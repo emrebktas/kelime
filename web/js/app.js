@@ -2,6 +2,15 @@ import * as store from './store.js';
 import * as sync from './sync.js';
 import { nowSec } from './srs.js';
 
+// Android uygulaması (Capacitor) içinde mi çalışıyoruz? Orada bazı işler yerel eklentilerle yapılır.
+const Cap = window.Capacitor;
+const isNative = !!Cap?.isNativePlatform?.();
+const plugin = (name) => (isNative ? Cap.registerPlugin(name) : null);
+const NativeTTS = plugin('TextToSpeech');
+const NativeApp = plugin('App');
+const NativeFS = plugin('Filesystem');
+const NativeShare = plugin('Share');
+
 // Başka bir sitenin içine gömülmeyi engelle (tıklama tuzağına karşı)
 if (window.top !== window.self) {
   document.documentElement.innerHTML = '';
@@ -94,9 +103,11 @@ function applyTheme() {
 }
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
 
+// Android'in uygulama içi tarayıcısında web seslendirmesi olmayabilir; orada yerel eklenti kullanılır
+const webSpeech = 'speechSynthesis' in window ? window.speechSynthesis : null;
 let voices = [];
-const loadVoices = () => { voices = speechSynthesis.getVoices(); };
-speechSynthesis.addEventListener?.('voiceschanged', loadVoices);
+const loadVoices = () => { voices = webSpeech?.getVoices() || []; };
+webSpeech?.addEventListener?.('voiceschanged', loadVoices);
 loadVoices();
 const warnedLangs = new Set();
 
@@ -110,10 +121,35 @@ function pickVoice(lang) {
   return voices.filter((v) => norm(v).split('-')[0] === base).sort((a, b) => score(b) - score(a))[0] || null;
 }
 
-function stopSpeech() { speechSynthesis.cancel(); }
+function stopSpeech() {
+  if (NativeTTS) NativeTTS.stop().catch(() => {});
+  else webSpeech?.cancel();
+}
+
+// Android: telefonun kendi metin okuma motoru (Google TTS vb.)
+const nativeLangChecked = new Map();
+async function nativeSpeak(text, lang) {
+  const tag = langInfo(lang)[2] || lang;
+  if (!nativeLangChecked.has(tag)) {
+    const ok = await NativeTTS.isLanguageSupported({ lang: tag }).then((r) => r.supported).catch(() => true);
+    nativeLangChecked.set(tag, ok);
+    if (!ok) {
+      toast(`Telefonda ${langName(lang)} ses verisi yok. Ayarlar › Sistem › Dil › Metin okuma çıkışı bölümünden ${langName(lang)} sesini indirebilirsin.`, 'info', 7000);
+    }
+  }
+  if (!nativeLangChecked.get(tag)) return;
+  try {
+    await NativeTTS.stop().catch(() => {});
+    await NativeTTS.speak({ text, lang: tag, rate: speechRate(), volume: speechVolume(), pitch: 1.0, category: 'playback' });
+  } catch (e) {
+    console.warn('Seslendirme hatası', e);
+  }
+}
 
 function speak(text, lang) {
   if (!text) return;
+  if (NativeTTS) { nativeSpeak(text, lang); return; }
+  if (!webSpeech) { toast('Bu cihazda seslendirme desteklenmiyor.', 'info'); return; }
   if (!voices.length) loadVoices();
   const voice = pickVoice(lang);
   if (!voice) {
@@ -130,7 +166,7 @@ function speak(text, lang) {
   u.lang = voice.lang;
   u.volume = speechVolume();
   u.rate = speechRate();
-  speechSynthesis.speak(u);
+  webSpeech.speak(u);
 }
 
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
@@ -377,9 +413,9 @@ function accountModal() {
     },
   });
   $('[data-sync]', form)?.addEventListener('click', () => guard(async () => { await sync.syncNow(); accountModal(); }));
-  $('[data-backup]', form).addEventListener('click', () => {
-    download(`kelime-yedek-${new Date().toISOString().slice(0, 10)}.json`, store.exportBackup());
-  });
+  $('[data-backup]', form).addEventListener('click', () => guard(
+    () => download(`kelime-yedek-${new Date().toISOString().slice(0, 10)}.json`, store.exportBackup()),
+  ));
   $('[data-logout]', form)?.addEventListener('click', () => guard(async () => {
     const pending = store.hasUnsynced();
     const ok = await confirmBox(pending
@@ -874,8 +910,19 @@ function joinModal() {
 
 /* =========================================================== içe / dışa aktarma */
 
-function download(filename, obj) {
-  const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
+async function download(filename, obj) {
+  const text = JSON.stringify(obj, null, 2);
+  if (NativeFS && NativeShare) {
+    // Android: dosyayı geçici klasöre yaz, paylaş menüsüyle kaydet/gönder (Drive, Dosyalar, WhatsApp...)
+    const { uri } = await NativeFS.writeFile({ path: filename, data: text, directory: 'CACHE', encoding: 'utf8' });
+    try {
+      await NativeShare.share({ title: filename, files: [uri], dialogTitle: 'Dosyayı kaydet ya da gönder' });
+    } catch (e) {
+      if (!/cancel/i.test(e?.message || '')) throw e;
+    }
+    return;
+  }
+  const blob = new Blob([text], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = filename;
@@ -889,7 +936,8 @@ function pickFile() {
   return new Promise((resolve) => {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = '.json,application/json,text/plain';
+    // Android'in dosya seçicisi .json uzantısını tanımayabiliyor; orada filtreleme yapma
+    if (!isNative) input.accept = '.json,application/json,text/plain';
     input.onchange = async () => {
       const f = input.files[0];
       resolve(f ? { name: f.name, text: await f.text() } : null);
@@ -1292,7 +1340,7 @@ document.addEventListener('click', (e) => {
       }
       case 'export': {
         const safe = deck.name.replace(/[^\p{L}\p{N} _-]+/gu, '_').trim() || 'deste';
-        download(`${safe}.json`, store.exportDeck(deck.id));
+        await download(`${safe}.json`, store.exportDeck(deck.id));
         break;
       }
       case 'add-card': cardForm(null, state.deckId, () => { refreshDecks(); renderDeck(); }); break;
@@ -1423,7 +1471,19 @@ async function init() {
   if (prefs.lastDeck && deckById(prefs.lastDeck)) openDeck(prefs.lastDeck);
   else showHome();
   loadProfile();
-  if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  if (NativeApp) {
+    // Android geri tuşu: önce pencere/menü kapanır, sonra bir üst ekrana dönülür, en son uygulamadan çıkılır
+    NativeApp.addListener('backButton', () => {
+      if (modalOpen()) closeModal();
+      else if (document.body.classList.contains('menu-open')) document.body.classList.remove('menu-open');
+      else if (state.view === 'study') backToDeck();
+      else if (state.view === 'deck') showHome();
+      else NativeApp.exitApp();
+    });
+    NativeApp.addListener('resume', () => sync.schedule(0));
+  }
+  // Android uygulamasında dosyalar zaten pakette; önbellek işçisine gerek yok
+  if (!isNative && 'serviceWorker' in navigator && location.protocol !== 'file:') {
     navigator.serviceWorker.register('sw.js').catch((e) => console.warn('Service worker kaydedilemedi', e));
   }
 }

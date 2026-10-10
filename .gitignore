@@ -12,3 +12,13 @@ supabase/.temp/
 supabase/.branches/
 .env
 .claude/
+
+# Android imza anahtarı — GİZLİ
+android-imza/
+*.p12
+*.keystore
+*.jks
+
+# Capacitor/Android derleme çıktıları
+node_modules/
+android/

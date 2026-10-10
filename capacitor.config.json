@@ -1,0 +1,10 @@
+{
+  "appId": "io.github.emrebktas.kelime",
+  "appName": "Kelime",
+  "webDir": "web",
+  "backgroundColor": "#14161b",
+  "android": {
+    "adjustMarginsForEdgeToEdge": "force",
+    "backgroundColor": "#14161b"
+  }
+}

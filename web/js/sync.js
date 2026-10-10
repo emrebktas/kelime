@@ -1,7 +1,7 @@
 // Supabase ile hesap, senkron, paylaşım ve değişiklik geçmişi
 
 import * as store from './store.js';
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
+import { SUPABASE_URL, SUPABASE_ANON_KEY, SITE_URL } from './config.js';
 
 // Geliştirmede (sadece localhost) config.js yerine tarayıcıda bir test sunucusu tanımlanabilir:
 // localStorage['kelime.config'] = '{"url": "...", "key": "..."}'
@@ -82,7 +82,8 @@ function handleSession(s, event) {
   }
 }
 
-const redirectTo = () => location.origin + location.pathname;
+// Android uygulamasının adresi (https://localhost) e-postadan açılamaz; orada web adresini kullan.
+const redirectTo = () => (window.Capacitor?.isNativePlatform?.() ? SITE_URL : location.origin + location.pathname);
 
 export async function signUp(email, password, displayName) {
   try {
