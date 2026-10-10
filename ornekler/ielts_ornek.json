@@ -1,0 +1,36 @@
+{
+  "deck": "IELTS Kelimeler",
+  "language": "en",
+  "cards": [
+    {
+      "word": "abundant",
+      "translation": "bol, bereketli",
+      "sentence": "The region has abundant natural resources.",
+      "synonyms": ["plentiful", "ample", "copious"]
+    },
+    {
+      "word": "mitigate",
+      "translation": "hafifletmek, azaltmak",
+      "sentence": "Governments must take steps to mitigate the effects of climate change.",
+      "synonyms": ["alleviate", "reduce", "lessen"]
+    },
+    {
+      "word": "inevitable",
+      "translation": "kaçınılmaz",
+      "sentence": "Some job losses are inevitable as technology advances.",
+      "synonyms": ["unavoidable", "certain", "inescapable"]
+    },
+    {
+      "word": "detrimental",
+      "translation": "zararlı",
+      "sentence": "Excessive screen time can be detrimental to children's health.",
+      "synonyms": ["harmful", "damaging", "adverse"]
+    },
+    {
+      "word": "substantial",
+      "translation": "önemli, kayda değer, büyük",
+      "sentence": "There has been a substantial increase in the number of students studying abroad.",
+      "synonyms": ["considerable", "significant", "sizeable"]
+    }
+  ]
+}

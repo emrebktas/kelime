@@ -1,0 +1,32 @@
+{
+  "deck": "Almanca B1",
+  "language": "de",
+  "cards": [
+    {
+      "word": "die Erfahrung",
+      "translation": "deneyim, tecrübe",
+      "sentence": "Ich habe viel Erfahrung in diesem Bereich.",
+      "synonyms": ["das Erlebnis", "die Praxis"],
+      "plural": "die Erfahrungen"
+    },
+    {
+      "word": "sich beschweren",
+      "translation": "şikayet etmek",
+      "sentence": "Er hat sich beim Kellner über das Essen beschwert.",
+      "synonyms": ["sich beklagen", "reklamieren"]
+    },
+    {
+      "word": "allerdings",
+      "translation": "ancak, gerçi",
+      "sentence": "Das Hotel war schön, allerdings etwas teuer.",
+      "synonyms": ["jedoch", "aber"]
+    },
+    {
+      "word": "der Zusammenhang",
+      "translation": "bağlam, ilişki",
+      "sentence": "In diesem Zusammenhang möchte ich etwas erwähnen.",
+      "synonyms": ["die Verbindung", "der Kontext"],
+      "plural": "die Zusammenhänge"
+    }
+  ]
+}

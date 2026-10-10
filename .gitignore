@@ -1,0 +1,14 @@
+# Kişisel veriler — asla depoya girmemeli
+data/
+kelime_yedek.json
+*.db
+
+# Python
+__pycache__/
+*.pyc
+
+# Supabase CLI yerel dosyaları
+supabase/.temp/
+supabase/.branches/
+.env
+.claude/
