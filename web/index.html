@@ -3,6 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://ytrrmjhhbmarwniaqngz.supabase.co wss://ytrrmjhhbmarwniaqngz.supabase.co http://127.0.0.1:54321; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
   <title>Kelime</title>
   <meta name="description" content="Anki tarzı kelime kartları: IELTS, Almanca ve diğer diller için aralıklı tekrar.">
   <meta name="theme-color" content="#4f5bd5">
@@ -37,7 +39,7 @@
         <button class="account" data-act="account" id="account-btn"></button>
         <div class="side-tools">
           <button class="ghost" data-act="theme" id="btn-theme" title="Tema"></button>
-          <button class="ghost" data-act="toggle-autospeak" id="btn-autospeak" title="Kart açılınca kelimeyi otomatik seslendir"></button>
+          <button class="ghost" data-act="speech-settings" id="btn-autospeak" title="Seslendirme ayarları"></button>
         </div>
       </div>
     </aside>

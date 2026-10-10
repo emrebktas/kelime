@@ -2,6 +2,13 @@ import * as store from './store.js';
 import * as sync from './sync.js';
 import { nowSec } from './srs.js';
 
+// Başka bir sitenin içine gömülmeyi engelle (tıklama tuzağına karşı)
+if (window.top !== window.self) {
+  document.documentElement.innerHTML = '';
+  window.top.location = window.self.location.href;
+  throw new Error('Kelime başka bir sayfanın içinde çalışmaz.');
+}
+
 /* =========================================================== yardımcılar */
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -81,8 +88,9 @@ function applyTheme() {
   document.documentElement.dataset.theme = dark ? 'dark' : 'light';
   $('meta[name=theme-color]').content = dark ? '#181a20' : '#eceef3';
   $('#btn-theme').textContent = { system: '◐ Sistem', light: '☀ Açık', dark: '☾ Koyu' }[mode];
-  $('#btn-autospeak').textContent = prefs.autoSpeak ? '🔊 Oto ses' : '🔈 Oto ses';
-  $('#btn-autospeak').title = prefs.autoSpeak ? 'Otomatik seslendirme açık' : 'Otomatik seslendirme kapalı';
+  const vol = Math.round((prefs.volume ?? 1) * 100);
+  $('#btn-autospeak').textContent = `${vol === 0 ? '🔇' : prefs.autoSpeak ? '🔊' : '🔈'} Ses %${vol}`;
+  $('#btn-autospeak').title = `Seslendirme ayarları · otomatik seslendirme ${prefs.autoSpeak ? 'açık' : 'kapalı'}`;
 }
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
 
@@ -120,8 +128,45 @@ function speak(text, lang) {
   const u = new SpeechSynthesisUtterance(text);
   u.voice = voice;
   u.lang = voice.lang;
-  u.rate = 0.95;
+  u.volume = speechVolume();
+  u.rate = speechRate();
   speechSynthesis.speak(u);
+}
+
+const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
+const speechVolume = () => clamp(prefs.volume ?? 1, 0, 1);
+const speechRate = () => clamp(prefs.rate ?? 0.95, 0.5, 1.5);
+
+function speechSettingsModal() {
+  const lang = deckById(state.deckId)?.language || 'en';
+  const sample = { en: 'abundant', de: 'die Erfahrung', fr: 'bonjour', es: 'hola', it: 'ciao' }[lang] || 'hello';
+  const form = openModal(`
+    <h2>Seslendirme</h2>
+    <label class="radio"><input type="checkbox" name="auto" ${prefs.autoSpeak ? 'checked' : ''}>
+      Kart açılınca kelimeyi otomatik seslendir</label>
+    <label>Ses seviyesi <small id="vol-val">%${Math.round(speechVolume() * 100)}</small>
+      <input type="range" name="volume" min="0" max="100" step="5" value="${Math.round(speechVolume() * 100)}"></label>
+    <label>Konuşma hızı <small id="rate-val">${speechRate().toFixed(2)}×</small>
+      <input type="range" name="rate" min="50" max="150" step="5" value="${Math.round(speechRate() * 100)}"></label>
+    <p class="muted" style="font-size:12.5px">Bu ses seviyesi cihazın genel sesinden bağımsızdır. Bazı tarayıcılar (özellikle iPhone/iPad'de Safari) ses seviyesi ayarını desteklemez; orada cihazın kendi ses tuşlarını kullan.</p>
+    <div class="modal-actions">
+      <button type="button" data-try>▶ Dene</button>
+      <span class="spacer"></span>
+      <button type="submit" class="primary">Tamam</button>
+    </div>`, { onSubmit: () => {} });
+  const save = () => {
+    prefs.autoSpeak = $('[name=auto]', form).checked;
+    prefs.volume = +$('[name=volume]', form).value / 100;
+    prefs.rate = +$('[name=rate]', form).value / 100;
+    $('#vol-val', form).textContent = `%${Math.round(prefs.volume * 100)}`;
+    $('#rate-val', form).textContent = `${prefs.rate.toFixed(2)}×`;
+    savePrefs();
+    applyTheme();
+  };
+  form.addEventListener('input', save);
+  // Kaydırıcı bırakılınca örnek kelimeyi yeni ayarla oku
+  $$('input[type=range]', form).forEach((r) => r.addEventListener('change', () => speak(sample, lang)));
+  $('[data-try]', form).addEventListener('click', () => speak(sample, lang));
 }
 
 /* =========================================================== modal */
@@ -708,7 +753,15 @@ async function shareModal(deck) {
   });
   form.addEventListener('click', (e) => {
     const uid = e.target.closest('[data-remove]')?.dataset.remove;
-    if (uid) guard(async () => { await sync.removeMember(deck.id, uid); await renderMembers(); toast('Üye çıkarıldı.'); });
+    if (!uid) return;
+    guard(async () => {
+      const code = await sync.removeMember(deck.id, uid);
+      refreshDecks();
+      deck = { ...deck, share_code: code || deckById(deck.id)?.share_code || deck.share_code };
+      $('.share-code code', form).textContent = deck.share_code;
+      await renderMembers();
+      toast('Üye çıkarıldı. Paylaşım kodu da yenilendi; eski kod artık çalışmaz.', 'success', 5000);
+    });
   });
 }
 
@@ -800,8 +853,8 @@ function joinModal() {
   }
   openModal(`
     <h2>Kodla desteye katıl</h2>
-    <p class="muted" style="font-size:13px">Deste sahibinden aldığın 8 karakterlik paylaşım kodunu gir.</p>
-    <label>Paylaşım kodu<input name="code" autocomplete="off" autocapitalize="characters" spellcheck="false"
+    <p class="muted" style="font-size:13px">Deste sahibinden aldığın paylaşım kodunu gir.</p>
+    <label>Paylaşım kodu<input name="code" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="16"
       style="font:600 20px ui-monospace,Consolas,monospace;letter-spacing:.1em;text-transform:uppercase" autofocus></label>
     <div class="modal-actions">
       <button type="button" data-close>Vazgeç</button>
@@ -1220,7 +1273,7 @@ document.addEventListener('click', (e) => {
         prefs.theme = order[(order.indexOf(prefs.theme || 'system') + 1) % 3];
         savePrefs(); applyTheme(); break;
       }
-      case 'toggle-autospeak': prefs.autoSpeak = !prefs.autoSpeak; savePrefs(); applyTheme(); break;
+      case 'speech-settings': speechSettingsModal(); break;
       case 'edit-deck': deckForm(deck); break;
       case 'share': await shareModal(deck); break;
       case 'history': await historyModal(deck); break;

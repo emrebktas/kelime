@@ -3,11 +3,12 @@
 import * as store from './store.js';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
 
-// Test/geliştirme için config.js yerine tarayıcıda bir sunucu tanımlanabilir:
+// Geliştirmede (sadece localhost) config.js yerine tarayıcıda bir test sunucusu tanımlanabilir:
 // localStorage['kelime.config'] = '{"url": "...", "key": "..."}'
-const cfg = window.KELIME_CONFIG || (() => {
+const isDevHost = ['localhost', '127.0.0.1'].includes(location.hostname);
+const cfg = isDevHost ? (() => {
   try { return JSON.parse(localStorage.getItem('kelime.config')) || {}; } catch { return {}; }
-})();
+})() : {};
 const URL_ = cfg.url || SUPABASE_URL;
 const KEY_ = cfg.key || SUPABASE_ANON_KEY;
 
@@ -276,6 +277,7 @@ async function rpc(name, args) {
 
 export async function joinDeck(code) {
   const deckId = await rpc('join_deck', { code: code.trim() });
+  if (!deckId) throw new Error('Bu kodla bir deste bulunamadı. Kodu kontrol et.');
   store.forgetFullSynced(deckId);
   await syncNow();
   return deckId;
@@ -292,8 +294,11 @@ export async function setMemberRole(deckId, userId, role) {
   await rpc('set_member_role', { p_deck: deckId, p_user: userId, p_role: role });
 }
 
+/** Üyeyi çıkarır; paylaşım kodu da yenilenir. Yeni kodu döndürür. */
 export async function removeMember(deckId, userId) {
-  await rpc('remove_member', { p_deck: deckId, p_user: userId });
+  const code = await rpc('remove_member', { p_deck: deckId, p_user: userId });
+  await syncNow();
+  return code;
 }
 
 export async function regenerateShareCode(deckId) {

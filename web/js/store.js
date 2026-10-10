@@ -230,6 +230,38 @@ export function forgetFullSynced(deckId) {
 
 const uuid = () => crypto.randomUUID();
 const clean = (s) => String(s ?? '').replace(/\s+/g, ' ').trim();
+
+// Veritabanındaki uzunluk sınırlarıyla aynı (supabase/migrations/*_guvenlik.sql)
+const LIMITS = { deckName: 100, word: 300, translation: 2000, sentence: 5000, notes: 5000, synonyms: 5000, extra: 10000 };
+const cut = (s, n) => (s.length > n ? s.slice(0, n) : s);
+function limitList(list, max) {
+  const out = [];
+  for (const s of list) {
+    if (JSON.stringify([...out, s]).length > max) break;
+    out.push(s);
+  }
+  return out;
+}
+function limitExtra(extra) {
+  const out = {};
+  for (const [k, v] of Object.entries(extra)) {
+    if (k === '__proto__' || k === 'constructor' || k === 'prototype') continue;
+    out[cut(k, 100)] = cut(v, 2000);
+    if (JSON.stringify(out).length > LIMITS.extra) { delete out[cut(k, 100)]; break; }
+  }
+  return out;
+}
+/** Kart içeriğini sunucunun kabul edeceği uzunluklara indirir. */
+function limitCard(c) {
+  return {
+    ...c,
+    translation: cut(c.translation || '', LIMITS.translation),
+    sentence: cut(c.sentence || '', LIMITS.sentence),
+    notes: cut(c.notes || '', LIMITS.notes),
+    synonyms: limitList(c.synonyms || [], LIMITS.synonyms),
+    extra: limitExtra(c.extra || {}),
+  };
+}
 export const wordKey = (w) => clean(w).toLocaleLowerCase();
 
 function toText(v, sep = ', ') {
@@ -274,8 +306,8 @@ export function normalizeCard(raw) {
       out.extra[String(k)] = toText(v);
     }
   }
-  out.word = clean(out.word);
-  return out.word ? out : null;
+  out.word = cut(clean(out.word), LIMITS.word);
+  return out.word ? limitCard(out) : null;
 }
 
 /* ------------------------------------------------------------------ erişim kontrolü */
@@ -364,6 +396,7 @@ function cleanDeckFields(data) {
   if ('name' in data) {
     f.name = clean(data.name);
     if (!f.name) throw new Error('Deste adı boş olamaz.');
+    if (f.name.length > LIMITS.deckName) throw new Error(`Deste adı en fazla ${LIMITS.deckName} karakter olabilir.`);
   }
   if ('language' in data) f.language = (String(data.language || '').trim().toLowerCase() || 'en').slice(0, 12);
   if ('new_per_day' in data) f.new_per_day = Math.max(0, Math.min(9999, parseInt(data.new_per_day, 10) || 0));
@@ -473,6 +506,10 @@ const maxPosition = (deckId) => deckCards(deckId).reduce((m, c) => Math.max(m, c
 export function saveCard(data) {
   const word = clean(data.word);
   if (!word) throw new Error('Kelime boş olamaz.');
+  if (word.length > LIMITS.word) throw new Error(`Kelime en fazla ${LIMITS.word} karakter olabilir.`);
+  for (const f of ['translation', 'sentence', 'notes']) {
+    if (String(data[f] || '').length > LIMITS[f]) throw new Error(`Bu alan en fazla ${LIMITS[f]} karakter olabilir.`);
+  }
   const key = wordKey(word);
   const existing = data.id ? mem.cards.get(data.id) : null;
   if (data.id && (!existing || existing.deleted)) throw new Error('Kart bulunamadı.');
@@ -482,11 +519,11 @@ export function saveCard(data) {
   if (deckCards(deckId).some((c) => c.wkey === key && c.id !== data.id)) throw new Error(`“${word}” bu destede zaten var.`);
   const extra = Object.fromEntries(Object.entries(data.extra || {})
     .map(([k, v]) => [String(k).trim(), String(v).trim()]).filter(([k]) => k));
-  const rec = {
+  const rec = limitCard({
     ...(existing || { id: uuid(), deck_id: deckId, position: maxPosition(deckId) + 1 }),
     word, wkey: key, translation: toText(data.translation), sentence: toText(data.sentence, '\n'),
     synonyms: toList(data.synonyms), notes: toText(data.notes), extra, deleted: false,
-  };
+  });
   setRec('cards', rec.id, rec);
   return cardView(rec);
 }
