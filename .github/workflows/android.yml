@@ -30,6 +30,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # sürüm notları için önceki sürüm etiketi ve commit geçmişi gerekli
 
       - uses: actions/setup-node@v4
         with:
@@ -86,6 +88,30 @@ jobs:
           fi
           rm -f "$RUNNER_TEMP/kelime.p12"
 
+      # Uygulamadaki "Yeni sürüm hazır" bildirimi "- " ile başlayan satırları gösterir
+      - name: Sürüm notları
+        run: |
+          PREV=$(git tag --list 'android-v*' --sort=-v:refname | head -1)
+          if [ -n "$PREV" ]; then
+            CHANGES=$(git log "$PREV"..HEAD --no-merges --format='- %s' -- web assets package.json capacitor.config.json android-build | head -15)
+          else
+            CHANGES=$(git log -1 --format='- %s')
+          fi
+          [ -z "$CHANGES" ] && CHANGES="- Küçük iyileştirmeler"
+          if [ "$BUILD" = "release" ]; then SIGN="kalıcı anahtar"; else SIGN="geçici test anahtarı"; fi
+          {
+            echo "### Yenilikler"
+            echo "$CHANGES"
+            echo
+            echo "**Telefona kurulum:** Telefonda bu sayfayı aç, aşağıdaki \`kelime.apk\` dosyasına dokun ve indir."
+            echo "İndirme bitince dosyayı aç; Android \"bilinmeyen kaynaklardan yükleme\" izni isterse bu seferlik izin ver."
+            echo
+            echo "Güncellemek için yeni sürümün APK'sını aynı şekilde kurman yeterli, verilerin korunur."
+            echo
+            echo "İmza: $SIGN"
+          } > release-notes.md
+          cat release-notes.md
+
       - name: Yayınla
         uses: softprops/action-gh-release@v2
         with:
@@ -93,9 +119,4 @@ jobs:
           name: Kelime Android 1.0.${{ github.run_number }}
           make_latest: true
           files: kelime.apk
-          body: |
-            **Telefona kurulum:** Telefonda bu sayfayı aç, aşağıdaki `kelime.apk` dosyasına dokun ve indir.
-            İndirme bitince dosyayı aç; Android "bilinmeyen kaynaklardan yükleme" izni isterse bu seferlik izin ver.
-
-            Güncellemek için yeni sürümün APK'sını aynı şekilde kurman yeterli, verilerin korunur.
-            İmza: ${{ env.BUILD == 'release' && 'kalıcı anahtar' || 'geçici test anahtarı' }}
+          body_path: release-notes.md

@@ -1410,6 +1410,60 @@ function backToDeck() {
   openDeck(state.deckId);
 }
 
+/* =========================================================== Android güncelleme bildirimi */
+
+const RELEASES_API = 'https://api.github.com/repos/emrebktas/kelime/releases/latest';
+const APK_URL = 'https://github.com/emrebktas/kelime/releases/latest/download/kelime.apk';
+const UPDATE_CHECK_EVERY = 6 * 3600 * 1000;
+let updateCheckedAt = 0;
+let updateDismissed = false;
+
+/** Android uygulamasında GitHub'daki son APK sürümünü kendi sürümüyle karşılaştırır. */
+async function checkForUpdate() {
+  if (!NativeApp || updateDismissed || !navigator.onLine) return;
+  if (Date.now() - updateCheckedAt < UPDATE_CHECK_EVERY) return;
+  updateCheckedAt = Date.now();
+  try {
+    const [info, release] = await Promise.all([
+      NativeApp.getInfo(),
+      fetch(RELEASES_API, { headers: { Accept: 'application/vnd.github+json' } }).then((r) => (r.ok ? r.json() : null)),
+    ]);
+    // Etiket: android-v1.0.<derleme no>; uygulamanın derleme numarası (versionCode) ile karşılaştırılır
+    const latest = Number(/^android-v\d+\.\d+\.(\d+)$/.exec(release?.tag_name || '')?.[1]);
+    const current = Number(info.build);
+    if (!latest || !current || latest <= current) return;
+    const notes = (release.body || '').split('\n').filter((l) => l.startsWith('- ')).slice(0, 4).map((l) => l.slice(2));
+    showUpdateBanner(`1.0.${latest}`, info.version, notes);
+  } catch (e) {
+    console.warn('Güncelleme kontrolü yapılamadı', e);
+  }
+}
+
+export function showUpdateBanner(newVersion, currentVersion, notes = []) {
+  if ($('#update-banner')) return;
+  const el = document.createElement('div');
+  el.id = 'update-banner';
+  el.className = 'update-banner';
+  el.innerHTML = `
+    <div class="ub-text">
+      <b>Yeni sürüm hazır: ${esc(newVersion)}</b> <span class="muted">· şu an ${esc(currentVersion)}</span>
+      ${notes.length ? `<ul>${notes.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>` : ''}
+    </div>
+    <div class="ub-actions">
+      <button class="ghost" data-ub="later">Sonra</button>
+      <button class="primary" data-ub="go">İndir</button>
+    </div>`;
+  el.addEventListener('click', (e) => {
+    const act = e.target.closest('[data-ub]')?.dataset.ub;
+    if (!act) return;
+    updateDismissed = true;
+    el.remove();
+    // Uygulama dışındaki adresler Android'de telefonun tarayıcısında açılır; APK oradan iner
+    if (act === 'go') location.href = APK_URL;
+  });
+  document.body.append(el);
+}
+
 /* =========================================================== uzaktan gelen değişiklikler */
 
 let remoteTimer = null;
@@ -1632,7 +1686,8 @@ async function init() {
       else if (state.view === 'deck') showHome();
       else NativeApp.exitApp();
     });
-    NativeApp.addListener('resume', () => sync.schedule(0));
+    NativeApp.addListener('resume', () => { sync.schedule(0); checkForUpdate(); });
+    setTimeout(checkForUpdate, 3000);
   }
   // Android uygulamasında dosyalar zaten pakette; önbellek işçisine gerek yok
   if (!isNative && 'serviceWorker' in navigator && location.protocol !== 'file:') {
