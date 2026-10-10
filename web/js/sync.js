@@ -38,6 +38,7 @@ const MESSAGES = [
   [/unable to validate email|invalid email|email address .* is invalid/i, 'Geçerli bir e-posta adresi gir.'],
   [/email rate limit|over_email_send_rate_limit/i, 'Onay e-postası gönderme sınırı doldu (ücretsiz Supabase saatte birkaç e-posta gönderebiliyor). Biraz sonra tekrar dene; sorun sürerse uygulama yöneticisi e-posta onayını kapatabilir.'],
   [/rate limit|too many/i, 'Çok fazla deneme yapıldı, biraz bekleyip tekrar dene.'],
+  [/failed to send a request to the edge function/i, 'Yapay zekâ servisine ulaşılamadı. İnternet bağlantını kontrol et.'],
   [/failed to fetch|network|load failed/i, 'Sunucuya ulaşılamadı. İnternet bağlantını kontrol et.'],
   [/jwt|token/i, 'Oturum süresi doldu, tekrar giriş yap.'],
 ];
@@ -269,6 +270,24 @@ async function pull() {
     }
     store.markFullSynced(deckId);
   }
+}
+
+/* ------------------------------------------------------------------ yapay zekâ */
+
+/** Kelimeler için kart içeriği üretir (sunucudaki kelime-ai fonksiyonu, NVIDIA API). */
+export async function aiCards(words, language) {
+  if (!enabled || !session) throw new Error('Yapay zekâ ile doldurmak için giriş yapman gerekiyor.');
+  if (!navigator.onLine) throw new Error('Yapay zekâ için internet bağlantısı gerekiyor.');
+  const timeout = new Promise((_, reject) => setTimeout(
+    () => reject(new Error('Yapay zekâ çok uzun sürdü. Biraz sonra tekrar dene.')), 120_000));
+  const { data, error } = await Promise.race([
+    client.functions.invoke('kelime-ai', { body: { words, language } }), timeout]);
+  if (error) {
+    let msg = error.message;
+    try { msg = (await error.context?.json?.())?.error || msg; } catch { /* gövde JSON değil */ }
+    throw new Error(message({ message: msg }));
+  }
+  return data?.cards || [];
 }
 
 /* ------------------------------------------------------------------ paylaşım ve geçmiş */

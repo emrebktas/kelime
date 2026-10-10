@@ -460,3 +460,17 @@ body.dragging #drop-overlay { display: grid; }
 @media (hover: none) {
   kbd { display: none; }
 }
+
+/* ---------- yapay zekâ ---------- */
+.ai-btn {
+  border-color: color-mix(in srgb, #b14cf0 45%, transparent);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 14%, var(--panel)), color-mix(in srgb, #b14cf0 14%, var(--panel)));
+  font-weight: 600;
+}
+.ai-btn:hover { background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 24%, var(--panel)), color-mix(in srgb, #b14cf0 24%, var(--panel))); }
+.ai-btn:disabled { opacity: .7; cursor: progress; }
+.ai-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 12.5px; }
+.modal.ai-busy textarea, .modal.ai-busy input:not([name=word]) { animation: pulse 1.2s infinite; }
+.ai-preview { max-height: 45vh; overflow-y: auto; }
+.ai-preview table.cards td { white-space: normal; vertical-align: top; }
+.ai-sentence { font-size: 12.5px; font-style: italic; margin-top: 2px; }

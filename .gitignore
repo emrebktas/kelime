@@ -22,3 +22,6 @@ android-imza/
 # Capacitor/Android derleme çıktıları
 node_modules/
 android/
+
+# Yerel araçlar (Supabase CLI)
+.tools/

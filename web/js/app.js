@@ -549,6 +549,7 @@ function renderDeck() {
       <section>
         <div class="cards-toolbar">
           <input id="card-search" type="search" placeholder="Kartlarda ara…" value="${esc(state.search)}">
+          ${editable && sync.enabled ? '<button class="ai-btn" data-act="ai-bulk" title="Kelime listesinden yapay zekâyla kart oluştur">✨ Listeden ekle</button>' : ''}
           ${editable ? '<button class="primary" data-act="add-card">+ Kart ekle <kbd>N</kbd></button>' : ''}
         </div>
         <div id="bulk"></div>
@@ -676,7 +677,7 @@ const parseExtra = (text) => Object.fromEntries((text || '').split('\n')
 function cardForm(card, deckId, after) {
   const readOnly = !store.canEdit(deckId);
   const c = card || { word: '', translation: '', sentence: '', synonyms: [], notes: '', extra: {} };
-  const extraText = Object.entries(c.extra || {}).map(([k, v]) => `${k}: ${v}`).join('\n');
+  const extraText = extraToText(c.extra);
   const dis = readOnly ? 'disabled' : '';
   const form = openModal(`
     <h2>${readOnly ? 'Kart' : card ? 'Kartı düzenle' : 'Yeni kart'}</h2>
@@ -684,6 +685,10 @@ function cardForm(card, deckId, after) {
       <label>Kelime<input name="word" value="${esc(c.word)}" autofocus ${dis}></label>
       <label>Türkçesi<input name="translation" value="${esc(c.translation)}" ${dis}></label>
     </div>
+    ${!readOnly && sync.enabled ? `<div class="ai-row">
+      <button type="button" class="ai-btn" data-ai>✨ Yapay zekâ ile doldur</button>
+      <span class="muted">${card ? 'Boş alanları doldurur; hepsi doluysa yeniden üretir.' : 'Kelimeyi yaz, Tab’a bas: gerisi kendiliğinden dolar.'}</span>
+    </div>` : ''}
     <label>Örnek cümle<textarea name="sentence" rows="2" ${dis}>${esc(c.sentence)}</textarea></label>
     <label>Eş anlamlılar <small>virgülle ayır</small><input name="synonyms" value="${esc(c.synonyms.join(', '))}" ${dis}></label>
     <label>Not<textarea name="notes" rows="2" ${dis}>${esc(c.notes)}</textarea></label>
@@ -720,6 +725,16 @@ function cardForm(card, deckId, after) {
       }
     },
   });
+  const aiBtn = $('[data-ai]', form);
+  if (aiBtn) {
+    aiBtn.addEventListener('click', () => aiFillForm(form, deckId, !card, false));
+    // Yeni kartta kelime yazılıp alandan çıkılınca (Tab) ve henüz anlam yazılmadıysa otomatik doldur
+    if (!card) {
+      $('[name=word]', form).addEventListener('change', () => {
+        if (!$('[name=translation]', form).value.trim() && sync.user()) aiFillForm(form, deckId, true, true);
+      });
+    }
+  }
   $('[data-act-modal=delete]', form)?.addEventListener('click', async () => {
     if (!(await confirmBox(`“${c.word}” kartı silinecek.`, { ok: 'Sil', danger: true }))) return cardForm(card, deckId, after);
     await guard(async () => {
@@ -728,6 +743,115 @@ function cardForm(card, deckId, after) {
       await after?.(null);
     });
   });
+}
+
+/* =========================================================== yapay zekâ */
+
+const coreWord = (w) => w.trim().toLocaleLowerCase().replace(/^(der|die|das|the|to|a|an|sich)\s+/, '');
+
+/** Kart penceresindeki alanları yapay zekâyla doldurur. */
+async function aiFillForm(form, deckId, isNew, auto) {
+  const wordInput = $('[name=word]', form);
+  const btn = $('[data-ai]', form);
+  const word = wordInput.value.trim();
+  if (!word) { if (!auto) toast('Önce kelimeyi yaz.', 'info'); return; }
+  if (!sync.user()) { toast('Yapay zekâ ile doldurmak için giriş yapman gerekiyor.', 'info'); return; }
+  if (btn.disabled) return;
+  const label = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '✨ Hazırlanıyor…';
+  form.classList.add('ai-busy');
+  try {
+    const [c] = await sync.aiCards([word], deckById(deckId)?.language || 'en');
+    if (!c) throw new Error('Yapay zekâ bu kelime için kart üretemedi.');
+    // Beklerken pencere kapandıysa ya da kelime değiştiyse sonucu kullanma
+    if (!form.isConnected || wordInput.value.trim() !== word) return;
+    const fields = { translation: c.translation, sentence: c.sentence, synonyms: c.synonyms.join(', '), extra: extraToText(c.extra) };
+    const empty = Object.keys(fields).filter((k) => !$(`[name=${k}]`, form).value.trim());
+    for (const k of (empty.length ? empty : Object.keys(fields))) {
+      if (fields[k]) $(`[name=${k}]`, form).value = fields[k];
+    }
+    if (fields.extra) $('details', form).open = true;
+    // Temel hâl (ör. Gebäude → das Gebäude, went → go) yeni kartta kelimenin yerine geçer
+    if (isNew && c.word && c.word !== word) {
+      wordInput.value = c.word;
+      if (coreWord(c.word) !== coreWord(word)) toast(`Kelime “${c.word}” olarak düzeltildi.`, 'info', 3500);
+    }
+  } catch (e) {
+    toast(e.message, 'error', 6000);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = label;
+    form.classList.remove('ai-busy');
+  }
+}
+
+/** Kelime listesinden toplu kart oluşturma: önce önizleme, sonra seçilenleri ekleme. */
+function aiBulkModal(deck) {
+  if (!sync.user()) {
+    toast('Yapay zekâ için önce giriş yapmalısın.', 'info');
+    return authModal();
+  }
+  const BATCH = 10;
+  const MAX = 100;
+  let results = null; // önizlemedeki kartlar
+  const existing = new Set(store.listCards(deck.id, '', Infinity).cards.map((c) => store.wordKey(c.word)));
+  const form = openModal(`
+    <h2>✨ Kelime listesinden kart oluştur</h2>
+    <p class="muted" style="font-size:13px">Kelimeleri alt alta ya da virgülle ayırarak yaz. Yapay zekâ her biri için Türkçe anlam,
+      ${esc(langName(deck.language))} örnek cümle ve eş anlamlıları hazırlar; eklemeden önce kontrol edebilirsin.</p>
+    <label>Kelimeler <small>en fazla ${MAX}</small><textarea name="words" rows="7" placeholder="abandon&#10;mitigate&#10;ubiquitous" autofocus></textarea></label>
+    <div id="ai-progress" class="muted" style="font-size:13px"></div>
+    <div id="ai-preview"></div>
+    <div class="modal-actions">
+      <button type="button" data-close>Vazgeç</button>
+      <button type="submit" class="primary" id="ai-submit">Oluştur</button>
+    </div>`, {
+    wide: true,
+    onSubmit: async (f) => {
+      if (results) {
+        const picked = results.filter((_, i) => $(`[data-pick="${i}"]`, f)?.checked);
+        if (!picked.length) { toast('Eklenecek kart seçilmedi.', 'info'); return false; }
+        const r = store.importCards({ deck_id: deck.id }, picked.map((c) => ({
+          word: c.word, translation: c.translation, sentence: c.sentence, synonyms: c.synonyms, ...c.extra,
+        })));
+        toast(`${r.added} kart eklendi.`, 'success');
+        refreshDecks();
+        renderDeck();
+        return;
+      }
+      const words = [...new Map(f.words.value.split(/[\n,;]+/).map((w) => w.trim()).filter(Boolean)
+        .map((w) => [store.wordKey(w), w])).values()];
+      if (!words.length) { toast('En az bir kelime yaz.', 'info'); return false; }
+      if (words.length > MAX) { toast(`Bir seferde en fazla ${MAX} kelime.`, 'error'); return false; }
+      const progress = $('#ai-progress', f);
+      const cards = [];
+      for (let i = 0; i < words.length; i += BATCH) {
+        progress.textContent = `Hazırlanıyor… ${Math.min(i + BATCH, words.length)}/${words.length} kelime`;
+        try {
+          cards.push(...await sync.aiCards(words.slice(i, i + BATCH), deck.language));
+        } catch (e) {
+          toast(e.message, 'error', 6000);
+          if (!cards.length) { progress.textContent = ''; return false; }
+          break;
+        }
+      }
+      results = cards;
+      const dup = (c) => existing.has(store.wordKey(c.word));
+      progress.textContent = `${cards.length} kart hazır. Eklemek istemediklerinin işaretini kaldır.`;
+      $('#ai-preview', f).innerHTML = `
+        <div class="table-wrap ai-preview"><table class="cards"><tbody>${cards.map((c, i) => `
+          <tr><td class="chk"><input type="checkbox" data-pick="${i}" ${dup(c) ? '' : 'checked'}></td>
+            <td><b>${esc(c.word)}</b>${dup(c) ? ' <span class="muted">(destede var)</span>' : ''}
+              <div class="muted">${esc(c.translation)}</div>
+              <div class="ai-sentence">${esc(c.sentence)}</div></td></tr>`).join('')}
+        </tbody></table></div>`;
+      f.words.closest('label').classList.add('hidden');
+      $('#ai-submit', f).textContent = 'Seçilenleri ekle';
+      return false;
+    },
+  });
+  return form;
 }
 
 /* =========================================================== paylaşım ve geçmiş */
@@ -1106,6 +1230,13 @@ function markWord(sentence, word, repl) {
   return { html: html.replace(/\n/g, '<br>'), hit };
 }
 
+// Ek alanların (JSON'dan ya da yapay zekâdan) kartta görünen adları
+const EXTRA_LABELS = { type: 'Tür', plural: 'Çoğul', forms: 'Çekim', article: 'Artikel', gender: 'Cinsiyet', level: 'Seviye' };
+// Düzenleme penceresinde de aynı Türkçe adlar
+function extraToText(extra) {
+  return Object.entries(extra || {}).map(([k, v]) => `${EXTRA_LABELS[k.toLowerCase()] || k}: ${v}`).join('\n');
+}
+
 function renderFaces(card, reverse, flipped) {
   const speakBtn = (act, small) => `<button type="button" class="icon-btn ${small ? 'small' : ''}" data-act="${act}" title="Seslendir${act === 'speak' ? ' (R)' : ''}">${ICON.speaker}</button>`;
   const word = `<div class="word">${esc(card.word)}${speakBtn('speak')}</div>`;
@@ -1116,7 +1247,7 @@ function renderFaces(card, reverse, flipped) {
   const notes = card.notes ? `<div class="notes">${esc(card.notes)}</div>` : '';
   const extraEntries = Object.entries(card.extra || {});
   const extra = extraEntries.length
-    ? `<dl class="extra">${extraEntries.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl>` : '';
+    ? `<dl class="extra">${extraEntries.map(([k, v]) => `<dt>${esc(EXTRA_LABELS[k.toLowerCase()] || k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl>` : '';
 
   let front;
   let back;
@@ -1343,6 +1474,7 @@ document.addEventListener('click', (e) => {
         await download(`${safe}.json`, store.exportDeck(deck.id));
         break;
       }
+      case 'ai-bulk': aiBulkModal(deck); break;
       case 'add-card': cardForm(null, state.deckId, () => { refreshDecks(); renderDeck(); }); break;
       case 'study': startStudy(); break;
       case 'back-deck': backToDeck(); break;
