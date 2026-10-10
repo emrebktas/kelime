@@ -786,6 +786,19 @@ async function aiFillForm(form, deckId, isNew, auto) {
   }
 }
 
+// "Listeden ekle" kutusundaki örnekler, destenin diline göre
+const AI_EXAMPLES = {
+  en: ['abandon', 'mitigate', 'ubiquitous'],
+  de: ['die Wohnung', 'sich bewerben', 'allerdings'],
+  fr: ['le logement', 'néanmoins', 'se souvenir'],
+  es: ['la vivienda', 'sin embargo', 'aprovechar'],
+  it: ["l'abitazione", 'tuttavia', 'approfittare'],
+  nl: ['de woning', 'echter', 'solliciteren'],
+  pt: ['a moradia', 'no entanto', 'aproveitar'],
+  ru: ['квартира', 'однако', 'стремиться'],
+  tr: ['ev', 'ancak', 'başvurmak'],
+};
+
 /** Kelime listesinden toplu kart oluşturma: önce önizleme, sonra seçilenleri ekleme. */
 function aiBulkModal(deck) {
   if (!sync.user()) {
@@ -800,7 +813,8 @@ function aiBulkModal(deck) {
     <h2>✨ Kelime listesinden kart oluştur</h2>
     <p class="muted" style="font-size:13px">Kelimeleri alt alta ya da virgülle ayırarak yaz. Yapay zekâ her biri için Türkçe anlam,
       ${esc(langName(deck.language))} örnek cümle ve eş anlamlıları hazırlar; eklemeden önce kontrol edebilirsin.</p>
-    <label>Kelimeler <small>en fazla ${MAX}</small><textarea name="words" rows="7" placeholder="abandon&#10;mitigate&#10;ubiquitous" autofocus></textarea></label>
+    <label>Kelimeler <small>en fazla ${MAX}</small><textarea name="words" rows="3" class="autogrow"
+      placeholder="${esc((AI_EXAMPLES[deck.language] || AI_EXAMPLES.en).join('\n'))}" autofocus></textarea></label>
     <div id="ai-progress" class="muted" style="font-size:13px"></div>
     <div id="ai-preview"></div>
     <div class="modal-actions">
@@ -850,6 +864,12 @@ function aiBulkModal(deck) {
       $('#ai-submit', f).textContent = 'Seçilenleri ekle';
       return false;
     },
+  });
+  // Kutu küçük başlar, yazdıkça büyür (en fazla ~10 satır)
+  const box = form.words;
+  box.addEventListener('input', () => {
+    box.style.height = 'auto';
+    box.style.height = `${Math.min(box.scrollHeight + 2, 240)}px`;
   });
   return form;
 }

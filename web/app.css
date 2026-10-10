@@ -474,3 +474,4 @@ body.dragging #drop-overlay { display: grid; }
 .ai-preview { max-height: 45vh; overflow-y: auto; }
 .ai-preview table.cards td { white-space: normal; vertical-align: top; }
 .ai-sentence { font-size: 12.5px; font-style: italic; margin-top: 2px; }
+textarea.autogrow { resize: none; overflow-y: auto; min-height: 0; }
