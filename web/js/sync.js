@@ -36,6 +36,7 @@ const MESSAGES = [
   [/email not confirmed/i, 'E-posta adresin henüz onaylanmadı. Gelen kutundaki onay bağlantısına tıkla.'],
   [/password should be at least|weak password/i, 'Şifre en az 6 karakter olmalı.'],
   [/unable to validate email|invalid email|email address .* is invalid/i, 'Geçerli bir e-posta adresi gir.'],
+  [/email rate limit|over_email_send_rate_limit/i, 'Onay e-postası gönderme sınırı doldu (ücretsiz Supabase saatte birkaç e-posta gönderebiliyor). Biraz sonra tekrar dene; sorun sürerse uygulama yöneticisi e-posta onayını kapatabilir.'],
   [/rate limit|too many/i, 'Çok fazla deneme yapıldı, biraz bekleyip tekrar dene.'],
   [/failed to fetch|network|load failed/i, 'Sunucuya ulaşılamadı. İnternet bağlantını kontrol et.'],
   [/jwt|token/i, 'Oturum süresi doldu, tekrar giriş yap.'],
