@@ -1,22 +1,22 @@
 :root {
-  --bg: #e8e1d4;
-  --panel: #f0eadf;
-  --side: #e0d8c9;
+  --bg: #ddd5c6;
+  --panel: #e6dfd2;
+  --side: #d5ccbb;
   --text: #2e2a27;
-  --muted: #6f655a;
-  --border: #d5cab7;
-  --hover: #ddd4c4;
+  --muted: #645a4f;
+  --border: #c9bea9;
+  --hover: #d2c8b6;
   --accent: #b65d37;
   --accent-hover: #a04f2c;
-  --accent-soft: #ead6c7;
+  --accent-soft: #e0cab9;
   --on-accent: #fffaf3;
   --primary: #2e2a27;
   --primary-hover: #46403a;
-  --on-primary: #f0eadf;
+  --on-primary: #e6dfd2;
   --sage: #5f8463;
-  --sage-soft: #d9e3d4;
+  --sage-soft: #ced9c8;
   --slate: #4d7088;
-  --slate-soft: #d6e0e6;
+  --slate-soft: #cbd6dd;
   --new: #4c7a99;
   --learn: #b7791f;
   --review: #5b8a5e;
@@ -25,7 +25,7 @@
   --good: #5b8a5e;
   --easy: #4c7a99;
   --danger: #b5452f;
-  --mark: #ead39a;
+  --mark: #dfc78c;
   --shadow: 0 1px 2px rgba(60, 40, 20, .05), 0 4px 16px rgba(60, 40, 20, .06);
   --radius: 12px;
   color-scheme: light;
@@ -644,11 +644,11 @@ textarea.autogrow { resize: none; overflow-y: auto; min-height: 0; }
 .es-prompt-box .pa-done, .es-prompt-box.editing .pa-edit, .es-prompt-box.collapsed .pa-edit { display: none; }
 .es-prompt-box.editing .pa-done { display: inline-block; }
 .es-prompt-view {
-  font: 15px/1.7 "Segoe UI Variable Text", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif; color: var(--text); margin-top: 6px; cursor: text;
+  font: 19px/1.6 "Segoe UI Variable Text", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif; color: var(--text); margin-top: 6px; cursor: text;
 }
 .es-prompt-view p { margin: 0 0 8px; }
 .es-prompt-view p:last-child { margin-bottom: 0; }
-.es-prompt-input { display: none; margin-top: 6px; font: 15px/1.6 "Segoe UI Variable Text", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif; resize: none; overflow: hidden; }
+.es-prompt-input { display: none; margin-top: 6px; font: 19px/1.55 "Segoe UI Variable Text", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif; resize: none; overflow: hidden; }
 .es-prompt-box.editing .es-prompt-input { display: block; }
 .es-prompt-box.editing .es-prompt-view, .es-prompt-box.collapsed .es-prompt-view { display: none; }
 .es-prompt-box.collapsed { padding-bottom: 8px; }
@@ -792,4 +792,8 @@ mark.lt-style { text-decoration-color: var(--easy); background: color-mix(in srg
 }
 .study-panel button.primary.big:hover, .done button.primary:hover, .answer-bar button.primary.big:hover {
   background: var(--accent-hover); border-color: var(--accent-hover);
+}
+
+@media (max-width: 760px) {
+  .es-prompt-view, .es-prompt-input { font-size: 17.5px; }
 }
