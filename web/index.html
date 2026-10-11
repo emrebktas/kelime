@@ -22,6 +22,9 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
       <span id="topbar-title">Kelime</span>
+      <button id="chat-chip" class="icon-btn chat-chip hidden" data-act="chat" title="Mesajlar" aria-label="Mesajlar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="chat-count count-badge hidden"></span>
+      </button>
       <button id="timer-chip" class="timer-chip" data-act="timer" title="Çalışma sayacı"></button>
       <span id="topbar-sync"></span>
     </header>
@@ -36,6 +39,9 @@
       </div>
       <button id="timer-widget" class="timer-widget" data-act="timer" title="Çalışma sayacı ve geçmişi"></button>
       <button id="nav-essays" class="nav-btn" data-act="essays" title="IELTS Writing yazıların">✍️ <span>Yazılarım</span><small>IELTS Writing</small></button>
+      <button id="nav-chat" class="nav-btn hidden" data-act="chat" title="Ortak destedeki kişilerle mesajlaş">
+        <span class="nav-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span><span>Mesajlar</span><span class="chat-count count-badge hidden"></span>
+      </button>
       <div class="side-label">Desteler</div>
       <nav id="deck-list"></nav>
       <div class="side-foot">

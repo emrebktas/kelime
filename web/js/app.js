@@ -58,6 +58,7 @@ const ICON = {
   download: svg('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/>'),
   trash: svg('<path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/>'),
   leave: svg('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>'),
+  send: svg('<path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4Z"/>'),
 };
 
 const prefs = (() => {
@@ -85,6 +86,7 @@ function toast(msg, kind = 'info', ms = 3200) {
   el.textContent = msg;
   $('#toast-root').append(el);
   setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 260); }, ms);
+  return el;
 }
 
 async function guard(fn) {
@@ -300,6 +302,7 @@ function renderSidebar() {
     : '<div class="empty-side">Henüz deste yok. “+ Yeni deste” ile oluştur ya da bir JSON dosyası içe aktar.</div>';
   $('#btn-join').classList.toggle('hidden', !sync.enabled);
   $('#nav-essays')?.classList.toggle('active', state.view === 'essays' || state.view === 'essay');
+  renderChatBadges();
   renderAccount();
 }
 
@@ -1851,7 +1854,7 @@ async function loadBoard() {
       ${onlineOthers ? `<span class="board-online" title="Çevrimiçi">${onlineOthers}<i class="presence on"></i></span>` : ''}
     </div>
     <div class="board-list">${list.slice(0, 4).map((r) => `
-      <div class="board-row ${r.is_me ? 'me' : ''}" title="${esc(r.display_name || '')}: bugün ${r.words_today} kelime, ${fmtDur(r.seconds)}${r.studying ? ' · şu an çalışıyor' : ''}">
+      <div class="board-row ${r.is_me ? 'me' : 'tappable'}" ${r.is_me ? '' : `data-act="chat-open" data-peer="${r.user_id}" data-name="${esc(r.display_name || '')}"`} title="${esc(r.display_name || '')}: bugün ${r.words_today} kelime, ${fmtDur(r.seconds)}${r.studying ? ' · şu an çalışıyor' : ''}">
         <span class="avatar sm">${esc((r.display_name || '?').charAt(0).toLocaleUpperCase('tr'))}<i class="presence ${r.online ? 'on' : ''}"></i></span>
         <span class="board-info">
           <span class="board-name">${esc(r.is_me ? 'Sen' : r.display_name || 'Kullanıcı')}</span>
@@ -2692,6 +2695,286 @@ export function showUpdateBanner(newVersion, currentVersion, notes = []) {
   document.body.append(el);
 }
 
+/* =========================================================== mesajlar */
+
+// Ortak destede olduğun kişilerle birebir sohbet. Anlık bağlantı yerine kısa aralıklarla sorulur:
+// sohbet açıkken birkaç saniyede bir, değilse yarım dakikada bir sadece okunmamış sayısı.
+const chat = {
+  contacts: null,     // kişi listesi (sunucudan)
+  peer: null,         // açık sohbetteki kişinin id'si
+  peerName: '',       // listede olmayan biri (ör. panodan) açıldıysa adı
+  msgs: [],           // açık sohbetin mesajları (eskiden yeniye)
+  hasMore: false,
+  poll: null,
+  listHtml: '',
+  msgsHtml: '',
+  unread: new Map(),  // gönderen id -> { display_name, unread, last_at, last_body }
+  unreadReady: false, // ilk okumada "yeni mesaj" bildirimi gösterme
+  lastNotified: 0,
+  missing: false,     // sunucuda mesaj fonksiyonları yok (SQL çalıştırılmadı)
+};
+const CHAT_PAGE = 50;
+
+function renderChatBadges() {
+  const on = sync.enabled && !!sync.user() && !chat.missing;
+  const total = [...chat.unread.values()].reduce((a, u) => a + u.unread, 0);
+  const label = total > 99 ? '99+' : String(total);
+  $('#nav-chat')?.classList.toggle('hidden', !on);
+  $('#nav-chat')?.classList.toggle('active', state.view === 'chat');
+  $('#chat-chip')?.classList.toggle('hidden', !on);
+  $$('.chat-count').forEach((b) => { b.textContent = label; b.classList.toggle('hidden', !total); });
+}
+
+async function checkUnread() {
+  if (!sync.user() || chat.missing || document.hidden || !navigator.onLine) return;
+  let rows;
+  try { rows = await sync.chatUnread(); } catch { return; }
+  if (rows === null) { chat.missing = !!sync.user(); renderChatBadges(); return; }
+  const open = state.view === 'chat' ? chat.peer : null; // açık sohbettekiler zaten okunuyor
+  rows = rows.filter((r) => r.sender !== open);
+  chat.unread = new Map(rows.map((r) => [r.sender, r]));
+  const newest = rows.reduce((a, r) => (!a || r.last_at > a.last_at ? r : a), null);
+  const t = newest ? new Date(newest.last_at).getTime() : 0;
+  if (chat.unreadReady && t > chat.lastNotified && state.view !== 'chat') {
+    const el = toast(`💬 ${newest.display_name || 'Yeni mesaj'}: ${newest.last_body}`, 'info', 6000);
+    el.classList.add('tappable');
+    el.addEventListener('click', () => { el.remove(); showChat(newest.sender); });
+  }
+  chat.lastNotified = Math.max(chat.lastNotified, t);
+  chat.unreadReady = true;
+  renderChatBadges();
+  if (state.view === 'chat') loadContacts();
+}
+
+function showChat(peer = null, name = '') {
+  leaveStudy();
+  state.view = 'chat';
+  document.body.classList.remove('menu-open');
+  Object.assign(chat, { peer: null, msgs: [], hasMore: false, listHtml: '', msgsHtml: '' });
+  renderSidebar();
+  setTitle('Mesajlar');
+  main.innerHTML = `
+    <div class="page chat-page">
+      <header class="deck-head">
+        <button class="icon-btn head-btn" data-act="home" title="Ana sayfaya dön (Esc)" aria-label="Ana sayfaya dön">${ICON.home}</button>
+        <div class="deck-title">
+          <h1>Mesajlar</h1>
+          <div class="sub">Ortak destede olduğun kişilerle yazış</div>
+        </div>
+      </header>
+      <div class="chat" id="chat">
+        <aside class="chat-list" id="chat-list"><div class="muted chat-note">Yükleniyor…</div></aside>
+        <section class="chat-thread" id="chat-thread"></section>
+      </div>
+    </div>`;
+  if (peer) openThread(peer, name); else closeThread();
+  loadContacts();
+  clearInterval(chat.poll);
+  let tick = 0;
+  chat.poll = setInterval(() => {
+    if (state.view !== 'chat') { clearInterval(chat.poll); return; }
+    if (document.hidden || !navigator.onLine) return;
+    if (chat.peer) fetchThread().catch(() => {});
+    if (++tick % 4 === 0) loadContacts();
+  }, 4000);
+}
+
+const contactOf = (id) => chat.contacts?.find((c) => c.user_id === id);
+const initialOf = (name) => esc((name || '?').charAt(0).toLocaleUpperCase('tr'));
+
+function shortTime(iso) {
+  const d = new Date(iso);
+  const today = store.dayKey(Date.now()) === store.dayKey(d.getTime());
+  return today ? d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
+    : d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+}
+
+async function loadContacts() {
+  let list;
+  try { list = await sync.chatContacts(); } catch (e) {
+    if (!chat.contacts && $('#chat-list')) $('#chat-list').innerHTML = `<div class="muted chat-note">Kişiler yüklenemedi: ${esc(e.message)}</div>`;
+    return;
+  }
+  if (state.view !== 'chat') return;
+  if (list === null) {
+    chat.missing = true;
+    renderChatBadges();
+    main.querySelector('.chat').outerHTML = '<div class="panel muted">Mesajlaşma sunucuda henüz kurulmadı. Uygulama yöneticisinin mesajlar SQL dosyasını çalıştırması gerekiyor.</div>';
+    return;
+  }
+  chat.contacts = list;
+  renderContacts();
+  if (chat.peer) renderThreadHead();
+}
+
+function renderContacts() {
+  const box = $('#chat-list');
+  if (!box || !chat.contacts) return;
+  const html = chat.contacts.length
+    ? chat.contacts.map((c) => {
+      const unread = c.user_id === chat.peer ? 0 : c.unread;
+      return `<button class="chat-contact ${c.user_id === chat.peer ? 'active' : ''} ${unread ? 'unread' : ''}" data-act="chat-open" data-peer="${c.user_id}">
+        <span class="avatar sm">${initialOf(c.display_name)}</span>
+        <span class="cc-info">
+          <span class="cc-name">${esc(c.display_name || 'Kullanıcı')}</span>
+          <span class="cc-last">${c.last_body ? `${c.last_from_me ? 'Sen: ' : ''}${esc(c.last_body)}` : '<i>Henüz mesaj yok</i>'}</span>
+        </span>
+        <span class="cc-side">${c.last_at ? `<span class="cc-time">${shortTime(c.last_at)}</span>` : ''}${unread ? `<span class="count-badge">${unread}</span>` : ''}</span>
+      </button>`;
+    }).join('')
+    : '<div class="muted chat-note">Henüz kimseyle ortak desten yok. Bir desteni paylaş (deste › ⚙ › Paylaş); katılan kişilerle buradan yazışabilirsin.</div>';
+  if (html !== chat.listHtml) { box.innerHTML = html; chat.listHtml = html; }
+}
+
+function openThread(peer, name = '') {
+  if (!peer) return;
+  const same = chat.peer === peer;
+  chat.peer = peer;
+  if (name) chat.peerName = name;
+  if (!same) Object.assign(chat, { msgs: [], hasMore: false, msgsHtml: '' });
+  $('#chat')?.classList.add('has-peer');
+  renderContacts();
+  if (!same || !$('#chat-msgs')) {
+    $('#chat-thread').innerHTML = `
+      <header class="chat-head" id="chat-head"></header>
+      <div class="chat-msgs" id="chat-msgs"><div class="muted chat-note">Yükleniyor…</div></div>
+      <form class="chat-compose" id="chat-compose" autocomplete="off">
+        <textarea id="chat-input" rows="1" maxlength="2000" placeholder="Mesaj yaz…" aria-label="Mesaj"></textarea>
+        <button type="submit" class="primary chat-send" title="Gönder (Enter)" aria-label="Gönder">${ICON.send}</button>
+      </form>
+      <div class="chat-readonly muted hidden" id="chat-readonly">Artık ortak bir desteniz yok; yeni mesaj gönderemezsin.</div>`;
+    const input = $('#chat-input');
+    const grow = () => { input.style.height = 'auto'; input.style.height = `${Math.min(input.scrollHeight, 140)}px`; };
+    input.addEventListener('input', grow);
+    input.addEventListener('keydown', (e) => {
+      // Bilgisayarda Enter gönderir, Shift+Enter alt satır; telefonda Enter alt satırdır
+      if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && !isMobile()) { e.preventDefault(); sendChat(); }
+    });
+    $('#chat-compose').addEventListener('submit', (e) => { e.preventDefault(); sendChat(); });
+    if (!isMobile()) input.focus();
+  }
+  renderThreadHead();
+  // Okunmamışlardan düş
+  if (chat.unread.delete(peer)) renderChatBadges();
+  fetchThread(true).catch((e) => {
+    if ($('#chat-msgs') && !chat.msgs.length) $('#chat-msgs').innerHTML = `<div class="muted chat-note">Mesajlar yüklenemedi: ${esc(e.message)}</div>`;
+  });
+}
+
+function closeThread() {
+  chat.peer = null;
+  Object.assign(chat, { msgs: [], hasMore: false, msgsHtml: '' });
+  $('#chat')?.classList.remove('has-peer');
+  const thread = $('#chat-thread');
+  if (thread) thread.innerHTML = '<div class="chat-placeholder muted"><span>💬</span>Yazışmak için listeden birini seç.</div>';
+  renderContacts();
+}
+
+function renderThreadHead() {
+  const head = $('#chat-head');
+  if (!head) return;
+  const c = contactOf(chat.peer);
+  const name = c?.display_name || chat.peerName || 'Kullanıcı';
+  head.innerHTML = `
+    <button type="button" class="icon-btn chat-back" data-act="chat-back" aria-label="Kişilere dön">${ICON.back}</button>
+    <span class="avatar sm">${initialOf(name)}</span>
+    <b>${esc(name)}</b>`;
+  // Kişi listesinde varsa ve artık ortak deste yoksa sadece okunur
+  const readonly = !!c && !c.can_send;
+  $('#chat-compose')?.classList.toggle('hidden', readonly);
+  $('#chat-readonly')?.classList.toggle('hidden', !readonly);
+}
+
+function mergeMessages(rows) {
+  const byId = new Map(chat.msgs.map((m) => [m.id, m]));
+  for (const r of rows) byId.set(r.id, r);
+  chat.msgs = [...byId.values()].sort((a, b) => (a.created_at < b.created_at ? -1 : a.created_at > b.created_at ? 1 : 0));
+}
+
+async function fetchThread(first = false) {
+  const peer = chat.peer;
+  const rows = await sync.chatMessages(peer, null, CHAT_PAGE);
+  if (chat.peer !== peer || state.view !== 'chat' || rows === null) return;
+  mergeMessages(rows);
+  if (first) chat.hasMore = rows.length === CHAT_PAGE;
+  renderMessages(first);
+  if (rows.some((m) => m.sender === peer && !m.read_at) && !document.hidden) {
+    await sync.markChatRead(peer).catch(() => {});
+    const c = contactOf(peer);
+    if (c?.unread) { c.unread = 0; renderContacts(); }
+  }
+}
+
+async function loadOlderMessages() {
+  const peer = chat.peer;
+  const oldest = chat.msgs.find((m) => !m.pending);
+  if (!peer || !oldest) return;
+  const box = $('#chat-msgs');
+  const fromBottom = box.scrollHeight - box.scrollTop;
+  const rows = await sync.chatMessages(peer, oldest.created_at, CHAT_PAGE);
+  if (chat.peer !== peer || !rows) return;
+  chat.hasMore = rows.length === CHAT_PAGE;
+  mergeMessages(rows);
+  renderMessages(false);
+  box.scrollTop = box.scrollHeight - fromBottom; // okuduğun yer kaymasın
+}
+
+function dayLabel(iso) {
+  const k = store.dayKey(new Date(iso).getTime());
+  if (k === store.dayKey(Date.now())) return 'Bugün';
+  if (k === store.dayKey(Date.now() - 86400_000)) return 'Dün';
+  return new Date(iso).toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long' });
+}
+
+function renderMessages(toBottom) {
+  const box = $('#chat-msgs');
+  if (!box) return;
+  const me = sync.user()?.id;
+  const nearBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
+  const lastMine = [...chat.msgs].reverse().find((m) => m.sender === me);
+  let day = '';
+  let html = chat.hasMore ? '<button type="button" class="link-btn chat-more" data-act="chat-more">Daha eski mesajları göster</button>' : '';
+  for (const m of chat.msgs) {
+    const d = dayLabel(m.created_at);
+    if (d !== day) { html += `<div class="chat-day"><span>${esc(d)}</span></div>`; day = d; }
+    const mine = m.sender === me;
+    const time = new Date(m.created_at).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+    const status = m === lastMine ? (m.pending ? ' · gönderiliyor…' : m.read_at ? ' · görüldü' : ' · gönderildi') : '';
+    html += `<div class="msg ${mine ? 'mine' : ''} ${m.pending ? 'pending' : ''}">
+      <div class="bubble">${esc(m.body)}</div><span class="msg-time">${time}${status}</span></div>`;
+  }
+  if (!chat.msgs.length) html += '<div class="muted chat-note chat-first">Henüz mesaj yok. İlk mesajı sen gönder 👋</div>';
+  if (html === chat.msgsHtml) return;
+  box.innerHTML = html;
+  chat.msgsHtml = html;
+  if (toBottom || nearBottom) box.scrollTop = box.scrollHeight;
+}
+
+async function sendChat() {
+  const input = $('#chat-input');
+  const text = input?.value.trim();
+  const peer = chat.peer;
+  if (!text || !peer) return;
+  if (text.length > 2000) { toast('Mesaj en fazla 2000 karakter olabilir.', 'error'); return; }
+  const temp = { id: `tmp-${Date.now()}`, sender: sync.user()?.id, body: text, created_at: new Date().toISOString(), pending: true };
+  chat.msgs.push(temp);
+  input.value = '';
+  input.style.height = 'auto';
+  renderMessages(true);
+  try {
+    const saved = await sync.sendMessage(peer, text);
+    chat.msgs = chat.msgs.filter((m) => m !== temp);
+    if (saved) mergeMessages([saved]);
+  } catch (e) {
+    chat.msgs = chat.msgs.filter((m) => m !== temp);
+    if (chat.peer === peer && !input.value) input.value = text; // yazdığın kaybolmasın
+    toast(e.message, 'error', 5000);
+  }
+  if (chat.peer !== peer) return;
+  renderMessages(true);
+  loadContacts();
+}
+
 /* =========================================================== uzaktan gelen değişiklikler */
 
 let remoteTimer = null;
@@ -2780,6 +3063,13 @@ document.addEventListener('click', (e) => {
       case 'speech-settings': speechSettingsModal(); break;
       case 'timer': timerModal(); break;
       case 'essays': showEssays(); break;
+      case 'chat': showChat(); break;
+      case 'chat-open':
+        if (state.view === 'chat') openThread(el.dataset.peer);
+        else showChat(el.dataset.peer, el.dataset.name);
+        break;
+      case 'chat-back': closeThread(); break;
+      case 'chat-more': await loadOlderMessages(); break;
       case 'essay-new': newEssayModal(); break;
       case 'essay-timer': {
         const t = ESSAY_TASKS[$('#es-task')?.value] || ESSAY_TASKS.task2;
@@ -2931,6 +3221,11 @@ document.addEventListener('keydown', (e) => {
     }
   } else if (state.view === 'essays') {
     if (e.key === 'Escape' && !typing) showHome();
+  } else if (state.view === 'chat') {
+    if (e.key !== 'Escape') return;
+    if (typing) document.activeElement.blur();
+    else if (chat.peer && isMobile()) closeThread();
+    else showHome();
   } else if (state.view === 'deck') {
     if (e.ctrlKey && key === 'f') { e.preventDefault(); $('#card-search')?.focus(); $('#card-search')?.select(); return; }
     if (typing) {
@@ -2980,15 +3275,21 @@ async function init() {
   sync.onAuth((session, event) => {
     if (event === 'PASSWORD_RECOVERY') recoveryModal();
     loadProfile();
+    chat.unread.clear();
+    chat.unreadReady = false;
     refreshDecks();
-    if (state.view === 'home') showHome();
+    if (state.view === 'home' || (state.view === 'chat' && !sync.user())) showHome();
+    checkUnread();
   });
   // Önce cihazdaki verilerle hemen aç. Senkron arka planda başlar: oturumun süresi dolmuşken
   // çevrimdışıysak Supabase oturumu yenilemeyi uzun süre dener; arayüz bunu beklememeli.
   refreshDecks();
   showHome(); // açılışta (ve F5'te) her zaman ana sayfa
+  setInterval(checkUnread, 30_000);
+  addEventListener('focus', () => checkUnread());
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) checkUnread(); });
   sync.init()
-    .then(() => { refreshDecks(); renderAccount(); loadProfile(); })
+    .then(() => { refreshDecks(); renderAccount(); loadProfile(); checkUnread(); })
     .catch((e) => console.warn('Senkron başlatılamadı', e));
   // Sayaç: uygulama kapalıyken süre dolduysa şimdi bitir, çalışıyorsa saymaya devam et
   syncTimerTick();
@@ -3004,7 +3305,9 @@ async function init() {
       if (modalOpen()) closeModal();
       else if (document.body.classList.contains('menu-open')) document.body.classList.remove('menu-open');
       else if (state.view === 'study') backToDeck();
-      else if (state.view === 'deck') showHome();
+      else if (state.view === 'chat' && chat.peer) closeThread();
+      else if (state.view === 'essay') showEssays();
+      else if (['deck', 'essays', 'chat'].includes(state.view)) showHome();
       else NativeApp.exitApp();
     });
     NativeApp.addListener('resume', () => { sync.schedule(0); checkForUpdate(); onTimerTick(); });

@@ -391,6 +391,26 @@ export async function setBoardVisibility(visibility) {
   await rpc('set_board_visibility', { p_visibility: visibility });
 }
 
+/* ------------------------------------------------------------------ mesajlar */
+
+// Sunucuda mesaj fonksiyonları henüz yoksa (SQL çalıştırılmadıysa) null döner
+let chatMissing = false;
+async function chatRpc(name, args = {}) {
+  if (!session || chatMissing) return null;
+  const { data, error } = await client.rpc(name, args);
+  if (error) {
+    if (isMissingFn(error)) { chatMissing = true; return null; }
+    throw new Error(message(error));
+  }
+  return data;
+}
+export const chatContacts = () => chatRpc('chat_contacts');
+export const chatMessages = (other, before = null, limit = 50) =>
+  chatRpc('chat_messages', { p_other: other, p_before: before, p_limit: limit });
+export const sendMessage = async (to, body) => (await chatRpc('send_message', { p_to: to, p_body: body }))?.[0] || null;
+export const markChatRead = (other) => chatRpc('mark_chat_read', { p_other: other });
+export const chatUnread = () => chatRpc('chat_unread');
+
 /* ------------------------------------------------------------------ paylaşım ve geçmiş */
 
 async function rpc(name, args) {
