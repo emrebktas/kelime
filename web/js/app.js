@@ -2637,8 +2637,36 @@ async function init() {
   }
   // Android uygulamasında dosyalar zaten pakette; önbellek işçisine gerek yok
   if (!isNative && 'serviceWorker' in navigator && location.protocol !== 'file:') {
-    navigator.serviceWorker.register('sw.js').catch((e) => console.warn('Service worker kaydedilemedi', e));
+    const hadController = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
+      .then((reg) => {
+        // Uygulama öne geldiğinde yeni sürüm var mı diye bak
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) reg.update().catch(() => {}); });
+      })
+      .catch((e) => console.warn('Service worker kaydedilemedi', e));
+    // Yeni sürüm devreye girdi: kendiliğinden yenileme (yazı yazıyor olabilir), haber ver
+    navigator.serviceWorker.addEventListener('controllerchange', () => { if (hadController) showReloadBanner(); });
   }
+}
+
+function showReloadBanner() {
+  if ($('#update-banner')) return;
+  const el = document.createElement('div');
+  el.id = 'update-banner';
+  el.className = 'update-banner';
+  el.innerHTML = `
+    <div class="ub-text"><b>Uygulama güncellendi</b> <span class="muted">· yeni sürümü görmek için yenile</span></div>
+    <div class="ub-actions">
+      <button class="ghost" data-ub="later">Sonra</button>
+      <button class="primary" data-ub="go">Yenile</button>
+    </div>`;
+  el.addEventListener('click', (e) => {
+    const act = e.target.closest('[data-ub]')?.dataset.ub;
+    if (!act) return;
+    el.remove();
+    if (act === 'go') { state.flushEssay?.(); store.flush().finally(() => location.reload()); }
+  });
+  document.body.append(el);
 }
 
 init().catch((e) => {

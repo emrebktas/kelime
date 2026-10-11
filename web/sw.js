@@ -1,7 +1,7 @@
 // Uygulama dosyalarını önbelleğe alır: internet yokken de açılır.
 // Önce ağ (her zaman en yeni sürüm), ağ yoksa ya da yavaşsa önbellek.
 
-const CACHE = 'kelime-v5';
+const CACHE = 'kelime-v6';
 const ASSETS = [
   './', 'index.html', 'app.css', 'manifest.webmanifest',
   'js/app.js', 'js/store.js', 'js/sync.js', 'js/srs.js', 'js/config.js',
@@ -10,7 +10,10 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));
+  // cache: 'reload' → tarayıcının HTTP önbelleğini atla; yeni sürüme eski dosya girmesin
+  e.waitUntil(caches.open(CACHE)
+    .then((c) => c.addAll(ASSETS.map((a) => new Request(a, { cache: 'reload' }))))
+    .then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (e) => {
@@ -26,8 +29,11 @@ self.addEventListener('fetch', (e) => {
   e.respondWith((async () => {
     const cache = await caches.open(CACHE);
     try {
+      // cache: 'no-cache' → her seferinde sunucuya "değişti mi?" diye sor (değişmediyse kısa 304 cevabı).
+      // GitHub Pages dosyaları 10 dk önbellekte tutturuyor; bu olmadan güncellemeler gecikiyordu.
       const res = await Promise.race([
-        fetch(e.request),
+        // (sayfa açılış istekleri ayarla kopyalanamaz; adresle yeniden istenir)
+        fetch(e.request.url, { cache: 'no-cache', credentials: 'same-origin' }),
         new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3500)),
       ]);
       if (res.ok) cache.put(e.request, res.clone());
