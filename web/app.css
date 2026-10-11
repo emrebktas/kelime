@@ -814,3 +814,21 @@ mark.lt-style { text-decoration-color: var(--easy); background: color-mix(in srg
   background: transparent; border-color: transparent; color: var(--muted); padding: 2px 8px; font-size: 12px;
 }
 .es-prompt-box:not(.editing) .pa-edit:hover { color: var(--text); background: var(--hover); }
+
+/* ---------- yazı: deste kelimeleri önerileri ---------- */
+.es-vocab { margin-top: 12px; }
+.es-tip.vocab { border-left: 3px solid var(--slate); line-height: 1.6; }
+.vc-used { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.chip.vc-ok { background: var(--sage-soft); color: var(--sage); }
+.vc-head { margin: 8px 0 4px; font-size: 12.5px; }
+.vc-list { display: flex; flex-direction: column; gap: 4px; }
+.vc-item { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; padding: 4px 0; border-top: 1px solid var(--border); }
+.vc-item:first-child { border-top: none; }
+.vc-from { background: none; border: none; padding: 0; color: var(--muted); text-decoration: underline dotted; text-underline-offset: 3px; font-size: 14px; }
+.vc-from:hover { background: none; color: var(--text); }
+.vc-arrow { color: var(--muted); }
+.vc-to { color: var(--slate); font-size: 15px; }
+.vc-tr { font-size: 12.5px; }
+.vc-tag { font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
+.es-toolbar #es-deck { width: auto; max-width: 220px; }
+.rp-vocab .rp-etype { color: var(--slate); text-transform: none; font-size: 12.5px; letter-spacing: 0; }

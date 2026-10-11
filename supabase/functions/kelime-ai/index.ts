@@ -205,7 +205,8 @@ Sadece geçerli JSON döndür, açıklama ya da kod bloğu ekleme:
   "improvements": ["en önemli 3-5 somut öneri"],
   "errors": [{"original": "...", "correction": "...", "type": "grammar", "explanation": "..."}],
   "band9_tips": ["..."],
-  "improved_sentence": {"original": "...", "improved": "..."}
+  "improved_sentence": {"original": "...", "improved": "..."},
+  "vocab_suggestions": [{"word": "...", "original": "...", "suggestion": "...", "why": "..."}]
 }
 
 Kurallar:
@@ -234,6 +235,10 @@ async function evaluateEssay(
   const essay = typeof body.body === 'string' ? body.body.trim().slice(0, 15000) : '';
   const prompt = typeof body.prompt === 'string' ? body.prompt.trim().slice(0, 3000) : '';
   const count = essay.split(/\s+/).filter((t) => /[\p{L}\p{N}]/u.test(t)).length;
+  // Öğrencinin destesindeki (çalıştığı) kelimeler: yazıda doğal kullanılabilecek yerler önerilir
+  const targets = (Array.isArray(body.target_words) ? body.target_words : []).slice(0, 80)
+    .map((t: Record<string, unknown>) => ({ word: str(t?.word, 80), translation: str(t?.translation, 120) }))
+    .filter((t: { word: string }) => t.word);
   if (count < 30) return reply({ error: 'Analiz için en az 30 kelimelik bir yazı gerekli.' }, 400);
   const quota = await useQuota(ESSAY_COST);
   if (quota) return quota;
@@ -243,7 +248,14 @@ async function evaluateEssay(
     {
       role: 'user',
       content: `Görev türü: ${task.label}${task.min ? ` · alt sınır ${task.min} kelime` : ''}\nKelime sayısı: ${count}\n\n`
-        + `SORU:\n${prompt || '(soru verilmedi; yazının konusundan çıkar)'}\n\nYAZI:\n${essay}`,
+        + `SORU:\n${prompt || '(soru verilmedi; yazının konusundan çıkar)'}\n\nYAZI:\n${essay}`
+        + (targets.length
+          ? `\n\nÖĞRENCİNİN ÇALIŞTIĞI KELİMELER (destesinden):\n${targets.map((t: { word: string; translation: string }) => `- ${t.word}${t.translation ? ` (${t.translation})` : ''}`).join('\n')}\n\n`
+            + 'Bu listedeki kelimelerden, yazıdaki bir cümleye anlamı bozmadan ve doğal şekilde oturanları bul; '
+            + '"vocab_suggestions" alanına yaz (en fazla 8, sadece gerçekten uygun olanlar, zorlama yok). '
+            + '"word" listedeki kelime olmalı; "original" yazıdan BİREBİR alıntı; "suggestion" o cümlenin kelimeyi kullanan yeni hâli; '
+            + '"why" kısa Türkçe açıklama. Uygun yer yoksa boş dizi ver.'
+          : ''),
     },
   ], 4000, 140_000);
   if (out instanceof Response) return out;
@@ -281,6 +293,16 @@ async function evaluateEssay(
         : null,
       words: count,
       model: MODEL,
+      vocab_suggestions: (() => {
+        const allowed = new Set(targets.map((t: { word: string }) => t.word.toLowerCase()));
+        return (Array.isArray(raw.vocab_suggestions) ? raw.vocab_suggestions : []).slice(0, 10)
+          .map((v: Record<string, unknown>) => ({
+            word: str(v?.word, 80), original: str(v?.original, 400), suggestion: str(v?.suggestion, 500), why: str(v?.why, 300),
+          }))
+          // sadece öğrencinin listesindeki kelimeler (model uydurmasın)
+          .filter((v: { word: string; original: string; suggestion: string }) =>
+            v.original && v.suggestion && allowed.has(v.word.toLowerCase()));
+      })(),
     };
     return reply({ report });
   } catch (e) {

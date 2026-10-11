@@ -1895,12 +1895,14 @@ function openEssay(id) {
       <div class="es-toolbar">
         <select id="es-task">${Object.entries(ESSAY_TASKS).map(([k, t]) => `<option value="${k}" ${k === e.task ? 'selected' : ''}>${esc(t.label)}</option>`).join('')}</select>
         <button type="button" data-act="essay-timer" id="es-timer-btn"></button>
+        <select id="es-deck" title="Önerilerde kullanılacak kelime destesi">${essayDeckOptions()}</select>
         <span class="spacer"></span>
         <button type="button" class="ai-btn" data-act="essay-report" id="es-report-btn">🎓 IELTS analizi</button>
       </div>
       <div class="es-toggles" role="group" aria-label="Yazarken gösterilecekler">
         <label class="es-toggle" title="Üstteki canlı kelime sayacı ve hedef çubuğu"><input type="checkbox" id="es-counter-on" ${prefs.essayCounter !== false ? 'checked' : ''}><span>Kelime sayacı</span></label>
         <label class="es-toggle" title="Sorudan kopya, dolgu kelimeleri ve tekrar eden kelimeler"><input type="checkbox" id="es-tips-on" ${prefs.essayTips !== false ? 'checked' : ''}><span>Öneriler</span></label>
+        <label class="es-toggle" title="Destendeki kelimelerin eş anlamlılarını yazında bulup o kelimeyi önerir"><input type="checkbox" id="es-vocab-on" ${prefs.essayVocab !== false ? 'checked' : ''}><span>Deste kelimeleri</span></label>
         <label class="es-toggle" title="Yazarken dilbilgisi ve yazım hatalarını işaretler (LanguageTool)"><input type="checkbox" id="es-grammar-on" ${prefs.essayGrammar !== false ? 'checked' : ''}><span>Canlı dilbilgisi</span></label>
         <label class="es-toggle" title="Tarayıcının kırmızı yazım altı çizgisi (sınavda yoktur)"><input type="checkbox" id="es-spell" ${prefs.essaySpell ? 'checked' : ''}><span>Yazım denetimi</span></label>
       </div>
@@ -1923,6 +1925,7 @@ function openEssay(id) {
           placeholder="Yazmaya başla… Paragraflar arasında bir satır boşluk bırak.">${esc(e.body)}</textarea>
       </div>
       <div class="es-grammar" id="es-grammar"></div>
+      <div class="es-vocab" id="es-vocab"></div>
       <div class="es-insights" id="es-insights"></div>
       <div id="es-report"></div>
     </div>`;
@@ -1984,7 +1987,12 @@ function openEssay(id) {
   });
 
   // Kelime sayacı ve öneriler ayrı ayrı açılıp kapatılır; tercih cihazda hatırlanır
-  for (const [boxId, key] of [['es-counter-on', 'essayCounter'], ['es-tips-on', 'essayTips']]) {
+  $('#es-deck').addEventListener('change', (ev) => {
+    prefs.essayDeck = ev.target.value;
+    savePrefs();
+    renderEssayStatus(analyzeEssay(body.value, prompt.value), task.value, saved);
+  });
+  for (const [boxId, key] of [['es-counter-on', 'essayCounter'], ['es-tips-on', 'essayTips'], ['es-vocab-on', 'essayVocab']]) {
     $(`#${boxId}`).addEventListener('change', (ev) => {
       prefs[key] = ev.target.checked;
       savePrefs();
@@ -2062,6 +2070,7 @@ function renderEssayStatus(a, taskKey, saved) {
     tips.push(`<div class="es-tip"><b>Çok tekrar edilenler</b> (eş anlamlılarla çeşitlendir): ${a.repeated.map(([w, c]) => `<span class="chip">${esc(w)} ×${c}</span>`).join(' ')}</div>`);
   }
   $('#es-insights').innerHTML = prefs.essayTips !== false ? tips.join('') : '';
+  renderVocabHints();
   setGrammarState(grammar.state);
 }
 
@@ -2176,10 +2185,16 @@ function renderGrammar() {
 
 function grammarGoto(i) {
   const m = grammar.matches[i];
+  if (m) selectInEssay(m.offset, m.length);
+}
+
+/** Yazı alanında bir aralığı seçer ve ekranın ortasına getirir. */
+function selectInEssay(offset, length) {
   const body = $('#es-body');
-  if (!m || !body) return;
+  if (!body) return;
   body.focus();
-  body.setSelectionRange(m.offset, m.offset + m.length);
+  body.setSelectionRange(offset, offset + length);
+  const m = { offset };
   // Seçili yeri ekranın ortasına getir (alan kendi kendine büyüdüğü için sayfa kayar)
   const before = body.value.slice(0, m.offset).split('\n').length;
   const lineH = parseFloat(getComputedStyle(body).lineHeight) || 28;
@@ -2196,6 +2211,106 @@ function grammarFix(i, k) {
   const delta = rep.length - m.length;
   grammar.matches = grammar.matches.filter((x) => x !== m).map((x) => (x.offset > m.offset ? { ...x, offset: x.offset + delta } : x));
   body.dispatchEvent(new Event('input'));
+}
+
+/* ---- deste kelimeleri: yazıda kullanılabilecek, çalıştığın kelimeler */
+
+function defaultEssayDeck() {
+  const en = state.decks.filter((d) => d.language === 'en');
+  return en.length > 1 ? 'all' : en[0]?.id || state.decks[0]?.id || '';
+}
+const essayDeckSel = () => {
+  const v = prefs.essayDeck ?? defaultEssayDeck();
+  return v === '' || v === 'all' || deckById(v) ? v : defaultEssayDeck();
+};
+function essayDeckOptions() {
+  const sel = essayDeckSel();
+  const en = state.decks.filter((d) => d.language === 'en');
+  return `<option value="" ${sel === '' ? 'selected' : ''}>📚 Deste seçilmedi</option>
+    ${en.length > 1 ? `<option value="all" ${sel === 'all' ? 'selected' : ''}>📚 Tüm İngilizce desteler</option>` : ''}
+    ${state.decks.map((d) => `<option value="${d.id}" ${sel === d.id ? 'selected' : ''}>📚 ${esc(d.name)}</option>`).join('')}`;
+}
+
+let vocabCache = { key: '', entries: [] };
+/** Seçili destenin kartlarından: kelimenin kendisi ve eş anlamlıları için aranacak kalıplar. */
+function vocabEntries() {
+  const sel = essayDeckSel();
+  const decks = sel === 'all' ? state.decks.filter((d) => d.language === 'en') : state.decks.filter((d) => d.id === sel);
+  const key = `${sel}|${decks.map((d) => `${d.id}:${d.total}`).join(',')}|${store.getMeta().cursors?.cards || ''}`;
+  if (vocabCache.key === key) return vocabCache.entries;
+  const entries = [];
+  for (const d of decks) {
+    for (const c of store.listCards(d.id, '', Infinity).cards) {
+      const forms = wordForms(c.word);
+      if (!forms.length) continue;
+      const own = new Set(forms.map((f) => f.toLowerCase()));
+      entries.push({
+        word: c.word,
+        translation: c.translation,
+        // hâlâ öğrendiğin kelimeler önce önerilir
+        learning: c.state !== 2 || c.ivl < 21,
+        usedRe: new RegExp(`(?<![\\p{L}])(?:${forms.map(reEsc).join('|')})\\p{L}*`, 'iu'),
+        syns: (c.synonyms || [])
+          .filter((x) => x.length > 2 && x.split(/\s+/).length <= 3 && !own.has(x.toLowerCase()))
+          .map((x) => ({ s: x, re: new RegExp(`(?<![\\p{L}])${reEsc(x)}(?:s|es|d|ed|ing)?(?![\\p{L}])`, 'giu') })),
+      });
+    }
+  }
+  vocabCache = { key, entries };
+  return entries;
+}
+
+/** Yazıda kullanılan deste kelimeleri ve eş anlamlısı yazılmış (yerine deste kelimesi önerilebilecek) yerler. */
+function analyzeVocab(body) {
+  const entries = vocabEntries();
+  if (!entries.length) return null;
+  const used = [];
+  const swaps = [];
+  for (const e of entries) {
+    if (e.usedRe.test(body)) { used.push(e); continue; }
+    const hits = [];
+    for (const { s: syn, re } of e.syns) {
+      re.lastIndex = 0;
+      let m;
+      while ((m = re.exec(body))) hits.push({ syn, offset: m.index, length: m[0].length, text: m[0] });
+    }
+    if (hits.length) swaps.push({ ...e, hits: hits.sort((a, b) => a.offset - b.offset) });
+  }
+  swaps.sort((a, b) => (b.learning - a.learning) || (b.hits.length - a.hits.length));
+  return { used, swaps: swaps.slice(0, 10) };
+}
+
+function renderVocabHints() {
+  const box = $('#es-vocab');
+  const body = $('#es-body');
+  if (!box || !body) return;
+  const sel = essayDeckSel();
+  if (prefs.essayVocab === false || !body.value.trim() || !sel) { box.innerHTML = ''; return; }
+  const v = analyzeVocab(body.value);
+  if (!v) { box.innerHTML = ''; return; }
+  const deckName = sel === 'all' ? 'İngilizce destelerin' : deckById(sel)?.name || '';
+  box.innerHTML = `
+    <div class="es-tip vocab">
+      <b>📚 Destendeki kelimeler</b> <span class="muted">· ${esc(deckName)}</span>
+      ${v.used.length ? `<div class="vc-used">Bu yazıda kullandıkların: ${v.used.slice(0, 12).map((e) => `<span class="chip vc-ok">✓ ${esc(e.word)}</span>`).join(' ')}</div>` : ''}
+      ${v.swaps.length ? `<div class="vc-head muted">Şu kelimelerin yerine çalıştığın kelimeyi kullanabilirsin:</div>
+        <div class="vc-list">${v.swaps.map((sw) => `
+          <div class="vc-item">
+            <button type="button" class="vc-from" data-act="vc-goto" data-o="${sw.hits[0].offset}" data-l="${sw.hits[0].length}" title="Metinde göster">“${esc(sw.hits[0].text)}”${sw.hits.length > 1 ? ` ×${sw.hits.length}` : ''}</button>
+            <span class="vc-arrow">→</span>
+            <b class="vc-to">${esc(sw.word)}</b>
+            ${sw.translation ? `<span class="muted vc-tr">${esc(sw.translation)}</span>` : ''}
+            ${sw.learning ? '<span class="vc-tag">öğreniyorsun</span>' : ''}
+          </div>`).join('')}</div>`
+        : `<div class="muted vc-head">${v.used.length ? 'Harika! ' : ''}Yazdıkça, destendeki kelimelerin eş anlamlılarını kullandığın yerlerde burada öneri çıkar. Daha fazlası için 🎓 IELTS analizi.</div>`}
+    </div>`;
+}
+
+/** Yapay zekâ analizi için hedef kelimeler: önce hâlâ öğrenilenler (en fazla 80). */
+function essayTargetWords() {
+  if (prefs.essayVocab === false || !essayDeckSel()) return [];
+  return [...vocabEntries()].sort((a, b) => b.learning - a.learning).slice(0, 80)
+    .map((e) => ({ word: e.word, translation: e.translation || '' }));
 }
 
 /* ---- IELTS analiz raporu (yapay zekâ) */
@@ -2233,7 +2348,7 @@ async function runEssayReport() {
   const box = $('#es-report');
   if (box) box.innerHTML = '<div class="panel es-report-wait">🎓 Yazın IELTS ölçütlerine göre değerlendiriliyor. Bu genelde 20-60 saniye sürer; bu sırada yazmaya devam edebilirsin.</div>';
   try {
-    const report = await sync.aiEssayReport({ task: e.task, prompt: e.prompt, body: e.body });
+    const report = await sync.aiEssayReport({ task: e.task, prompt: e.prompt, body: e.body, targetWords: essayTargetWords() });
     store.saveEssayReport(e.id, report);
     toast(`Analiz hazır: tahmini Band ${report.overall.toFixed(1)}`, 'success');
     if (state.view === 'essay' && state.essayId === e.id) {
@@ -2288,6 +2403,13 @@ function renderEssayReport() {
             <span class="rp-etype">${esc(ERR_TYPES[x.type] || x.type)}</span>
             <span><del>${esc(x.original)}</del> → <ins>${esc(x.correction)}</ins></span>
             ${x.explanation ? `<small>${esc(x.explanation)}</small>` : ''}
+          </button>`).join('')}</div></div>` : ''}
+      ${r.vocab_suggestions?.length ? `<div class="rp-block"><h4>📚 Destendeki kelimelerle yazabileceklerin <small class="muted">(metinde göstermek için tıkla)</small></h4>
+        <div class="rp-errors">${r.vocab_suggestions.map((x) => `
+          <button type="button" class="rp-err rp-vocab" data-act="rp-goto" data-text="${esc(x.original)}">
+            <span class="rp-etype">${esc(x.word)}</span>
+            <span><del>${esc(x.original)}</del><br><ins>${esc(x.suggestion)}</ins></span>
+            ${x.why ? `<small>${esc(x.why)}</small>` : ''}
           </button>`).join('')}</div></div>` : ''}
       ${list('🚀 Daha yüksek band için', r.band9_tips)}
       ${r.improved_sentence ? `<div class="rp-block"><h4>✨ Örnek: cümleni yükselt</h4>
@@ -2472,6 +2594,7 @@ document.addEventListener('click', (e) => {
         break;
       }
       case 'rp-goto': reportGoto(el.dataset.text); break;
+      case 'vc-goto': selectInEssay(+el.dataset.o, +el.dataset.l); break;
       case 'essay-copy': {
         await navigator.clipboard.writeText($('#es-body').value);
         toast('Metin kopyalandı.', 'success', 1500);
