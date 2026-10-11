@@ -6,7 +6,7 @@
 // İstek:  POST { "words": ["abandon", "die Erfahrung"], "language": "en" }
 // Cevap:  { "cards": [{ word, translation, sentence, synonyms, extra: { type, plural, forms } }] }
 
-import { createClient } from 'npm:@supabase/supabase-js@2';
+import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2';
 
 const NVIDIA_URL = 'https://integrate.api.nvidia.com/v1/chat/completions';
 const MODEL = Deno.env.get('NVIDIA_MODEL') ?? 'z-ai/glm-5.3-flash';
@@ -153,7 +153,7 @@ Deno.serve(async (req) => {
     return data.choices?.[0]?.message?.content ?? '';
   };
 
-  if (body.action === 'essay') return evaluateEssay(body, useQuota, callModel, reply);
+  if (body.action === 'essay') return evaluateEssay(body, admin, useQuota, callModel, reply);
 
   const language = str(body.language, 12).toLowerCase() || 'en';
   const words = [...new Set((Array.isArray(body.words) ? body.words : [])
@@ -243,21 +243,36 @@ const DESCRIPTORS = {
 3 and below: sentence forms attempted but errors in grammar and punctuation predominate and distort meaning.`,
 };
 
-function essayPrompt(taskKey: string): string {
-  const taskDesc = taskKey === 'task1' ? DESCRIPTORS.task1 : taskKey === 'gt1' ? DESCRIPTORS.gt1 : DESCRIPTORS.task2;
-  return `You are a certified IELTS Writing examiner. Assess the candidate's response strictly against the public IELTS Writing band descriptors summarised below, exactly as a trained examiner would.
+// Resmi tanımlayıcı metni (Mayıs 2023) Supabase'deki gizli tablodan okunur; telif hakkı nedeniyle
+// herkese açık depoda tutulmaz. Tablo yoksa yukarıdaki özetler kullanılır.
+let descriptorCache: Record<string, string> | null = null;
+async function officialDescriptors(admin: SupabaseClient): Promise<Record<string, string> | null> {
+  if (descriptorCache) return descriptorCache;
+  const { data, error } = await admin.from('ielts_descriptors').select('key, content');
+  if (error || !data?.length) return null;
+  descriptorCache = Object.fromEntries(data.map((r: { key: string; content: string }) => [r.key, r.content]));
+  return descriptorCache;
+}
 
-${taskDesc}
+function essayPrompt(taskKey: string, official: Record<string, string> | null): string {
+  const isTask1 = taskKey === 'task1' || taskKey === 'gt1';
+  const officialText = official?.[isTask1 ? 'task1' : 'task2'];
+  const variant = taskKey === 'task1'
+    ? 'This is an ACADEMIC Task 1 (report on visual data): apply the lines marked (Academic) and ignore those marked (General Training).'
+    : taskKey === 'gt1'
+      ? 'This is a GENERAL TRAINING Task 1 (letter): apply the lines marked (General Training) and ignore those marked (Academic).'
+      : 'This is a Task 2 essay.';
+  const descriptorBlock = officialText
+    ? `OFFICIAL IELTS WRITING BAND DESCRIPTORS (public version, updated May 2023) — apply them word for word:\n${officialText}\n\n${variant}`
+    : `${taskKey === 'task1' ? DESCRIPTORS.task1 : taskKey === 'gt1' ? DESCRIPTORS.gt1 : DESCRIPTORS.task2}\n\n${DESCRIPTORS.coherence}\n\n${DESCRIPTORS.lexical}\n\n${DESCRIPTORS.grammar}`;
+  return `You are a certified IELTS Writing examiner. Assess the candidate's response strictly against the IELTS Writing band descriptors below, exactly as a trained examiner would.
 
-${DESCRIPTORS.coherence}
-
-${DESCRIPTORS.lexical}
-
-${DESCRIPTORS.grammar}
+${descriptorBlock}
 
 EXAMINER METHOD (follow exactly):
 1. Rate each of the four criteria independently; do not let one criterion influence another.
-2. For each criterion, start from the band whose description best fits the response ("best fit"). Only award a band if the response meets the positive features of that band; if it meets most features of a band but clearly falls short on one key feature, award the lower band. Half bands (e.g. 6.5) are allowed only when the response sits clearly between two bands.
+2. For each criterion, find the band whose description best fits the response. Official rule: "A script must fully fit the positive features of the descriptor at a particular level." If it does not fully fit a band's positive features, award the band below. Features marked in **bold** are negative features that LIMIT the rating: if one applies, the response cannot be rated above that band for that criterion. Use whole bands per criterion; use a half band only when the response sits clearly between two bands.
+   Official rules: responses of 20 words or fewer are rated at Band 1; any copied rubric (words copied from the question) must be discounted; Band 0 only if not attempted, not in English, or proven to be totally memorised.
 3. Base every judgement on evidence in the text. Do not reward length, memorised phrases or "impressive" words used inaccurately; do not penalise British/American spelling variation if used consistently.
 4. Task penalties: if the response is under the minimum word count, it cannot fully address/cover the task and the task criterion must reflect this (typically capped around band 5–6 depending on how far under). Words copied verbatim from the question are not counted. An off-topic, memorised or largely irrelevant response must receive a low task score. For Task 2, a response without a clear position cannot score above 5 for Task Response.
 5. Be calibrated: most real candidates score between 5 and 7. Bands 8–9 require near-native control. Neither generous nor harsh.
@@ -298,6 +313,7 @@ const strList = (v: unknown, max: number, len: number) =>
 
 async function evaluateEssay(
   body: Record<string, unknown>,
+  admin: SupabaseClient,
   useQuota: (units: number) => Promise<Response | null>,
   callModel: (messages: unknown[], maxTokens: number, timeoutMs: number, temperature?: number) => Promise<string | Response>,
   reply: (b: unknown, status?: number) => Response,
@@ -315,7 +331,7 @@ async function evaluateEssay(
   if (quota) return quota;
 
   const out = await callModel([
-    { role: 'system', content: essayPrompt(String(body.task)) },
+    { role: 'system', content: essayPrompt(String(body.task), await officialDescriptors(admin)) },
     {
       role: 'user',
       content: `Görev türü: ${task.label}${task.min ? ` · alt sınır ${task.min} kelime` : ''}\nKelime sayısı: ${count}\n\n`
@@ -370,6 +386,7 @@ async function evaluateEssay(
         : null,
       words: count,
       model: MODEL,
+      descriptor_source: descriptorCache ? 'official-2023' : 'summary',
       vocab_suggestions: (() => {
         const allowed = new Set(targets.map((t: { word: string }) => t.word.toLowerCase()));
         return (Array.isArray(raw.vocab_suggestions) ? raw.vocab_suggestions : []).slice(0, 10)

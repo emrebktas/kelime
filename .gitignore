@@ -25,3 +25,6 @@ android/
 
 # Yerel araçlar (Supabase CLI)
 .tools/
+
+# IELTS band tanımlayıcılarının tam metni (telif hakkı IELTS) — depoya girmez
+ielts-descriptors/

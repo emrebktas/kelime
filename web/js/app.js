@@ -2453,7 +2453,7 @@ function renderEssayReport() {
         <div class="rp-band"><b>${r.overall.toFixed(1)}</b><span>/ 9</span></div>
         <div class="rp-title">
           <h3>Tahmini IELTS bandı</h3>
-          <span class="muted">${esc(when)} · ${r.words} kelimeyle · IELTS'in herkese açık band tanımlayıcılarına göre yapay zekâ değerlendirmesi; resmi puan değildir</span>
+          <span class="muted">${esc(when)} · ${r.words} kelimeyle · ${r.descriptor_source === 'official-2023' ? 'IELTS resmi band tanımlayıcılarına (Mayıs 2023) göre' : 'IELTS band tanımlayıcılarının özetine göre'} yapay zekâ değerlendirmesi; resmi puan değildir</span>
           ${changed ? '<span class="rp-stale">Yazı bu analizden sonra değişti</span>' : ''}
         </div>
         <button type="button" data-act="essay-report">↻ Yeniden analiz et</button>
