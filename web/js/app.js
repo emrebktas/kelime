@@ -1895,10 +1895,14 @@ function openEssay(id) {
       <div class="es-toolbar">
         <select id="es-task">${Object.entries(ESSAY_TASKS).map(([k, t]) => `<option value="${k}" ${k === e.task ? 'selected' : ''}>${esc(t.label)}</option>`).join('')}</select>
         <button type="button" data-act="essay-timer" id="es-timer-btn"></button>
-        <label class="radio es-check" title="Tarayıcının kırmızı yazım altı çizgisi (sınavda yoktur)"><input type="checkbox" id="es-spell" ${prefs.essaySpell ? 'checked' : ''}> Yazım denetimi</label>
-        <label class="radio es-check" title="Yazarken dilbilgisi ve yazım hatalarını işaretler (LanguageTool)"><input type="checkbox" id="es-grammar-on" ${prefs.essayGrammar !== false ? 'checked' : ''}> Canlı dilbilgisi</label>
         <span class="spacer"></span>
         <button type="button" class="ai-btn" data-act="essay-report" id="es-report-btn">🎓 IELTS analizi</button>
+      </div>
+      <div class="es-toggles" role="group" aria-label="Yazarken gösterilecekler">
+        <label class="es-toggle" title="Üstteki canlı kelime sayacı ve hedef çubuğu"><input type="checkbox" id="es-counter-on" ${prefs.essayCounter !== false ? 'checked' : ''}><span>Kelime sayacı</span></label>
+        <label class="es-toggle" title="Sorudan kopya, dolgu kelimeleri ve tekrar eden kelimeler"><input type="checkbox" id="es-tips-on" ${prefs.essayTips !== false ? 'checked' : ''}><span>Öneriler</span></label>
+        <label class="es-toggle" title="Yazarken dilbilgisi ve yazım hatalarını işaretler (LanguageTool)"><input type="checkbox" id="es-grammar-on" ${prefs.essayGrammar !== false ? 'checked' : ''}><span>Canlı dilbilgisi</span></label>
+        <label class="es-toggle" title="Tarayıcının kırmızı yazım altı çizgisi (sınavda yoktur)"><input type="checkbox" id="es-spell" ${prefs.essaySpell ? 'checked' : ''}><span>Yazım denetimi</span></label>
       </div>
       <details class="es-prompt" ${e.prompt ? 'open' : ''}>
         <summary>Soru / görev metni <small class="muted">isteğe bağlı · kopyalanan kısımlar sayılmaz</small></summary>
@@ -1935,6 +1939,14 @@ function openEssay(id) {
   };
   for (const el of [body, title, prompt]) el.addEventListener('input', changed);
   body.addEventListener('input', () => { autoGrow(body); renderGrammar(); scheduleGrammar(); });
+  // Kelime sayacı ve öneriler ayrı ayrı açılıp kapatılır; tercih cihazda hatırlanır
+  for (const [boxId, key] of [['es-counter-on', 'essayCounter'], ['es-tips-on', 'essayTips']]) {
+    $(`#${boxId}`).addEventListener('change', (ev) => {
+      prefs[key] = ev.target.checked;
+      savePrefs();
+      renderEssayStatus(analyzeEssay(body.value, prompt.value), task.value, saved);
+    });
+  }
   $('#es-grammar-on').addEventListener('change', (ev) => {
     prefs.essayGrammar = ev.target.checked;
     savePrefs();
@@ -1978,7 +1990,11 @@ function renderEssayStatus(a, taskKey, saved) {
   const pct = t.min ? Math.min(100, (n / t.min) * 100) : 0;
   const level = !t.min ? 'free' : n < t.min ? 'short' : t.max && n > t.max + 60 ? 'long' : 'ok';
   const hint = !t.min ? '' : level === 'short' ? `${t.min - n} kelime daha` : level === 'long' ? 'Uzun: zaman ve hata riski' : 'Hedefe ulaştın ✓';
-  $('#es-status').innerHTML = `
+  const showCounter = prefs.essayCounter !== false;
+  $('#es-status').classList.toggle('es-status-min', !showCounter);
+  $('#es-status').innerHTML = !showCounter ? `
+    <div class="es-meta"><span class="muted">Kelime sayacı gizli</span><span id="es-grammar-state"></span>
+      <span class="muted">${saved ? '✓ Kaydedildi' : 'Kaydediliyor…'}</span></div>` : `
     <div class="es-count es-${level}">
       <b>${n}</b><span>${t.min ? ` / ${t.min}` : ''} kelime</span>
       ${a.copied.count ? `<small title="Sorudan kopyalanmış görünen kelimeler sayılmaz">(${a.words} − ${a.copied.count} kopya)</small>` : ''}
@@ -2001,7 +2017,7 @@ function renderEssayStatus(a, taskKey, saved) {
   if (a.repeated.length) {
     tips.push(`<div class="es-tip"><b>Çok tekrar edilenler</b> (eş anlamlılarla çeşitlendir): ${a.repeated.map(([w, c]) => `<span class="chip">${esc(w)} ×${c}</span>`).join(' ')}</div>`);
   }
-  $('#es-insights').innerHTML = tips.join('');
+  $('#es-insights').innerHTML = prefs.essayTips !== false ? tips.join('') : '';
   setGrammarState(grammar.state);
 }
 
