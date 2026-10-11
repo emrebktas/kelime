@@ -126,7 +126,7 @@ Deno.serve(async (req) => {
   };
 
   // Modeli çağırır; hata durumunda kullanıcıya gösterilecek cevabı döndürür
-  const callModel = async (messages: unknown[], maxTokens: number, timeoutMs: number): Promise<string | Response> => {
+  const callModel = async (messages: unknown[], maxTokens: number, timeoutMs: number, temperature = 0.2): Promise<string | Response> => {
     let res: Response;
     try {
       res = await fetch(NVIDIA_URL, {
@@ -134,7 +134,7 @@ Deno.serve(async (req) => {
         headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: MODEL,
-          temperature: 0.2,
+          temperature,
           max_tokens: maxTokens,
           reasoning_effort: 'low', // uzun "düşünme" aşamasını kapatır: cevap birkaç kat hızlı gelir
           messages,
@@ -189,34 +189,105 @@ const ESSAY_TASKS: Record<string, { label: string; min: number; criterion: strin
   free: { label: 'Serbest yazı (IELTS Task 2 ölçütleriyle)', min: 0, criterion: 'Task Response' },
 };
 
-const ESSAY_PROMPT = `Sen deneyimli, resmi IELTS Writing band tanımlayıcılarını (public band descriptors) çok iyi bilen bir sınav değerlendiricisisin.
-Verilen yazıyı gerçek bir IELTS sınavındaki gibi değerlendir: ne cömert ne aşırı sert, dürüst ve tutarlı ol.
+// IELTS Writing band tanımlayıcıları (IELTS'in herkese açık yayımladığı "Writing band descriptors",
+// Mayıs 2023 güncellemesi). Metin telif hakkıyla korunduğu için birebir değil, ayırt edici özellikleri
+// kendi cümlelerimizle özetlenmiştir. Model puanı bu özelliklere ve görevli (examiner) yöntemine göre verir.
+const DESCRIPTORS = {
+  task2: `TASK RESPONSE (Task 2)
+9: Fully addresses all parts of the prompt; a fully developed position directly answers the question; ideas are relevant, fully extended and well supported; lapses in content or support are extremely rare.
+8: Sufficiently addresses all parts; a well-developed response with a clear position; ideas relevant, well extended and supported; only occasional omissions or lapses.
+7: Addresses all parts of the prompt; presents a clear, developed position throughout; main ideas are extended and supported but there may be a tendency to over-generalise or supporting ideas may lack focus/precision.
+6: Addresses all parts, though some more fully than others; presents a relevant position although conclusions may be unclear, unjustified or repetitive; main ideas are relevant but some are insufficiently developed or may lack clarity; some supporting arguments may be less relevant.
+5: Addresses the prompt only partially; format may be inappropriate in places; a position is expressed but its development is not always clear; main ideas are limited and not sufficiently developed; there may be irrelevant detail and some repetition.
+4: Responds only minimally or tangentially; format may be inappropriate; a position is discernible but unclear; main ideas are difficult to identify and may be repetitive, irrelevant or unsupported.
+3 and below: does not adequately address any part of the prompt; no relevant position; few ideas, largely undeveloped or irrelevant.`,
+  task1: `TASK ACHIEVEMENT (Academic Task 1)
+9: All requirements of the task are fully and appropriately satisfied; lapses are extremely rare.
+8: Covers all requirements appropriately, relevantly and sufficiently; key features are skilfully selected, clearly presented, highlighted and illustrated; occasional omissions or lapses.
+7: Covers the requirements; content is relevant and accurate; presents a clear overview of main trends, differences or stages; key features are clearly presented and highlighted but could be more fully extended or illustrated.
+6: Focuses on the requirements; presents an overview with information appropriately selected; key features are adequately highlighted, but some details may be irrelevant, inappropriate or inaccurate; some key features may be missing or under-developed.
+5: Generally addresses the task; format may be inappropriate in places; recounts detail mechanically with no clear overview (or no data to support the description); key features are inadequately covered; may focus on details.
+4: Attempts to address the task but does not cover all key features; format may be inappropriate; may confuse key features with detail; parts may be unclear, irrelevant, repetitive or inaccurate.
+3 and below: fails to address the task; very limited content, largely irrelevant or inaccurate.`,
+  gt1: `TASK ACHIEVEMENT (General Training Task 1 — letter)
+9: All requirements fully satisfied; all bullet points fully and appropriately covered; purpose fully clear; tone consistently appropriate.
+8: All requirements covered appropriately and sufficiently; all bullet points clearly presented, highlighted and extended; purpose clear; tone consistent and appropriate; occasional lapses.
+7: Covers all requirements; all bullet points presented and highlighted but could be more fully extended; purpose clear; tone consistent and appropriate with possible minor lapses.
+6: Addresses the requirements; all bullet points covered but some unevenly or inadequately; purpose generally clear though there may be inconsistencies in tone.
+5: Generally addresses the task; may not cover all bullet points or some are covered only partially; purpose may be unclear at times; tone may be variable and sometimes inappropriate.
+4: Attempts to address the task; does not cover all bullet points; purpose unclear; tone may be inappropriate.
+3 and below: fails to address the task; purpose unclear; very limited relevant content.`,
+  coherence: `COHERENCE AND COHESION
+9: The message can be followed effortlessly; cohesion is used in a way that attracts no attention; paragraphing is skilfully managed.
+8: The message can be followed with ease; information and ideas are logically sequenced and cohesion is well managed; occasional lapses; paragraphing is used sufficiently and appropriately.
+7: Information and ideas are logically organised with clear progression throughout; a range of cohesive devices, including reference and substitution, is used flexibly but with some inaccuracies or some over/under-use; paragraphing is generally effective and each paragraph has a clear central topic.
+6: Information and ideas are arranged coherently with clear overall progression; cohesive devices are used to some good effect but cohesion within and/or between sentences may be faulty or mechanical (e.g. overuse of linkers); referencing and substitution may be unclear or repetitive; paragraphing may not always be logical and the central topic may not always be clear.
+5: Organisation is evident but not wholly logical and there may be a lack of overall progression; relationships between ideas can be followed but sentences are not fluently linked; limited range or overuse of cohesive devices with some inaccuracy; writing may be repetitive because of inadequate referencing; paragraphing may be inadequate or missing.
+4: Ideas are evident but not arranged coherently; no clear progression; relationships between ideas are unclear or inadequately marked; basic cohesive devices used inaccurately or repetitively; paragraphing absent or confusing.
+3 and below: no apparent logical organisation; ideas discernible but difficult to relate; minimal use of linking.`,
+  lexical: `LEXICAL RESOURCE
+9: Full flexibility and precise use; wide range of vocabulary used accurately and appropriately with very natural and sophisticated control of lexical features; minor errors in spelling and word formation are extremely rare.
+8: A wide resource is used fluently and flexibly to convey precise meanings; skilful use of uncommon and idiomatic items when appropriate, despite occasional inaccuracies in word choice and collocation; occasional errors in spelling/word formation with minimal impact.
+7: Sufficient resource to allow some flexibility and precision; some ability to use less common and idiomatic items; awareness of style and collocation, though inappropriacies occur; only a few errors in spelling/word formation that do not detract from clarity.
+6: Generally adequate and appropriate resource; meaning is generally clear despite a rather restricted range or lack of precision in word choice; if risks are taken, some wrong word choice; some errors in spelling/word formation that do not impede communication.
+5: Limited but minimally adequate resource; simple vocabulary may be used accurately but the range does not permit much variation; frequent lapses in appropriacy and/or repetition; errors in spelling/word formation may be noticeable and cause some difficulty for the reader.
+4: Limited and inadequate or unrelated vocabulary; basic vocabulary used repetitively; inappropriate use of lexical chunks (e.g. memorised phrases, formulaic language); errors may impede meaning.
+3 and below: very limited range; errors predominate and may severely distort meaning.`,
+  grammar: `GRAMMATICAL RANGE AND ACCURACY
+9: A wide range of structures used with full flexibility and control; punctuation and grammar are used appropriately throughout; minor errors are extremely rare.
+8: A wide range of structures used flexibly and accurately; the majority of sentences are error-free; punctuation is well managed; occasional, non-systematic errors and inappropriacies with minimal impact.
+7: A variety of complex structures used with some flexibility and accuracy; grammar and punctuation are generally well controlled and error-free sentences are frequent; a few errors in grammar may persist but do not impede communication.
+6: A mix of simple and complex sentence forms but flexibility is limited; more complex structures are not as accurate as simple ones; errors in grammar and punctuation occur but rarely impede communication.
+5: Range of structures is limited and rather repetitive; complex sentences are attempted but tend to be faulty; greatest accuracy is in simple sentences; grammatical errors may be frequent and cause some difficulty for the reader; punctuation may be faulty.
+4: Very limited range of structures; subordinate clauses are rare and simple sentences predominate; some structures are produced accurately but grammatical errors are frequent and may impede meaning; punctuation is often faulty or inadequate.
+3 and below: sentence forms attempted but errors in grammar and punctuation predominate and distort meaning.`,
+};
 
-Sadece geçerli JSON döndür, açıklama ya da kod bloğu ekleme:
+function essayPrompt(taskKey: string): string {
+  const taskDesc = taskKey === 'task1' ? DESCRIPTORS.task1 : taskKey === 'gt1' ? DESCRIPTORS.gt1 : DESCRIPTORS.task2;
+  return `You are a certified IELTS Writing examiner. Assess the candidate's response strictly against the public IELTS Writing band descriptors summarised below, exactly as a trained examiner would.
+
+${taskDesc}
+
+${DESCRIPTORS.coherence}
+
+${DESCRIPTORS.lexical}
+
+${DESCRIPTORS.grammar}
+
+EXAMINER METHOD (follow exactly):
+1. Rate each of the four criteria independently; do not let one criterion influence another.
+2. For each criterion, start from the band whose description best fits the response ("best fit"). Only award a band if the response meets the positive features of that band; if it meets most features of a band but clearly falls short on one key feature, award the lower band. Half bands (e.g. 6.5) are allowed only when the response sits clearly between two bands.
+3. Base every judgement on evidence in the text. Do not reward length, memorised phrases or "impressive" words used inaccurately; do not penalise British/American spelling variation if used consistently.
+4. Task penalties: if the response is under the minimum word count, it cannot fully address/cover the task and the task criterion must reflect this (typically capped around band 5–6 depending on how far under). Words copied verbatim from the question are not counted. An off-topic, memorised or largely irrelevant response must receive a low task score. For Task 2, a response without a clear position cannot score above 5 for Task Response.
+5. Be calibrated: most real candidates score between 5 and 7. Bands 8–9 require near-native control. Neither generous nor harsh.
+
+OUTPUT: valid JSON only, no prose and no code fences, in exactly this shape:
 {
   "criteria": {
-    "task": {"band": 6.5, "comment": "..."},
-    "coherence": {"band": 6, "comment": "..."},
-    "lexical": {"band": 6, "comment": "..."},
-    "grammar": {"band": 5.5, "comment": "..."}
+    "task": {"band": 6, "descriptor": "...", "evidence": ["exact quote", "..."], "next_band": "...", "comment": "..."},
+    "coherence": {"band": 6, "descriptor": "...", "evidence": ["..."], "next_band": "...", "comment": "..."},
+    "lexical": {"band": 6, "descriptor": "...", "evidence": ["..."], "next_band": "...", "comment": "..."},
+    "grammar": {"band": 6, "descriptor": "...", "evidence": ["..."], "next_band": "...", "comment": "..."}
   },
-  "summary": "2-3 cümlelik genel değerlendirme",
+  "summary": "...",
   "strengths": ["..."],
-  "improvements": ["en önemli 3-5 somut öneri"],
+  "improvements": ["..."],
   "errors": [{"original": "...", "correction": "...", "type": "grammar", "explanation": "..."}],
   "band9_tips": ["..."],
   "improved_sentence": {"original": "...", "improved": "..."},
   "vocab_suggestions": [{"word": "...", "original": "...", "suggestion": "...", "why": "..."}]
 }
 
-Kurallar:
-- Bantlar 0-9 arası, yarım puan adımlı. "task" ölçütü Task 2'de Task Response, Task 1'de Task Achievement'tır.
-- Yorumlarda band tanımlayıcılarına somut atıf yap (ör. "pozisyon net ama fikirler yeterince geliştirilmemiş").
-- Kelime sayısı alt sınırın altındaysa task puanını buna göre düşür ve bunu belirt.
-- errors: yazıdaki gerçek hatalar (en fazla 15, en önemlileri önce). "original" yazıdan BİREBİR alıntı olsun; type: grammar, vocabulary, spelling, punctuation ya da style.
-- band9_tips: bu yazıyı daha yüksek banda taşıyacak 2-4 somut ipucu.
-- improved_sentence: yazıdaki zayıf bir cümleyi Band 8-9 seviyesinde yeniden yaz.
-- Tüm yorumları, açıklamaları ve önerileri TÜRKÇE yaz; düzeltmeler, alıntılar ve örnek cümleler İngilizce kalsın.`;
+FIELD RULES:
+- "descriptor": which band-descriptor features this response matches (paraphrase them).
+- "evidence": 1–3 short quotes copied EXACTLY from the response that justify the band.
+- "next_band": what is specifically missing to reach the next band up, referring to that band's descriptor features.
+- "comment": a short overall judgement for the criterion.
+- "errors": real errors only (max 15, most important first); "original" must be copied EXACTLY from the response; type is one of grammar, vocabulary, spelling, punctuation, style.
+- "band9_tips": 2–4 concrete, actionable tips. "improved_sentence": rewrite one weak sentence at band 8–9 level.
+- LANGUAGE: write descriptor, next_band, comment, summary, strengths, improvements, explanations, band9_tips and why fields in TURKISH. Keep quotes, corrections and example sentences in English.`;
+}
 
 const band = (v: unknown) => {
   const n = Number(v);
@@ -228,7 +299,7 @@ const strList = (v: unknown, max: number, len: number) =>
 async function evaluateEssay(
   body: Record<string, unknown>,
   useQuota: (units: number) => Promise<Response | null>,
-  callModel: (messages: unknown[], maxTokens: number, timeoutMs: number) => Promise<string | Response>,
+  callModel: (messages: unknown[], maxTokens: number, timeoutMs: number, temperature?: number) => Promise<string | Response>,
   reply: (b: unknown, status?: number) => Response,
 ): Promise<Response> {
   const task = ESSAY_TASKS[String(body.task)] ?? ESSAY_TASKS.task2;
@@ -244,7 +315,7 @@ async function evaluateEssay(
   if (quota) return quota;
 
   const out = await callModel([
-    { role: 'system', content: ESSAY_PROMPT },
+    { role: 'system', content: essayPrompt(String(body.task)) },
     {
       role: 'user',
       content: `Görev türü: ${task.label}${task.min ? ` · alt sınır ${task.min} kelime` : ''}\nKelime sayısı: ${count}\n\n`
@@ -257,19 +328,25 @@ async function evaluateEssay(
             + '"why" kısa Türkçe açıklama. Uygun yer yoksa boş dizi ver.'
           : ''),
     },
-  ], 4000, 140_000);
+  ], 5500, 140_000, 0.1);
   if (out instanceof Response) return out;
 
   try {
     const m = out.match(/\{[\s\S]*\}/);
     if (!m) throw new Error('JSON yok');
     const raw = JSON.parse(m[0]);
-    const criteria: Record<string, { band: number; comment: string }> = {};
+    const criteria: Record<string, { band: number; comment: string; descriptor: string; evidence: string[]; next_band: string }> = {};
     for (const k of ['task', 'coherence', 'lexical', 'grammar']) {
       const c = raw.criteria?.[k] ?? {};
       const b = band(c.band);
       if (b === null) throw new Error(`${k} bandı yok`);
-      criteria[k] = { band: b, comment: str(c.comment, 800) };
+      criteria[k] = {
+        band: b,
+        comment: str(c.comment, 800),
+        descriptor: str(c.descriptor, 600),
+        evidence: strList(c.evidence, 3, 240),
+        next_band: str(c.next_band, 500),
+      };
     }
     // IELTS gibi: dört ölçütün ortalaması, en yakın yarım banda yuvarlanır (x.25 → x.5, x.75 → x+1)
     const avg = Object.values(criteria).reduce((a, c) => a + c.band, 0) / 4;

@@ -2382,7 +2382,7 @@ function renderEssayReport() {
         <div class="rp-band"><b>${r.overall.toFixed(1)}</b><span>/ 9</span></div>
         <div class="rp-title">
           <h3>Tahmini IELTS bandı</h3>
-          <span class="muted">${esc(when)} · ${r.words} kelimeyle · yapay zekâ değerlendirmesidir, resmi puan değildir</span>
+          <span class="muted">${esc(when)} · ${r.words} kelimeyle · IELTS'in herkese açık band tanımlayıcılarına göre yapay zekâ değerlendirmesi; resmi puan değildir</span>
           ${changed ? '<span class="rp-stale">Yazı bu analizden sonra değişti</span>' : ''}
         </div>
         <button type="button" data-act="essay-report">↻ Yeniden analiz et</button>
@@ -2393,6 +2393,9 @@ function renderEssayReport() {
           <div class="rp-crit-head"><span><b>${esc(en)}</b> <small class="muted">${esc(tr)}</small></span><b class="rp-score">${c.band.toFixed(1)}</b></div>
           ${bandBar(c.band)}
           <p>${esc(c.comment)}</p>
+          ${c.descriptor ? `<p class="rp-desc"><b>Band tanımlayıcısına göre:</b> ${esc(c.descriptor)}</p>` : ''}
+          ${c.evidence?.length ? `<div class="rp-evidence">${c.evidence.map((q) => `<button type="button" data-act="rp-goto" data-text="${esc(q)}" title="Metinde göster"><q>${esc(q)}</q></button>`).join('')}</div>` : ''}
+          ${c.next_band && c.band < 9 ? `<p class="rp-next"><b>Band ${Math.min(9, Math.floor(c.band) + 1)} için:</b> ${esc(c.next_band)}</p>` : ''}
         </div>` : '';
       }).join('')}</div>
       ${r.summary ? `<p class="rp-summary">${esc(r.summary)}</p>` : ''}
