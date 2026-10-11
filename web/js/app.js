@@ -399,6 +399,12 @@ function accountModal() {
         <input name="name" value="${esc(state.profileName || u.user_metadata?.display_name || '')}"></label>
       <div class="muted" style="font-size:13px">${esc(u.email)}</div>` : `
       <div class="info-box">Senkron yapılandırılmadığı için veriler sadece bu cihazda saklanıyor.</div>`}
+    ${u ? `<label>Çalışma panosunda beni kimler görsün?
+      <select name="visibility">
+        <option value="shared" ${board.myVisibility === 'shared' ? 'selected' : ''}>Ortak destede olduklarım</option>
+        <option value="everyone" ${board.myVisibility === 'everyone' ? 'selected' : ''}>Uygulamayı kullanan herkes</option>
+        <option value="nobody" ${board.myVisibility === 'nobody' ? 'selected' : ''}>Kimse (sadece ben)</option>
+      </select></label>` : ''}
     <label>Cihaz adı <small>değişiklik geçmişinde görünür</small>
       <input name="device" value="${esc(store.deviceName())}"></label>
     ${u ? `<div style="display:flex;align-items:center;gap:8px;font-size:13px">
@@ -415,6 +421,11 @@ function accountModal() {
     onSubmit: async (f) => {
       const fd = Object.fromEntries(new FormData(f));
       store.setDeviceName(fd.device);
+      if (u && fd.visibility && fd.visibility !== board.myVisibility) {
+        await sync.setBoardVisibility(fd.visibility);
+        board.myVisibility = fd.visibility;
+        if (state.view === 'home') loadBoard();
+      }
       if (u && fd.name.trim() && fd.name.trim() !== state.profileName) {
         await sync.updateProfile(fd.name.trim());
         state.profileName = fd.name.trim();
@@ -481,6 +492,7 @@ function showHome() {
         </div>
       </div>
       ${studyTimePanel()}
+      ${sync.enabled && sync.user() ? '<section class="panel board" id="board"><div class="muted">Pano yükleniyor…</div></section>' : ''}
       ${state.decks.length ? `<div class="tiles">${state.decks.map((d) => `
         <button class="tile" data-deck="${d.id}">
           <span class="t-name">${esc(d.name)}</span>
@@ -497,6 +509,7 @@ function showHome() {
         <pre class="code">${esc(EXAMPLE_JSON)}</pre>
       </div>
     </div>`;
+  loadBoard();
 }
 
 /* =========================================================== deste sayfası */
@@ -1504,6 +1517,7 @@ function timerStart() {
   syncTimerTick();
   scheduleTimerAlert();
   renderTimer();
+  sync.heartbeat().catch(() => {});
 }
 
 function timerPause() {
@@ -1514,6 +1528,7 @@ function timerPause() {
   syncTimerTick();
   cancelTimerAlert();
   renderTimer();
+  sync.heartbeat().catch(() => {});
 }
 
 function timerReset() {
@@ -1521,6 +1536,7 @@ function timerReset() {
   saveTimer();
   syncTimerTick();
   cancelTimerAlert();
+  sync.heartbeat().catch(() => {});
 }
 
 /** Oturumu bitirir ve kaydeder. completed: süre doldu (erken bitirme değil). */
@@ -1735,6 +1751,58 @@ function renderTimerHistory() {
         <button type="button" class="icon-btn small" data-tm-del="${s.id}" title="Sil">✕</button>
       </div>`).join('')}`;
   }).join('');
+}
+
+/* ---- çalışma panosu: bugün kim ne kadar çalıştı (motivasyon) */
+
+const board = { myVisibility: 'shared', timer: null };
+const ONLINE_WINDOW = 150 * 1000; // son 2,5 dakikada sinyal gelmişse çevrimiçi
+
+async function loadBoard() {
+  const box = $('#board');
+  if (!box) return;
+  clearTimeout(board.timer);
+  const since = new Date();
+  since.setHours(0, 0, 0, 0);
+  let rows;
+  try {
+    rows = await sync.fetchBoard(since);
+  } catch (e) {
+    box.innerHTML = `<div class="muted">Pano yüklenemedi: ${esc(e.message)}</div>`;
+    return;
+  }
+  if (!$('#board')) return; // bu arada başka ekrana geçildi
+  if (rows === null) { box.remove(); return; } // sunucuda pano henüz kurulmadı
+  const me = rows.find((r) => r.is_me);
+  if (me) board.myVisibility = me.visibility;
+  const now = Date.now();
+  const live = (r) => (r.studying_since ? Math.max(0, Math.floor(now / 1000) - Number(r.studying_since)) : 0);
+  const list = rows.map((r) => ({
+    ...r,
+    // kendi satırında cihazdaki gerçek değerleri kullan (henüz eşitlenmemiş olabilir)
+    seconds: r.is_me ? store.studyStats(liveSec()).today : r.seconds_today + live(r),
+    online: r.is_me || (r.last_seen && now - new Date(r.last_seen).getTime() < ONLINE_WINDOW),
+    studying: r.is_me ? timer.status === 'running' : !!r.studying_since && now - new Date(r.last_seen).getTime() < ONLINE_WINDOW,
+  })).sort((a, b) => b.seconds - a.seconds || b.words_today - a.words_today);
+  const others = list.filter((r) => !r.is_me).length;
+  box.innerHTML = `
+    <div class="board-head">
+      <h3>👥 Bugün</h3>
+      <span class="muted">${others ? `${list.filter((r) => r.online && !r.is_me).length} kişi çevrimiçi` : ''}</span>
+    </div>
+    <div class="board-list">${list.map((r, i) => `
+      <div class="board-row ${r.is_me ? 'me' : ''}">
+        <span class="board-rank">${i + 1}</span>
+        <span class="avatar sm">${esc((r.display_name || '?').charAt(0).toLocaleUpperCase('tr'))}<i class="presence ${r.online ? 'on' : ''}" title="${r.online ? 'Çevrimiçi' : 'Çevrimdışı'}"></i></span>
+        <span class="board-name">${esc(r.display_name || 'Kullanıcı')}${r.is_me ? ' <span class="muted">(sen)</span>' : ''}
+          ${r.studying ? '<span class="board-live">⏱ çalışıyor</span>' : ''}</span>
+        <span class="board-stat" title="Bugün eklenen kelime">📝 <b>${r.words_today}</b></span>
+        <span class="board-stat" title="Bugün çalışma süresi">⏱ <b>${fmtDur(r.seconds)}</b></span>
+      </div>`).join('')}
+    </div>
+    ${others ? '' : `<p class="muted board-empty">Henüz burada sadece sen varsın. Bir desteni paylaş (deste › ⚙ › Paylaş) ya da hesap ayarlarından panoda görünürlüğünü “Herkes” yap; arkadaşların burada görünsün.</p>`}`;
+  // Ana sayfa açıkken dakikada bir yenile
+  board.timer = setTimeout(() => { if (state.view === 'home' && !document.hidden) loadBoard(); }, 60_000);
 }
 
 /** Ana sayfadaki "Bugün çalıştın" kutusu. */
@@ -2842,6 +2910,7 @@ async function init() {
   applyTheme();
   await store.open();
   store.onRemoteChange(onRemoteChange);
+  sync.setPresenceProvider(() => (timer.status === 'running' ? Math.floor((Date.now() - timerElapsed()) / 1000) : null));
   sync.onStatus(() => renderAccount());
   sync.onAuth((session, event) => {
     if (event === 'PASSWORD_RECOVERY') recoveryModal();

@@ -73,7 +73,7 @@ function handleSession(s, event) {
   session = s;
   const uid = s?.user?.id || null;
   if (uid) {
-    if (uid !== prev) store.setUser(uid);
+    if (uid !== prev) { store.setUser(uid); startPresence(); }
     if (status.state === 'signed-out' || status.state === 'disabled') setStatus({ state: 'idle' });
     schedule(0);
   } else {
@@ -349,6 +349,46 @@ export async function aiEssayReport({ task, prompt, body, targetWords = [] }) {
   }
   if (!data?.report) throw new Error('Yapay zekâ bir değerlendirme döndürmedi. Sunucu fonksiyonu güncel mi?');
   return data.report;
+}
+
+/* ------------------------------------------------------------------ çalışma panosu ve çevrimiçi durumu */
+
+// Sunucuda pano fonksiyonları henüz yoksa (SQL çalıştırılmadıysa) sessizce atla
+const isMissingFn = (e) => ['PGRST202', '42883'].includes(e?.code);
+let boardMissing = false;
+let presenceProvider = () => null;
+let presenceTimer = null;
+
+/** Uygulama, sayaç çalışıyorsa "geçen süreyi veren başlangıç anını" (unix sn) bildirir. */
+export function setPresenceProvider(fn) { presenceProvider = fn; }
+
+/** "Çevrimiçiyim" sinyali: uygulama açık ve önde iken dakikada bir. */
+export async function heartbeat() {
+  if (!session || boardMissing || !navigator.onLine || document.hidden) return;
+  const { error } = await client.rpc('heartbeat', { p_studying_since: presenceProvider() });
+  if (error && isMissingFn(error)) boardMissing = true;
+}
+
+function startPresence() {
+  clearInterval(presenceTimer);
+  presenceTimer = setInterval(() => heartbeat().catch(() => {}), 60_000);
+  heartbeat().catch(() => {});
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) heartbeat().catch(() => {}); });
+
+/** Bugünün panosu; sunucuda fonksiyon yoksa null. */
+export async function fetchBoard(since) {
+  if (!session || boardMissing) return null;
+  const { data, error } = await client.rpc('study_board', { p_since: since.toISOString() });
+  if (error) {
+    if (isMissingFn(error)) { boardMissing = true; return null; }
+    throw new Error(message(error));
+  }
+  return data || [];
+}
+
+export async function setBoardVisibility(visibility) {
+  await rpc('set_board_visibility', { p_visibility: visibility });
 }
 
 /* ------------------------------------------------------------------ paylaşım ve geçmiş */

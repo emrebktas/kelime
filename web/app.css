@@ -847,3 +847,36 @@ mark.lt-style { text-decoration-color: var(--easy); background: color-mix(in srg
 .report-banner { border-color: color-mix(in srgb, var(--sage) 55%, var(--border)); border-left: 4px solid var(--sage); }
 .report-banner.failed { border-left-color: var(--danger); }
 .report-banner .ub-text .muted { font-size: 12.5px; margin-top: 2px; }
+
+/* ---------- çalışma panosu ---------- */
+.board { margin-bottom: 22px; }
+.board-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.board-head h3 { font-size: 16px; }
+.board-head .muted { font-size: 12.5px; }
+.board-list { display: flex; flex-direction: column; }
+.board-row {
+  display: grid; grid-template-columns: 22px auto 1fr auto auto; align-items: center; gap: 10px;
+  padding: 8px 6px; border-top: 1px solid var(--border);
+}
+.board-row:first-child { border-top: none; }
+.board-row.me { background: var(--accent-soft); border-radius: 10px; border-top-color: transparent; }
+.board-row.me + .board-row { border-top-color: transparent; }
+.board-rank { color: var(--muted); font-size: 12.5px; text-align: center; font-variant-numeric: tabular-nums; }
+.avatar.sm { grid-row: auto; width: 30px; height: 30px; font-size: 13px; position: relative; }
+.presence {
+  position: absolute; right: -1px; bottom: -1px; width: 10px; height: 10px; border-radius: 50%;
+  background: #9a9389; border: 2px solid var(--panel);
+}
+.presence.on { background: #4caf6a; }
+.board-row.me .presence { border-color: var(--accent-soft); }
+.board-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.board-live { margin-left: 6px; font-size: 11.5px; font-weight: 600; color: var(--slate); background: var(--slate-soft); padding: 1px 7px; border-radius: 999px; }
+.board-stat { font-size: 13px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.board-stat b { color: var(--text); }
+.board-empty { font-size: 12.5px; margin: 8px 0 0; }
+@media (max-width: 760px) {
+  .board-row { grid-template-columns: auto 1fr auto auto; gap: 8px; }
+  .board-rank { display: none; }
+  .board-name .board-live { display: none; }
+  .board-stat { font-size: 12.5px; }
+}
