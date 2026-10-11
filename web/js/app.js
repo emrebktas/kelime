@@ -491,8 +491,10 @@ function showHome() {
           <button class="primary" data-act="new-deck">+ Yeni deste</button>
         </div>
       </div>
-      ${studyTimePanel()}
-      ${sync.enabled && sync.user() ? '<section class="panel board" id="board"><div class="muted">Pano yükleniyor…</div></section>' : ''}
+      <div class="home-row">
+        ${studyTimePanel()}
+        ${sync.enabled && sync.user() ? '<section class="panel board" id="board"><div class="muted">Pano yükleniyor…</div></section>' : ''}
+      </div>
       ${state.decks.length ? `<div class="tiles">${state.decks.map((d) => `
         <button class="tile" data-deck="${d.id}">
           <span class="t-name">${esc(d.name)}</span>
@@ -1791,20 +1793,19 @@ async function loadBoard() {
   box.innerHTML = `
     <div class="board-head">
       <h3>👥 Bugün</h3>
-      <span class="muted">${onlineOthers ? `${onlineOthers} kişi çevrimiçi` : ''}</span>
+      ${onlineOthers ? `<span class="board-online" title="Çevrimiçi">${onlineOthers}<i class="presence on"></i></span>` : ''}
     </div>
-    <div class="board-list">${list.slice(0, 5).map((r, i) => `
-      <div class="board-row ${r.is_me ? 'me' : ''}">
-        <span class="board-rank">${i + 1}</span>
-        <span class="avatar sm">${esc((r.display_name || '?').charAt(0).toLocaleUpperCase('tr'))}<i class="presence ${r.online ? 'on' : ''}" title="${r.online ? 'Çevrimiçi' : 'Çevrimdışı'}"></i></span>
-        <span class="board-name">${esc(r.display_name || 'Kullanıcı')}${r.is_me ? ' <span class="muted">(sen)</span>' : ''}
-          ${r.studying ? '<span class="board-live">⏱ çalışıyor</span>' : ''}</span>
-        <span class="board-stat" title="Bugün eklenen kelime">📝 <b>${r.words_today}</b></span>
-        <span class="board-stat" title="Bugün çalışma süresi">⏱ <b>${fmtDur(r.seconds)}</b></span>
+    <div class="board-list">${list.slice(0, 4).map((r) => `
+      <div class="board-row ${r.is_me ? 'me' : ''}" title="${esc(r.display_name || '')}: bugün ${r.words_today} kelime, ${fmtDur(r.seconds)}${r.studying ? ' · şu an çalışıyor' : ''}">
+        <span class="avatar sm">${esc((r.display_name || '?').charAt(0).toLocaleUpperCase('tr'))}<i class="presence ${r.online ? 'on' : ''}"></i></span>
+        <span class="board-info">
+          <span class="board-name">${esc(r.is_me ? 'Sen' : r.display_name || 'Kullanıcı')}</span>
+          <span class="board-stats">📝 ${r.words_today} · <span class="${r.studying ? 'board-live' : ''}">⏱ ${fmtDur(r.seconds)}</span></span>
+        </span>
       </div>`).join('')}
     </div>
-    ${list.length > 5 ? `<div class="muted board-more">+${list.length - 5} kişi daha</div>` : ''}
-    ${others ? '' : `<p class="muted board-empty">Arkadaşların burada görünsün: bir desteni paylaş ya da hesap ayarlarından panoda “Herkes”i seç.</p>`}`;
+    ${list.length > 4 ? `<div class="muted board-more">+${list.length - 4} kişi</div>` : ''}
+    ${others ? '' : '<p class="muted board-empty">Desteni paylaş, arkadaşların burada görünsün.</p>'}`;
   // Ana sayfa açıkken dakikada bir yenile
   board.timer = setTimeout(() => { if (state.view === 'home' && !document.hidden) loadBoard(); }, 60_000);
 }
