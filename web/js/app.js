@@ -641,23 +641,47 @@ function renderBulk() {
     <div class="bulk">
       <span class="sel-n">${n} kart seçili</span>
       <button class="ghost" data-act="bulk-reset" title="Çalışma ilerlemesini sıfırla, yeni kart yap">Sıfırla</button>
-      ${editable && others.length ? `<select id="bulk-move"><option value="">Başka desteye taşı…</option>
-        ${others.map((d) => `<option value="${d.id}">${esc(d.name)}</option>`).join('')}</select>` : ''}
+      ${others.length ? '<button class="ghost" data-act="bulk-copy" title="Seçili kartları başka destelere kopyala">Destelere kopyala…</button>' : ''}
       ${editable ? '<button class="danger-ghost" data-act="bulk-delete">Sil</button>' : ''}
       <span style="flex:1"></span>
       <button class="ghost" data-act="bulk-clear">Seçimi kaldır</button>
     </div>`;
-  $('#bulk-move')?.addEventListener('change', (e) => {
-    const target = e.target.value;
-    if (!target) return;
-    guard(() => {
-      const r = store.moveCards([...state.selected], target);
-      toast(`${r.moved} kart taşındı${r.skipped ? `, ${r.skipped} kart hedefte zaten olduğu için atlandı` : ''}.`, 'success');
+}
+
+/** Kartları bir ya da birden çok desteye kopyalar (isteğe bağlı: bu desteden kaldır = taşı). */
+function copyCardsModal(ids, after) {
+  const targets = state.decks.filter((d) => d.id !== state.deckId && d.role !== 'viewer');
+  if (!targets.length) { toast('Kopyalanacak başka bir deste yok. Önce yeni bir deste oluştur.', 'info'); return; }
+  const canRemove = store.canEdit(state.deckId);
+  const label = ids.length === 1 ? `“${state.cards.get(ids[0])?.word || 'Kart'}”` : `${ids.length} kart`;
+  const form = openModal(`
+    <h2>${esc(label)} → başka destelere</h2>
+    <p class="muted" style="font-size:13px">Kart bu destede kalır; seçtiğin her desteye bir kopyası eklenir.
+      Kopyanın çalışma ilerlemesi yeni destede sıfırdan başlar. Hedefte aynı kelime varsa o deste atlanır.</p>
+    <div class="task-choices">${targets.map((d) => `
+      <label class="radio task-choice"><input type="checkbox" name="target" value="${d.id}">
+        <span><b>${esc(d.name)}</b><small>${esc(langName(d.language))} · ${d.total} kart</small></span></label>`).join('')}
+    </div>
+    ${canRemove ? '<label class="radio" style="font-size:13px"><input type="checkbox" name="move"> Bu desteden kaldır (taşı)</label>' : ''}
+    <div class="modal-actions">
+      <button type="button" data-close>Vazgeç</button>
+      <button type="submit" class="primary" id="copy-submit">Kopyala</button>
+    </div>`, {
+    onSubmit: (f) => {
+      const tids = [...f.querySelectorAll('[name=target]:checked')].map((x) => x.value);
+      if (!tids.length) { toast('En az bir deste seç.', 'info'); return false; }
+      const move = !!f.move?.checked;
+      const r = store.copyCards(ids, tids);
+      if (move) store.deleteCards(ids);
+      const where = tids.length === 1 ? `“${deckById(tids[0])?.name}” destesine` : `${tids.length} desteye`;
+      toast(`${r.copied} kopya ${where} eklendi${move ? ', kartlar bu desteden kaldırıldı' : ''}${r.skipped ? ` (${r.skipped} tanesi hedefte zaten vardı)` : ''}.`, 'success', 5000);
       state.selected.clear();
       refreshDecks();
-      renderDeck();
-    });
+      if (state.view === 'deck') renderDeck(); // çalışma ekranından açıldıysa çalışmayı bölme
+      after?.();
+    },
   });
+  form.move?.addEventListener('change', () => { $('#copy-submit', form).textContent = form.move.checked ? 'Taşı' : 'Kopyala'; });
 }
 
 /* =========================================================== formlar */
@@ -716,7 +740,9 @@ function cardForm(card, deckId, after) {
     </details>
     ${readOnly ? '<p class="muted" style="font-size:12.5px">Bu destede sadece görüntüleme yetkin var.</p>' : ''}
     <div class="modal-actions">
-      ${card && !readOnly ? '<button type="button" class="danger-ghost" data-act-modal="delete">Sil</button><span class="spacer"></span>' : ''}
+      ${card && !readOnly ? '<button type="button" class="danger-ghost" data-act-modal="delete">Sil</button>' : ''}
+      ${card && state.decks.some((d) => d.id !== deckId && d.role !== 'viewer') ? '<button type="button" class="ghost" data-act-modal="copy">Destelere kopyala…</button>' : ''}
+      ${card ? '<span class="spacer"></span>' : ''}
       <button type="button" data-close>${readOnly ? 'Kapat' : 'Vazgeç'}</button>
       ${readOnly ? '' : `<button type="submit" class="primary">${card ? 'Kaydet' : 'Ekle'} <kbd>Ctrl+Enter</kbd></button>`}
     </div>`, {
@@ -753,6 +779,7 @@ function cardForm(card, deckId, after) {
       });
     }
   }
+  $('[data-act-modal=copy]', form)?.addEventListener('click', () => copyCardsModal([card.id]));
   $('[data-act-modal=delete]', form)?.addEventListener('click', async () => {
     if (!(await confirmBox(`“${c.word}” kartı silinecek.`, { ok: 'Sil', danger: true }))) return cardForm(card, deckId, after);
     await guard(async () => {
@@ -2338,6 +2365,9 @@ async function runEssayReport() {
     if (!ok) return;
   }
   reportBusy = true;
+  // Analiz uzun sürebilir: arka plandayken bitince sistem bildirimi için (bilgisayarda) izin iste
+  if (NativeNotif) NativeNotif.checkPermissions().then((p) => p.display !== 'granted' && NativeNotif.requestPermissions()).catch(() => {});
+  else if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission().catch(() => {});
   const started = Date.now();
   const tick = setInterval(() => {
     const btn = $('#es-report-btn');
@@ -2350,19 +2380,60 @@ async function runEssayReport() {
   try {
     const report = await sync.aiEssayReport({ task: e.task, prompt: e.prompt, body: e.body, targetWords: essayTargetWords() });
     store.saveEssayReport(e.id, report);
-    toast(`Analiz hazır: tahmini Band ${report.overall.toFixed(1)}`, 'success');
-    if (state.view === 'essay' && state.essayId === e.id) {
+    const here = state.view === 'essay' && state.essayId === e.id;
+    if (here) {
       renderEssayReport();
       $('#es-report')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+    notifyReport(e.id, `Tahmini Band ${report.overall.toFixed(1)} · ${essayTitle(store.getEssay(e.id) || e)}`, true, here);
   } catch (err) {
     toast(err.message, 'error', 7000);
     renderEssayReport();
+    notifyReport(e.id, err.message, false, false);
   } finally {
     clearInterval(tick);
     reportBusy = false;
     const b = $('#es-report-btn');
     if (b) { b.disabled = false; b.textContent = '🎓 IELTS analizi'; }
+  }
+}
+
+/**
+ * Analiz bitince haber ver: uygulama içinde kalıcı bildirim (hangi ekranda olursan ol),
+ * uygulama arka plandaysa sistem bildirimi (bilgisayarda tarayıcı, Android'de bildirim çubuğu).
+ */
+export function notifyReport(essayId, detail, ok, alreadyHere) {
+  $('#report-banner')?.remove();
+  const el = document.createElement('div');
+  el.id = 'report-banner';
+  el.className = `update-banner report-banner ${ok ? '' : 'failed'}`;
+  el.innerHTML = `
+    <div class="ub-text"><b>${ok ? '🎓 IELTS analizi bitti' : '🎓 IELTS analizi tamamlanamadı'}</b>
+      <div class="muted">${esc(detail)}</div></div>
+    <div class="ub-actions">
+      <button class="ghost" data-rb="close">Kapat</button>
+      ${ok && !alreadyHere ? '<button class="primary" data-rb="open">Raporu aç</button>' : ''}
+    </div>`;
+  el.addEventListener('click', (ev) => {
+    const act = ev.target.closest('[data-rb]')?.dataset.rb;
+    if (!act) return;
+    el.remove();
+    if (act === 'open' && store.getEssay(essayId)) {
+      openEssay(essayId);
+      setTimeout(() => $('#es-report')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+    }
+  });
+  document.body.append(el);
+  // Rapor zaten ekrandaysa bildirim bir süre sonra kendiliğinden kapanır
+  if (alreadyHere) setTimeout(() => el.remove(), 9000);
+
+  if (!document.hidden) return;
+  const title = ok ? '🎓 IELTS analizi bitti' : 'IELTS analizi tamamlanamadı';
+  if (NativeNotif) {
+    NativeNotif.schedule({ notifications: [{ id: 4243, title, body: detail, schedule: { at: new Date(Date.now() + 500) } }] }).catch(() => {});
+  } else if ('Notification' in window && Notification.permission === 'granted') {
+    const n = new Notification(title, { body: detail, icon: 'icons/icon-192.png', tag: 'kelime-report' });
+    n.onclick = () => { window.focus(); n.close(); if (ok && store.getEssay(essayId)) openEssay(essayId); };
   }
 }
 
@@ -2651,6 +2722,7 @@ document.addEventListener('click', (e) => {
       case 'speak': if (state.study?.res.card) speak(state.study.res.card.word, deck?.language); break;
       case 'speak-sentence': if (state.study?.res.card) speak(state.study.res.card.sentence, deck?.language); break;
       case 'bulk-clear': state.selected.clear(); loadCards(); break;
+      case 'bulk-copy': copyCardsModal([...state.selected]); break;
       case 'bulk-reset':
         if (await confirmBox(`${state.selected.size} kartın çalışma ilerlemesi sıfırlanacak.`, { ok: 'Sıfırla' })) {
           store.resetCards([...state.selected]);

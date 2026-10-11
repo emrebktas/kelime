@@ -843,3 +843,7 @@ mark.lt-style { text-decoration-color: var(--easy); background: color-mix(in srg
 }
 .rp-evidence button:hover { background: var(--hover); color: var(--text); }
 .rp-crit .rp-next { font-size: 13px; background: var(--sage-soft); border-radius: 8px; padding: 7px 10px; }
+/* Analiz bitti bildirimi */
+.report-banner { border-color: color-mix(in srgb, var(--sage) 55%, var(--border)); border-left: 4px solid var(--sage); }
+.report-banner.failed { border-left-color: var(--danger); }
+.report-banner .ub-text .muted { font-size: 12.5px; margin-top: 2px; }

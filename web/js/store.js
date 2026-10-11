@@ -872,3 +872,30 @@ export function saveEssayReport(id, report) {
   setRec('essays', id, rec);
   return rec;
 }
+
+/**
+ * Kartları başka destelere kopyalar; kaynak destede kalırlar. Hedefte aynı kelime zaten
+ * varsa o deste için atlanır. Kopyanın çalışma ilerlemesi yeni destede sıfırdan başlar.
+ */
+export function copyCards(ids, targetDeckIds) {
+  let copied = 0;
+  let skipped = 0;
+  const sources = ids.map((id) => mem.cards.get(id)).filter((c) => c && !c.deleted);
+  for (const deckId of [...new Set(targetDeckIds)]) {
+    deckOrThrow(deckId);
+    requireEdit(deckId);
+    const taken = new Set(deckCards(deckId).map((c) => c.wkey));
+    let pos = maxPosition(deckId);
+    for (const c of sources) {
+      if (c.deck_id === deckId || taken.has(c.wkey)) { skipped++; continue; }
+      taken.add(c.wkey);
+      const id = uuid();
+      setRec('cards', id, {
+        id, deck_id: deckId, position: ++pos, word: c.word, wkey: c.wkey, translation: c.translation,
+        sentence: c.sentence, synonyms: [...(c.synonyms || [])], notes: c.notes, extra: { ...(c.extra || {}) }, deleted: false,
+      });
+      copied++;
+    }
+  }
+  return { copied, skipped };
+}
