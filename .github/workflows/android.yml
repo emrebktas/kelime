@@ -51,8 +51,8 @@ jobs:
       - name: Simgeler ve açılış ekranı
         run: >
           npx capacitor-assets generate --android
-          --iconBackgroundColor '#4f5bd5' --iconBackgroundColorDark '#4f5bd5'
-          --splashBackgroundColor '#14161b' --splashBackgroundColorDark '#14161b'
+          --iconBackgroundColor '#EEE6D8' --iconBackgroundColorDark '#EEE6D8'
+          --splashBackgroundColor '#EEE6D8' --splashBackgroundColorDark '#2E2A27'
 
       - name: Sürüm ve imza ayarları
         env:
