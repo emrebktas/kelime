@@ -921,3 +921,11 @@ mark.lt-style { text-decoration-color: var(--easy); background: color-mix(in srg
   .home-row > .study-time { flex-basis: 100%; }
   .board.panel { width: 190px; }
 }
+
+/* Sayaç: geri sayım / kronometre seçimi */
+.tm-mode { display: flex; gap: 4px; padding: 3px; border-radius: 10px; background: var(--hover); width: fit-content; margin: 4px auto 10px; }
+.tm-mode button { border: none; background: none; padding: 6px 14px; font-size: 13px; border-radius: 8px; }
+.tm-mode button.active { background: var(--panel); box-shadow: 0 1px 3px rgba(0,0,0,.12); font-weight: 650; }
+.tm-sw-note { display: none; text-align: center; font-size: 13px; margin: 0 0 6px; }
+#tm-setup.stopwatch .tm-cd { display: none; }
+#tm-setup.stopwatch .tm-sw-note { display: block; }

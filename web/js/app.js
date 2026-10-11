@@ -474,8 +474,42 @@ function showHome() {
   state.view = 'home';
   renderSidebar();
   setTitle('Kelime');
+  main.innerHTML = homeHtml();
+  loadBoard();
+}
+
+/** Başka cihazdan değişiklik gelince: ekranı baştan çizmeden sadece değişen parçaları yenile
+ *  (kaydırma yeri, pano ve odak yerinde kalır, ekran yanıp sönmez). */
+function refreshHome() {
+  const page = main.firstElementChild;
+  const tmp = document.createElement('div');
+  tmp.innerHTML = homeHtml();
+  const fresh = tmp.firstElementChild;
+  if (!page || !fresh) { showHome(); return; }
+  const hadBoard = !!$('#board');
+  patchNode(page, fresh);
+  if (!hadBoard && $('#board')) loadBoard();
+}
+
+function patchNode(old, fresh) {
+  if (old.id === 'board' && fresh.id === 'board') return; // pano kendi kendini yeniler
+  if (old.outerHTML === fresh.outerHTML) return;
+  const sameShell = old.tagName === fresh.tagName && old.className === fresh.className
+    && old.children.length === fresh.children.length && old.children.length > 0
+    && [...old.attributes].every((a) => fresh.getAttribute(a.name) === a.value)
+    && old.attributes.length === fresh.attributes.length;
+  if (!sameShell) { old.replaceWith(fresh); return; }
+  const a = [...old.children];
+  const b = [...fresh.children];
+  // Yazı düğümleri farklıysa (ör. başlıktaki metin) kabuğu da yenile
+  const text = (el) => [...el.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join('');
+  if (text(old) !== text(fresh)) { old.replaceWith(fresh); return; }
+  a.forEach((el, i) => patchNode(el, b[i]));
+}
+
+function homeHtml() {
   const due = state.decks.reduce((a, d) => a + d.new + d.learn + d.review, 0);
-  main.innerHTML = `
+  return `
     <div class="page">
       <div class="hero">
         <div>
@@ -511,7 +545,6 @@ function showHome() {
         <pre class="code">${esc(EXAMPLE_JSON)}</pre>
       </div>
     </div>`;
-  loadBoard();
 }
 
 /* =========================================================== deste sayfası */
@@ -1479,13 +1512,19 @@ const TIMER_KEY = 'kelime.timer';
 const TIMER_NOTIF_ID = 4242;
 const TIMER_PRESETS = [15, 25, 45, 60, 90];
 const timer = (() => {
-  const base = { status: 'idle', planned: 25, startedAt: 0, runStart: 0, elapsed: 0 };
+  // mode: 'countdown' (geri sayım) ya da 'stopwatch' (kronometre, 0'dan yukarı sayar)
+  const base = { status: 'idle', mode: 'countdown', planned: 25, startedAt: 0, runStart: 0, elapsed: 0 };
   try { return { ...base, ...JSON.parse(localStorage.getItem(TIMER_KEY)) }; } catch { return base; }
 })();
 const saveTimer = () => { try { localStorage.setItem(TIMER_KEY, JSON.stringify(timer)); } catch { /* yok say */ } };
 const timerElapsed = () => timer.elapsed + (timer.status === 'running' ? Date.now() - timer.runStart : 0);
 const timerRemaining = () => Math.max(0, timer.planned * 60_000 - timerElapsed());
 const liveSec = () => (timer.status === 'idle' ? 0 : Math.floor(timerElapsed() / 1000));
+const isStopwatch = () => timer.mode === 'stopwatch';
+const STOPWATCH_MAX_MS = 12 * 3600_000; // unutulan kronometre en fazla 12 saatte kendiliğinden biter
+/** Ekranda gösterilecek süre: geri sayımda kalan, kronometrede geçen. */
+const timerShown = () => (isStopwatch() ? Math.floor(timerElapsed() / 1000) * 1000 : timerRemaining());
+const timerPct = () => (timer.status === 'idle' || isStopwatch() ? 0 : Math.min(100, (timerElapsed() / (timer.planned * 60_000)) * 100));
 
 function fmtClock(ms) {
   const s = Math.ceil(ms / 1000);
@@ -1507,7 +1546,8 @@ function syncTimerTick() {
   timerTick = timer.status === 'running' ? setInterval(onTimerTick, 1000) : null;
 }
 function onTimerTick() {
-  if (timer.status === 'running' && timerRemaining() <= 0) { timerFinish(true); return; }
+  if (timer.status === 'running' && isStopwatch() && timerElapsed() >= STOPWATCH_MAX_MS) { timerFinish(false); return; }
+  if (timer.status === 'running' && !isStopwatch() && timerRemaining() <= 0) { timerFinish(true); return; }
   renderTimer();
 }
 
@@ -1545,10 +1585,11 @@ function timerReset() {
 function timerFinish(completed) {
   if (timer.status === 'idle') return;
   const plannedMs = timer.planned * 60_000;
-  const actualMs = completed ? plannedMs : timerElapsed();
+  const actualMs = completed ? plannedMs : Math.min(timerElapsed(), isStopwatch() ? STOPWATCH_MAX_MS : Infinity);
   // Uygulama kapalıyken dolduysa bitiş anı, gerçek dolma anıdır
   const endedAt = completed && timer.status === 'running' ? timer.runStart + (plannedMs - timer.elapsed) : Date.now();
-  const planned = timer.planned;
+  // Kronometrede hedef yok; kayıtta hedef, çalışılan süre kadar sayılır
+  const planned = isStopwatch() ? Math.min(180, Math.max(1, Math.round(actualMs / 60_000))) : timer.planned;
   const startedAt = timer.startedAt;
   timerReset();
   if (actualMs >= 60_000) {
@@ -1572,7 +1613,7 @@ function timerFinish(completed) {
         <div class="modal-actions">
           <button type="button" data-close>Tamam</button>
           <button type="submit" class="primary">Yeniden başlat (${planned} dk)</button>
-        </div>`, { onSubmit: () => { timer.planned = planned; timerStart(); } });
+        </div>`, { onSubmit: () => { timer.mode = 'countdown'; timer.planned = planned; timerStart(); } });
     } else {
       toast(`Süre doldu! ${msg}`, 'success', 8000);
     }
@@ -1603,6 +1644,7 @@ function timerAlarm() {
 
 // Android: süre dolunca uygulama kapalı ya da ekran kilitliyken de bildirim gelsin
 async function scheduleTimerAlert() {
+  if (isStopwatch()) return; // kronometrede dolacak bir süre yok
   if (NativeNotif) {
     try {
       const perm = await NativeNotif.checkPermissions();
@@ -1630,8 +1672,8 @@ function cancelTimerAlert() {
 function renderTimer() {
   const stats = store.studyStats(liveSec());
   const idle = timer.status === 'idle';
-  const left = fmtClock(timerRemaining());
-  const pct = idle ? 0 : Math.min(100, (timerElapsed() / (timer.planned * 60_000)) * 100);
+  const left = fmtClock(timerShown());
+  const pct = timerPct();
   const widget = $('#timer-widget');
   widget.classList.toggle('running', timer.status === 'running');
   widget.classList.toggle('paused', timer.status === 'paused');
@@ -1639,8 +1681,8 @@ function renderTimer() {
     ? `<span class="tw-icon">⏱</span><span class="tw-main">Çalışma sayacı</span>
        <span class="tw-sub">Bugün <b>${fmtDur(stats.today)}</b>${stats.streak > 1 ? ` · 🔥 ${stats.streak} gün` : ''}</span>`
     : `<span class="tw-icon">${timer.status === 'paused' ? '⏸' : '⏱'}</span><span class="tw-main tw-clock">${left}</span>
-       <span class="tw-sub">${timer.status === 'paused' ? 'Duraklatıldı' : `${timer.planned} dk oturum`} · Bugün <b>${fmtDur(stats.today)}</b></span>
-       <span class="tw-bar"><span style="width:${pct}%"></span></span>`;
+       <span class="tw-sub">${timer.status === 'paused' ? 'Duraklatıldı' : isStopwatch() ? 'Kronometre' : `${timer.planned} dk oturum`} · Bugün <b>${fmtDur(stats.today)}</b></span>
+       ${isStopwatch() ? '' : `<span class="tw-bar"><span style="width:${pct}%"></span></span>`}`;
   const chip = $('#timer-chip');
   chip.textContent = idle ? '⏱' : `${timer.status === 'paused' ? '⏸' : '⏱'} ${left}`;
   chip.classList.toggle('active', !idle);
@@ -1657,10 +1699,17 @@ function timerModal() {
     <div class="tm-display" id="tm-display"></div>
     <div class="tm-progress"><span id="tm-bar"></span></div>
     <div id="tm-setup">
+      <div class="seg tm-mode" role="tablist">
+        <button type="button" data-tm-mode="countdown">⏳ Geri sayım</button>
+        <button type="button" data-tm-mode="stopwatch">⏱ Kronometre</button>
+      </div>
+      <p class="muted tm-sw-note">Sıfırdan başlar, sen bitirene kadar çalıştığın süreyi sayar.</p>
+      <div class="tm-cd">
       <label>Süre <small><b id="tm-min">${timer.planned}</b> dakika</small>
         <input type="range" id="tm-range" min="1" max="180" step="1" value="${timer.planned}"></label>
       <div class="tm-presets">${TIMER_PRESETS.map((m) => `<button type="button" data-tm-preset="${m}">${m} dk</button>`).join('')}
         <input type="number" id="tm-number" min="1" max="180" inputmode="numeric" value="${timer.planned}" title="Dakika (1-180)"></div>
+      </div>
     </div>
     <div class="tm-actions" id="tm-actions"></div>
     <div class="tm-summary" id="tm-summary"></div>
@@ -1681,6 +1730,11 @@ function timerModal() {
   form.addEventListener('click', (e) => {
     const preset = e.target.closest('[data-tm-preset]')?.dataset.tmPreset;
     if (preset) return setPlanned(preset);
+    const mode = e.target.closest('[data-tm-mode]')?.dataset.tmMode;
+    if (mode) {
+      if (timer.status === 'idle') { timer.mode = mode; saveTimer(); renderTimer(); }
+      return renderTimerModal(true);
+    }
     const act = e.target.closest('[data-tm]')?.dataset.tm;
     if (act === 'start' || act === 'resume') timerStart();
     else if (act === 'pause') timerPause();
@@ -1709,14 +1763,17 @@ function timerModal() {
 /** full: butonları ve geçmişi de yeniden çiz (her saniye sadece saat güncellenir). */
 function renderTimerModal(full) {
   const idle = timer.status === 'idle';
-  $('#tm-display').textContent = fmtClock(idle ? timer.planned * 60_000 : timerRemaining());
+  $('#tm-display').textContent = fmtClock(idle && !isStopwatch() ? timer.planned * 60_000 : timerShown());
   $('#tm-display').classList.toggle('paused', timer.status === 'paused');
-  $('#tm-bar').style.width = `${idle ? 0 : Math.min(100, (timerElapsed() / (timer.planned * 60_000)) * 100)}%`;
+  $('#tm-bar').parentElement.classList.toggle('hidden', isStopwatch());
+  $('#tm-bar').style.width = `${timerPct()}%`;
   const st = store.studyStats(liveSec());
   $('#tm-summary').innerHTML = `<span>Bugün <b>${fmtDur(st.today)}</b></span><span>Bu hafta <b>${fmtDur(st.weekTotal)}</b></span>
     <span>🔥 Seri <b>${st.streak} gün</b></span>`;
   if (!full) return;
   $('#tm-setup').classList.toggle('hidden', !idle);
+  $('#tm-setup').classList.toggle('stopwatch', isStopwatch());
+  $$('[data-tm-mode]').forEach((b) => b.classList.toggle('active', b.dataset.tmMode === timer.mode));
   $('#tm-actions').innerHTML = idle
     ? '<button type="button" class="primary big" data-tm="start">▶ Başlat</button>'
     : `${timer.status === 'running'
@@ -1835,7 +1892,11 @@ function studyTimePanel() {
 
 function refreshStudyTime() {
   const el = $('#study-time');
-  if (el) el.outerHTML = studyTimePanel();
+  if (el) {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = studyTimePanel();
+    patchNode(el, tmp.firstElementChild);
+  }
   renderTimerHistory();
 }
 
@@ -2657,7 +2718,7 @@ function onRemoteChange() {
       const active = document.activeElement;
       if (!active || !['es-body', 'es-title', 'es-prompt'].includes(active.id)) openEssay(state.essayId);
     } else if (state.view === 'home') {
-      showHome();
+      refreshHome();
     } else if (state.view === 'study') {
       if (!deckById(state.deckId)) { toast('Bu desteye artık erişimin yok.', 'info'); showHome(); return; }
       const s = state.study;
@@ -2725,6 +2786,7 @@ document.addEventListener('click', (e) => {
       case 'essay-timer': {
         const t = ESSAY_TASKS[$('#es-task')?.value] || ESSAY_TASKS.task2;
         if (timer.status !== 'idle') { timerModal(); break; }
+        timer.mode = 'countdown';
         timer.planned = t.minutes;
         timerStart();
         toast(`${t.minutes} dakikalık sınav süresi başladı. Süre dolunca uyarılacaksın.`, 'success');
