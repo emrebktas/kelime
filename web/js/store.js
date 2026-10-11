@@ -4,7 +4,7 @@
 import * as srs from './srs.js';
 
 const DB_NAME = 'kelime';
-const TABLES = ['decks', 'members', 'cards', 'states', 'revlog', 'sessions'];
+const TABLES = ['decks', 'members', 'cards', 'states', 'revlog', 'sessions', 'essays'];
 const LOCAL_UID = 'local';
 
 const mem = Object.fromEntries(TABLES.map((t) => [t, new Map()]));
@@ -31,8 +31,8 @@ const txDone = (tx) => new Promise((res, rej) => { tx.oncomplete = res; tx.onerr
 
 export async function open() {
   idb = await new Promise((res, rej) => {
-    // Sürüm 2: çalışma sayacı oturumları (sessions) eklendi; eksik tablolar oluşturulur, veriler korunur
-    const r = indexedDB.open(DB_NAME, 2);
+    // Sürüm 2: çalışma sayacı oturumları, 3: yazılar; eksik tablolar oluşturulur, veriler korunur
+    const r = indexedDB.open(DB_NAME, 3);
     r.onupgradeneeded = () => {
       for (const t of [...TABLES, 'meta']) if (!r.result.objectStoreNames.contains(t)) r.result.createObjectStore(t);
     };
@@ -130,6 +130,7 @@ function adoptLocal(newUid) {
   for (const [key, s] of mem.states) setRec('states', key, { ...s, user_id: newUid });
   for (const [key, r] of mem.revlog) setRec('revlog', key, { ...r, user_id: newUid });
   for (const [key, s] of mem.sessions) setRec('sessions', key, { ...s, user_id: newUid });
+  for (const [key, e] of mem.essays) setRec('essays', key, { ...e, user_id: newUid });
 }
 
 /** Çıkış: cihazdaki tüm veriyi siler. */
@@ -162,7 +163,7 @@ export function markClean(table, rows) {
     if (r && r._rev === rev) {
       r._dirty = false;
       r._server = true;
-      if ((table === 'cards' || table === 'sessions') && r.deleted) delRec(table, key);
+      if (['cards', 'sessions', 'essays'].includes(table) && r.deleted) delRec(table, key);
       else persist(table, key, r);
     }
   }
@@ -199,6 +200,13 @@ export function applyRemote(table, rows) {
       if (r.user_id !== meta.uid || mem.states.get(r.card_id)?._dirty) continue;
       setRec('states', r.card_id, { user_id: r.user_id, card_id: r.card_id, deck_id: r.deck_id, state: r.state,
         due: Number(r.due), ivl: r.ivl, ease: r.ease, step: r.step, reps: r.reps, lapses: r.lapses, _server: true }, false);
+    } else if (table === 'essays') {
+      if (r.user_id !== meta.uid || mem.essays.get(r.id)?._dirty) continue;
+      if (r.deleted) delRec('essays', r.id);
+      else {
+        setRec('essays', r.id, { id: r.id, user_id: r.user_id, title: r.title, task: r.task, prompt: r.prompt, body: r.body,
+          words: r.words, created_at: Number(r.created_at), edited_at: Number(r.edited_at), deleted: false, _server: true }, false);
+      }
     } else if (table === 'study_sessions') {
       if (r.user_id !== meta.uid || mem.sessions.get(r.id)?._dirty) continue;
       if (r.deleted) delRec('sessions', r.id);
@@ -811,4 +819,46 @@ export function studyStats(liveSec = 0) {
     weekTotal: week.reduce((a, x) => a + x.sec, 0),
     streak,
   };
+}
+
+/* ------------------------------------------------------------------ yazılar (IELTS essay) */
+
+export const ESSAY_TASKS = ['task2', 'task1', 'gt1', 'free'];
+const ESSAY_LIMITS = { title: 200, prompt: 5000, body: 50000 };
+
+export function listEssays() {
+  return [...mem.essays.values()].filter((e) => !e.deleted).sort((a, b) => b.edited_at - a.edited_at);
+}
+
+export function getEssay(id) {
+  const e = mem.essays.get(id);
+  return e && !e.deleted ? e : null;
+}
+
+export function createEssay(task = 'task2') {
+  const now = Math.floor(Date.now() / 1000);
+  const id = uuid();
+  const rec = { id, user_id: meta.uid, title: '', task: ESSAY_TASKS.includes(task) ? task : 'task2', prompt: '', body: '',
+    words: 0, created_at: now, edited_at: now, deleted: false };
+  setRec('essays', id, rec);
+  return rec;
+}
+
+/** Yazının alanlarını günceller (title, task, prompt, body, words). */
+export function saveEssay(id, patch) {
+  const e = getEssay(id);
+  if (!e) throw new Error('Yazı bulunamadı.');
+  const next = { ...e };
+  for (const k of ['title', 'prompt', 'body']) if (k in patch) next[k] = cut(String(patch[k] ?? ''), ESSAY_LIMITS[k]);
+  if ('task' in patch && ESSAY_TASKS.includes(patch.task)) next.task = patch.task;
+  if ('words' in patch) next.words = Math.max(0, Math.round(Number(patch.words) || 0));
+  if (['title', 'task', 'prompt', 'body', 'words'].every((k) => next[k] === e[k])) return e;
+  next.edited_at = Math.floor(Date.now() / 1000);
+  setRec('essays', id, next);
+  return next;
+}
+
+export function deleteEssay(id) {
+  const e = mem.essays.get(id);
+  if (e) setRec('essays', id, { ...e, deleted: true });
 }

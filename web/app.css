@@ -577,3 +577,77 @@ textarea.autogrow { resize: none; overflow-y: auto; min-height: 0; }
   .st-day { height: 100px; }
   .tm-item { grid-template-columns: auto auto 1fr auto; gap: 8px; font-size: 13px; }
 }
+
+/* ---------- IELTS yazıları ---------- */
+.nav-btn {
+  display: flex; align-items: baseline; gap: 8px; margin: 0 14px 6px; padding: 9px 12px; width: auto; text-align: left;
+  background: transparent; border: 1px solid transparent; border-radius: 10px; font-weight: 600;
+}
+.nav-btn small { margin-left: auto; font-weight: 400; font-size: 11px; color: var(--muted); }
+.nav-btn:hover { background: var(--hover); }
+.nav-btn.active { background: var(--panel); border-color: var(--border); box-shadow: var(--shadow); }
+
+.essay-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 22px; }
+.essay-item {
+  display: flex; flex-direction: column; gap: 6px; text-align: left; white-space: normal;
+  background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow);
+}
+.essay-item:hover { border-color: var(--accent); background: var(--panel); }
+.ei-title { font-weight: 650; font-size: 15px; }
+.ei-meta { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; font-size: 12.5px; }
+.ei-ok { color: var(--good); font-weight: 600; }
+.ei-short { color: var(--hard); font-weight: 600; }
+.ei-preview { color: var(--muted); font-size: 13px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.ielts-rules summary { cursor: pointer; }
+.ielts-rules ul { margin: 10px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 13.5px; }
+
+.task-choices { display: flex; flex-direction: column; gap: 8px; }
+.task-choice { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+.task-choice span { display: flex; flex-direction: column; }
+.task-choice small { color: var(--muted); font-weight: 400; }
+.task-choice:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+
+.essay-page { max-width: 860px; }
+.es-title { font: 700 22px/1.2 inherit; border: none; background: transparent; padding: 6px 0; border-radius: 0; border-bottom: 1px dashed transparent; }
+.es-title:focus { outline: none; border-bottom-color: var(--border); }
+.es-toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+.es-toolbar select { width: auto; }
+.es-check { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); cursor: pointer; }
+.es-check input { width: auto; }
+.es-prompt { margin-bottom: 10px; }
+.es-prompt summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--muted); padding: 4px 0; }
+.es-prompt textarea { margin-top: 6px; font-size: 14px; }
+.es-status {
+  position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(6px);
+  padding: 10px 2px; margin-bottom: 8px; border-bottom: 1px solid var(--border);
+}
+.es-count { display: flex; align-items: baseline; gap: 4px; font-variant-numeric: tabular-nums; }
+.es-count b { font-size: 28px; line-height: 1; }
+.es-count span { color: var(--muted); font-size: 14px; }
+.es-count small { color: var(--muted); font-size: 12px; margin-left: 4px; }
+.es-count.es-short b { color: var(--hard); }
+.es-count.es-ok b { color: var(--good); }
+.es-count.es-long b { color: var(--easy); }
+.es-bar { flex: 1; min-width: 120px; height: 6px; background: var(--hover); border-radius: 6px; overflow: hidden; }
+.es-bar span { display: block; height: 100%; transition: width .2s; background: var(--hard); }
+.es-bar.es-ok span { background: var(--good); }
+.es-bar.es-long span { background: var(--easy); }
+.es-meta { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); width: 100%; }
+.es-hint.es-short { color: var(--hard); font-weight: 600; }
+.es-hint.es-ok { color: var(--good); font-weight: 600; }
+.es-hint.es-long { color: var(--easy); font-weight: 600; }
+.es-body {
+  min-height: 55vh; font: 16px/1.75 Georgia, "Times New Roman", serif; padding: 18px 20px;
+  background: var(--panel); border-radius: var(--radius); resize: vertical;
+}
+.es-insights { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.es-tip { font-size: 13px; background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; line-height: 1.9; }
+.es-tip.warn { border-color: color-mix(in srgb, var(--hard) 50%, var(--border)); }
+.es-tip q { font-style: italic; color: var(--muted); margin-right: 6px; }
+.es-tip .chip { font-size: 12px; padding: 1px 8px; }
+@media (max-width: 760px) {
+  .es-body { min-height: 50vh; padding: 14px; font-size: 15.5px; }
+  .es-count b { font-size: 24px; }
+  .essay-page .deck-head > .primary { padding: 7px 10px; }
+}

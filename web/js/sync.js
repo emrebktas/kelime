@@ -225,7 +225,14 @@ async function push() {
       id: rec.id, user_id: uid, started_at: rec.started_at, ended_at: rec.ended_at, planned_min: rec.planned_min,
       actual_sec: rec.actual_sec, device: rec.device || dev, deleted: !!rec.deleted,
     })),
-  ), 200));
+  ), 200), 'study_sessions');
+
+  await optionalTable(() => pushTable('essays', store.dirtyRows('essays'), (part) => client.from('essays').upsert(
+    part.map(({ rec }) => ({
+      id: rec.id, user_id: uid, title: rec.title || '', task: rec.task, prompt: rec.prompt || '', body: rec.body || '',
+      words: rec.words || 0, created_at: rec.created_at, edited_at: rec.edited_at, deleted: !!rec.deleted,
+    })),
+  ), 20), 'essays');
 
   await pushTable('revlog', store.dirtyRows('revlog'), (part) => client.from('revlog').upsert(
     part.map(({ rec }) => ({
@@ -235,14 +242,15 @@ async function push() {
   ), 500);
 }
 
-const PULL_TABLES = ['deck_members', 'decks', 'cards', 'card_states', 'revlog', 'study_sessions'];
-const OWN_TABLES = ['card_states', 'revlog', 'study_sessions'];
+const PULL_TABLES = ['deck_members', 'decks', 'cards', 'card_states', 'revlog', 'study_sessions', 'essays'];
+const OWN_TABLES = ['card_states', 'revlog', 'study_sessions', 'essays'];
+const OPTIONAL_TABLES = ['study_sessions', 'essays'];
 
 // Sonradan eklenen tablolar (ör. study_sessions) sunucuda henüz oluşturulmadıysa
 // senkronun geri kalanı bozulmasın: o tablo bu oturumda atlanır, veriler cihazda bekler.
 let missingTables = new Set();
 const isMissingTable = (e) => ['PGRST205', '42P01'].includes(e?.code);
-async function optionalTable(fn, name = 'study_sessions') {
+async function optionalTable(fn, name) {
   if (missingTables.has(name)) return;
   try { await fn(); } catch (e) {
     if (!isMissingTable(e)) throw e;
@@ -283,7 +291,7 @@ async function pull() {
       });
       if (last && (!cursor || toMs(last) > toMs(cursor))) store.setMeta({ cursors: { ...store.getMeta().cursors, [table]: last } });
     };
-    if (table === 'study_sessions') await optionalTable(pullOne, table);
+    if (OPTIONAL_TABLES.includes(table)) await optionalTable(pullOne, table);
     else await pullOne();
   }
   // Yeni katılınan (ya da yeniden indirilmesi gereken) destelerin tüm içeriği

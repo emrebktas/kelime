@@ -299,6 +299,7 @@ function renderSidebar() {
       </button>`).join('')
     : '<div class="empty-side">Henüz deste yok. “+ Yeni deste” ile oluştur ya da bir JSON dosyası içe aktar.</div>';
   $('#btn-join').classList.toggle('hidden', !sync.enabled);
+  $('#nav-essays')?.classList.toggle('active', state.view === 'essays' || state.view === 'essay');
   renderAccount();
 }
 
@@ -1072,7 +1073,7 @@ function joinModal() {
 /* =========================================================== içe / dışa aktarma */
 
 async function download(filename, obj) {
-  const text = JSON.stringify(obj, null, 2);
+  const text = typeof obj === 'string' ? obj : JSON.stringify(obj, null, 2);
   if (NativeFS && NativeShare) {
     // Android: dosyayı geçici klasöre yaz, paylaş menüsüyle kaydet/gönder (Drive, Dosyalar, WhatsApp...)
     const { uri } = await NativeFS.writeFile({ path: filename, data: text, directory: 'CACHE', encoding: 'utf8' });
@@ -1083,7 +1084,7 @@ async function download(filename, obj) {
     }
     return;
   }
-  const blob = new Blob([text], { type: 'application/json' });
+  const blob = new Blob([text], { type: filename.endsWith('.txt') ? 'text/plain;charset=utf-8' : 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = filename;
@@ -1301,6 +1302,7 @@ function renderFaces(card, reverse, flipped) {
 }
 
 function leaveStudy() {
+  leaveEssay();
   if (state.study?.timer) clearTimeout(state.study.timer);
   state.study = null;
   stopSpeech();
@@ -1601,6 +1603,7 @@ function renderTimer() {
   const home = $('#home-today');
   if (home) home.textContent = fmtDur(stats.today);
   if ($('#tm-display')) renderTimerModal(false);
+  renderEssayTimerBtn();
 }
 
 function timerModal() {
@@ -1736,6 +1739,253 @@ function refreshStudyTime() {
   renderTimerHistory();
 }
 
+/* =========================================================== IELTS yazıları */
+
+const ESSAY_TASKS = {
+  task2: { label: 'Task 2 · Essay', min: 250, max: 320, minutes: 40 },
+  task1: { label: 'Academic Task 1 · Rapor', min: 150, max: 200, minutes: 20 },
+  gt1: { label: 'General Task 1 · Mektup', min: 150, max: 200, minutes: 20 },
+  free: { label: 'Serbest yazı', min: 0, max: 0, minutes: 0 },
+};
+
+// IELTS sayımı: boşlukla ayrılan her parça bir kelimedir (bilgisayarlı sınavdaki sayaç gibi).
+// İçinde harf ya da rakam olmayan parçalar (–, &, ...) kelime sayılmaz.
+// Böylece don't, well-known, 2020, 45% tek kelime; a, the ve dolgu kelimeleri de sayılır.
+const essayTokens = (text) => text.split(/\s+/).filter((t) => /[\p{L}\p{N}]/u.test(t));
+const normToken = (t) => t.toLowerCase().replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '');
+
+/** Sorudan aynen kopyalanmış görünen kelimeler: soruyla ortak, en az 6 kelimelik ardışık diziler. */
+function copiedFromPrompt(tokens, prompt) {
+  const N = 6;
+  const p = essayTokens(prompt).map(normToken).filter(Boolean);
+  if (p.length < N || tokens.length < N) return { count: 0, phrases: [] };
+  const grams = new Set();
+  for (let i = 0; i + N <= p.length; i++) grams.add(p.slice(i, i + N).join(' '));
+  const words = tokens.map(normToken);
+  const marked = new Array(words.length).fill(false);
+  for (let i = 0; i + N <= words.length; i++) {
+    if (grams.has(words.slice(i, i + N).join(' '))) for (let j = i; j < i + N; j++) marked[j] = true;
+  }
+  const phrases = [];
+  let run = [];
+  marked.forEach((m, i) => {
+    if (m) run.push(tokens[i]);
+    if ((!m || i === marked.length - 1) && run.length) { phrases.push(run.join(' ')); run = []; }
+  });
+  return { count: marked.filter(Boolean).length, phrases };
+}
+
+const FILLERS = ['very', 'really', 'basically', 'actually', 'literally', 'just', 'stuff', 'things', 'thing',
+  'a lot of', 'lots of', 'kind of', 'sort of', 'you know', 'i mean', 'etc'];
+const STOPWORDS = new Set(('a an the and or but if so of to in on at by for with from as is are was were be been being '
+  + 'this that these those it its they them their there here he she his her we our you your i me my not no can could '
+  + 'will would should may might must do does did have has had which who whom what when where why how than then also '
+  + 'more most some any such into about over after before between because while all each other many much very').split(' '));
+
+export function analyzeEssay(body, prompt) {
+  const tokens = essayTokens(body);
+  const copied = copiedFromPrompt(tokens, prompt || '');
+  const lower = ` ${body.toLowerCase().replace(/[^\p{L}\p{N}' ]+/gu, ' ').replace(/\s+/g, ' ')} `;
+  const fillers = FILLERS.map((f) => [f, (lower.match(new RegExp(` ${f} `, 'g')) || []).length]).filter(([, n]) => n);
+  const freq = new Map();
+  for (const t of tokens) {
+    const w = normToken(t);
+    if (w.length > 2 && !STOPWORDS.has(w) && !/^\d+$/.test(w)) freq.set(w, (freq.get(w) || 0) + 1);
+  }
+  const repeated = [...freq].filter(([, n]) => n >= 4).sort((a, b) => b[1] - a[1]).slice(0, 6);
+  const blocks = body.split(/\n\s*\n/).filter((b) => b.trim());
+  const lines = body.split('\n').filter((l) => l.trim());
+  return {
+    words: tokens.length,
+    net: tokens.length - copied.count,
+    copied,
+    fillers,
+    repeated,
+    paragraphs: blocks.length > 1 ? blocks.length : lines.length,
+    sentences: (body.match(/[\p{L}\p{N})"'”’][.!?]+(?=\s|$)/gu) || []).length,
+  };
+}
+
+const essayTitle = (e) => e.title.trim() || (e.body.trim() ? `${essayTokens(e.body).slice(0, 6).join(' ')}…` : 'Başlıksız yazı');
+
+function showEssays() {
+  leaveStudy();
+  state.view = 'essays';
+  document.body.classList.remove('menu-open');
+  renderSidebar();
+  setTitle('Yazılarım');
+  const essays = store.listEssays();
+  main.innerHTML = `
+    <div class="page">
+      <header class="deck-head">
+        <button class="icon-btn head-btn" data-act="home" title="Ana sayfaya dön (Esc)" aria-label="Ana sayfaya dön">${ICON.home}</button>
+        <div class="deck-title">
+          <h1>Yazılarım</h1>
+          <div class="sub">IELTS Writing · ${essays.length} yazı</div>
+        </div>
+        <button class="primary" data-act="essay-new">+ Yeni yazı</button>
+      </header>
+      ${essays.length ? `<div class="essay-list">${essays.map((e) => {
+        const t = ESSAY_TASKS[e.task] || ESSAY_TASKS.free;
+        const ok = !t.min || e.words >= t.min;
+        return `<button class="essay-item" data-essay="${e.id}">
+          <span class="ei-title">${esc(essayTitle(e))}</span>
+          <span class="ei-meta"><span class="badge">${esc(t.label)}</span>
+            <span class="${ok ? 'ei-ok' : 'ei-short'}">${e.words}${t.min ? ` / ${t.min}` : ''} kelime</span>
+            <span class="muted">${new Date(e.edited_at * 1000).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}</span></span>
+          ${e.body.trim() ? `<span class="ei-preview">${esc(e.body.trim().slice(0, 160))}</span>` : ''}
+        </button>`;
+      }).join('')}</div>` : '<div class="panel empty">Henüz yazı yok. “+ Yeni yazı” ile ilk essay’ini yaz.</div>'}
+      <details class="panel ielts-rules">
+        <summary><b>IELTS’te kelimeler nasıl sayılır?</b></summary>
+        <ul>
+          <li>Yazdığın <b>her kelime sayılır</b>: <i>a, the, and, in</i> gibi küçük kelimeler ve <i>actually, basically, really</i> gibi dolgu kelimeleri de. Dolgu kelimeleri sayıya eklenir ama puanına katkı yapmaz; gereksizse çıkar.</li>
+          <li>Kısaltmalar (<i>don't, it's</i>) <b>tek kelime</b> sayılır. Akademik yazıda kısaltma kullanmaman önerilir.</li>
+          <li>Tireli kelimeler (<i>well-known, long-term</i>) <b>tek kelime</b> sayılır.</li>
+          <li>Rakamla yazılan sayılar (<i>2020, 45%</i>) <b>tek kelime</b> sayılır.</li>
+          <li><b>Sorudan aynen kopyaladığın ifadeler sayılmaz.</b> Soruyu “Soru metni” alanına yapıştırırsan uygulama kopya kısımları bulup sayıdan düşer.</li>
+          <li>Alt sınır: Task 1 için <b>150</b>, Task 2 için <b>250</b> kelime. Altında kalırsan puan kaybedersin. Üst sınır yok, ama çok uzun yazmak zaman kaybettirir ve hata riskini artırır.</li>
+          <li>Task 2’de başlık yazmana gerek yok.</li>
+          <li>Bilgisayarlı sınavdaki sayaç boşlukla ayrılan her parçayı bir kelime sayar; bu uygulama da aynı şekilde sayar.</li>
+        </ul>
+      </details>
+    </div>`;
+}
+
+function newEssayModal() {
+  openModal(`
+    <h2>Yeni yazı</h2>
+    <div class="task-choices">${Object.entries(ESSAY_TASKS).map(([k, t], i) => `
+      <label class="radio task-choice"><input type="radio" name="task" value="${k}" ${i === 0 ? 'checked' : ''}>
+        <span><b>${esc(t.label)}</b><small>${t.min ? `en az ${t.min} kelime · ${t.minutes} dk` : 'kelime sınırı yok'}</small></span></label>`).join('')}
+    </div>
+    <div class="modal-actions">
+      <button type="button" data-close>Vazgeç</button>
+      <button type="submit" class="primary">Yazmaya başla</button>
+    </div>`, {
+    onSubmit: (f) => { openEssay(store.createEssay(new FormData(f).get('task')).id); },
+  });
+}
+
+let essaySaveTimer = null;
+function openEssay(id) {
+  const e = store.getEssay(id);
+  if (!e) return showEssays();
+  leaveStudy();
+  state.view = 'essay';
+  state.essayId = id;
+  document.body.classList.remove('menu-open');
+  renderSidebar();
+  setTitle(essayTitle(e));
+  main.innerHTML = `
+    <div class="page essay-page">
+      <header class="deck-head">
+        <button class="icon-btn head-btn" data-act="essays" title="Yazılarıma dön (Esc)" aria-label="Yazılarıma dön">${ICON.back.replace(/width="16" height="16"[^>]*/, '')}</button>
+        <div class="deck-title"><input id="es-title" class="es-title" placeholder="Başlık (isteğe bağlı)" maxlength="200" value="${esc(e.title)}"></div>
+        <div class="menu-wrap">
+          <button class="icon-btn head-btn" data-act="deck-menu" title="Yazı işlemleri" aria-label="Yazı işlemleri" aria-haspopup="menu">${ICON.gear}</button>
+          <div class="menu-pop hidden" id="deck-menu" role="menu">
+            <button role="menuitem" data-act="essay-copy">${ICON.edit}<span>Metni kopyala</span></button>
+            <button role="menuitem" data-act="essay-export">${ICON.download}<span>Metin dosyası olarak indir</span></button>
+            <hr>
+            <button role="menuitem" class="danger" data-act="essay-delete">${ICON.trash}<span>Yazıyı sil</span></button>
+          </div>
+        </div>
+      </header>
+      <div class="es-toolbar">
+        <select id="es-task">${Object.entries(ESSAY_TASKS).map(([k, t]) => `<option value="${k}" ${k === e.task ? 'selected' : ''}>${esc(t.label)}</option>`).join('')}</select>
+        <button type="button" data-act="essay-timer" id="es-timer-btn"></button>
+        <label class="radio es-check"><input type="checkbox" id="es-spell" ${prefs.essaySpell ? 'checked' : ''}> Yazım denetimi</label>
+      </div>
+      <details class="es-prompt" ${e.prompt ? 'open' : ''}>
+        <summary>Soru / görev metni <small class="muted">isteğe bağlı · kopyalanan kısımlar sayılmaz</small></summary>
+        <textarea id="es-prompt" rows="3" maxlength="5000" placeholder="Görev metnini buraya yapıştır…">${esc(e.prompt)}</textarea>
+      </details>
+      <div class="es-status" id="es-status"></div>
+      <textarea id="es-body" class="es-body" lang="en" spellcheck="${prefs.essaySpell ? 'true' : 'false'}" autocapitalize="sentences"
+        placeholder="Yazmaya başla… Paragraflar arasında bir satır boşluk bırak.">${esc(e.body)}</textarea>
+      <div class="es-insights" id="es-insights"></div>
+    </div>`;
+
+  const body = $('#es-body');
+  const title = $('#es-title');
+  const prompt = $('#es-prompt');
+  const task = $('#es-task');
+  let saved = true;
+  const save = () => {
+    clearTimeout(essaySaveTimer);
+    const a = analyzeEssay(body.value, prompt.value);
+    store.saveEssay(id, { title: title.value, prompt: prompt.value, body: body.value, task: task.value, words: a.words });
+    saved = true;
+    renderEssayStatus(a, task.value, saved);
+  };
+  const changed = () => {
+    saved = false;
+    renderEssayStatus(analyzeEssay(body.value, prompt.value), task.value, saved);
+    clearTimeout(essaySaveTimer);
+    essaySaveTimer = setTimeout(save, 600);
+  };
+  for (const el of [body, title, prompt]) el.addEventListener('input', changed);
+  task.addEventListener('change', () => { save(); renderEssayTimerBtn(); });
+  title.addEventListener('change', () => setTitle(essayTitle(store.getEssay(id))));
+  $('#es-spell').addEventListener('change', (ev) => {
+    prefs.essaySpell = ev.target.checked;
+    savePrefs();
+    body.spellcheck = ev.target.checked;
+    body.blur();
+    body.focus();
+  });
+  // Sayfadan çıkarken bekleyen kaydı hemen yaz
+  state.flushEssay = () => { if (!saved && store.getEssay(id)) save(); };
+  renderEssayStatus(analyzeEssay(body.value, prompt.value), task.value, true);
+  renderEssayTimerBtn();
+  if (!isMobile()) body.focus();
+}
+
+function renderEssayTimerBtn() {
+  const btn = $('#es-timer-btn');
+  if (!btn) return;
+  const t = ESSAY_TASKS[$('#es-task').value];
+  btn.classList.toggle('hidden', !t.minutes);
+  btn.textContent = timer.status === 'idle' ? `⏱ ${t.minutes} dk sınav süresi başlat` : `⏱ Sayaç: ${fmtClock(timerRemaining())}`;
+}
+
+function renderEssayStatus(a, taskKey, saved) {
+  const t = ESSAY_TASKS[taskKey] || ESSAY_TASKS.free;
+  const n = a.net;
+  const pct = t.min ? Math.min(100, (n / t.min) * 100) : 0;
+  const level = !t.min ? 'free' : n < t.min ? 'short' : t.max && n > t.max + 60 ? 'long' : 'ok';
+  const hint = !t.min ? '' : level === 'short' ? `${t.min - n} kelime daha` : level === 'long' ? 'Uzun: zaman ve hata riski' : 'Hedefe ulaştın ✓';
+  $('#es-status').innerHTML = `
+    <div class="es-count es-${level}">
+      <b>${n}</b><span>${t.min ? ` / ${t.min}` : ''} kelime</span>
+      ${a.copied.count ? `<small title="Sorudan kopyalanmış görünen kelimeler sayılmaz">(${a.words} − ${a.copied.count} kopya)</small>` : ''}
+    </div>
+    ${t.min ? `<div class="es-bar es-${level}"><span style="width:${pct}%"></span></div>` : ''}
+    <div class="es-meta">
+      ${hint ? `<span class="es-hint es-${level}">${hint}</span>` : ''}
+      <span>${a.paragraphs} paragraf · ${a.sentences} cümle</span>
+      <span class="muted">${saved ? '✓ Kaydedildi' : 'Kaydediliyor…'}</span>
+    </div>`;
+  const tips = [];
+  if (a.copied.count) {
+    tips.push(`<div class="es-tip warn"><b>Sorudan kopyalanmış görünen ${a.copied.count} kelime sayılmaz.</b> Soruyu kendi cümlelerinle yeniden ifade et (paraphrase):
+      ${a.copied.phrases.slice(0, 3).map((p) => `<q>${esc(p)}</q>`).join(' ')}</div>`);
+  }
+  if (a.fillers.length) {
+    tips.push(`<div class="es-tip"><b>Dolgu kelimeleri</b> (sayılır ama puana katkı yapmaz): ${a.fillers.map(([f, c]) => `<span class="chip">${esc(f)} ×${c}</span>`).join(' ')}</div>`);
+  }
+  if (a.repeated.length) {
+    tips.push(`<div class="es-tip"><b>Çok tekrar edilenler</b> (eş anlamlılarla çeşitlendir): ${a.repeated.map(([w, c]) => `<span class="chip">${esc(w)} ×${c}</span>`).join(' ')}</div>`);
+  }
+  $('#es-insights').innerHTML = tips.join('');
+}
+
+function leaveEssay() {
+  state.flushEssay?.();
+  state.flushEssay = null;
+}
+
 /* =========================================================== Android güncelleme bildirimi */
 
 const RELEASES_API = 'https://api.github.com/repos/emrebktas/kelime/releases/latest';
@@ -1806,6 +2056,13 @@ function onRemoteChange() {
     if (state.view === 'deck') {
       if (!deckById(state.deckId)) { toast('Bu desteye artık erişimin yok.', 'info'); showHome(); return; }
       if (document.activeElement?.id === 'card-search') loadCards(); else renderDeck();
+    } else if (state.view === 'essays') {
+      showEssays();
+    } else if (state.view === 'essay') {
+      // Yazarken ekranı yenileme; sadece başka cihazda değiştiyse ve şu an yazılmıyorsa
+      if (!store.getEssay(state.essayId)) { toast('Bu yazı başka bir cihazda silindi.', 'info'); showEssays(); return; }
+      const active = document.activeElement;
+      if (!active || !['es-body', 'es-title', 'es-prompt'].includes(active.id)) openEssay(state.essayId);
     } else if (state.view === 'home') {
       showHome();
     } else if (state.view === 'study') {
@@ -1840,9 +2097,10 @@ document.addEventListener('click', (e) => {
     if (e.target.tagName !== 'INPUT') chkCell.querySelector('input')?.click();
     return;
   }
-  const el = e.target.closest('[data-act], [data-deck], [data-card]');
+  const el = e.target.closest('[data-act], [data-deck], [data-card], [data-essay]');
   if (!el || (el.closest('#modal-root') && !el.dataset.act)) return;
   if (el.dataset.deck) return guard(() => openDeck(el.dataset.deck));
+  if (el.dataset.essay) return guard(() => openEssay(el.dataset.essay));
   if (el.dataset.card && !el.dataset.act) {
     const card = state.cards.get(el.dataset.card);
     if (card) cardForm(card, state.deckId, () => { refreshDecks(); renderDeck(); });
@@ -1869,6 +2127,38 @@ document.addEventListener('click', (e) => {
       }
       case 'speech-settings': speechSettingsModal(); break;
       case 'timer': timerModal(); break;
+      case 'essays': showEssays(); break;
+      case 'essay-new': newEssayModal(); break;
+      case 'essay-timer': {
+        const t = ESSAY_TASKS[$('#es-task')?.value] || ESSAY_TASKS.task2;
+        if (timer.status !== 'idle') { timerModal(); break; }
+        timer.planned = t.minutes;
+        timerStart();
+        toast(`${t.minutes} dakikalık sınav süresi başladı. Süre dolunca uyarılacaksın.`, 'success');
+        $('#es-body')?.focus();
+        break;
+      }
+      case 'essay-copy': {
+        await navigator.clipboard.writeText($('#es-body').value);
+        toast('Metin kopyalandı.', 'success', 1500);
+        break;
+      }
+      case 'essay-export': {
+        state.flushEssay?.();
+        const es = store.getEssay(state.essayId);
+        const name = (essayTitle(es).replace(/[^\p{L}\p{N} _-]+/gu, '').trim() || 'essay').slice(0, 60);
+        const parts = [es.title, es.prompt && `[Soru]\n${es.prompt}`, es.body, `— ${es.words} kelime`].filter(Boolean);
+        const text = parts.join('\n\n');
+        await download(`${name}.txt`, text);
+        break;
+      }
+      case 'essay-delete':
+        if (await confirmBox('Bu yazı kalıcı olarak silinecek.', { ok: 'Sil', danger: true })) {
+          state.flushEssay = null;
+          store.deleteEssay(state.essayId);
+          showEssays();
+        }
+        break;
       case 'edit-deck': deckForm(deck); break;
       case 'share': await shareModal(deck); break;
       case 'history': await historyModal(deck); break;
@@ -1968,6 +2258,14 @@ document.addEventListener('keydown', (e) => {
     } else if (e.key === 'Escape') {
       backToDeck();
     }
+  } else if (state.view === 'essay') {
+    if (e.ctrlKey && key === 's') { e.preventDefault(); state.flushEssay?.(); toast('Kaydedildi.', 'success', 1200); return; }
+    if (e.key === 'Escape') {
+      if (typing) document.activeElement.blur();
+      else showEssays();
+    }
+  } else if (state.view === 'essays') {
+    if (e.key === 'Escape' && !typing) showHome();
   } else if (state.view === 'deck') {
     if (e.ctrlKey && key === 'f') { e.preventDefault(); $('#card-search')?.focus(); $('#card-search')?.select(); return; }
     if (typing) {
@@ -2027,7 +2325,11 @@ async function init() {
   // Sayaç: uygulama kapalıyken süre dolduysa şimdi bitir, çalışıyorsa saymaya devam et
   syncTimerTick();
   onTimerTick();
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) onTimerTick(); });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) state.flushEssay?.(); // telefonda uygulama arka plana geçerken yazıyı kaydet
+    else onTimerTick();
+  });
+  addEventListener('pagehide', () => state.flushEssay?.());
   if (NativeApp) {
     // Android geri tuşu: önce pencere/menü kapanır, sonra bir üst ekrana dönülür, en son uygulamadan çıkılır
     NativeApp.addListener('backButton', () => {
