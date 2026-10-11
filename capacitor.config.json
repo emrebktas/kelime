@@ -6,5 +6,11 @@
   "android": {
     "adjustMarginsForEdgeToEdge": "force",
     "backgroundColor": "#14161b"
+  },
+  "plugins": {
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_kelime",
+      "iconColor": "#4f5bd5"
+    }
   }
 }

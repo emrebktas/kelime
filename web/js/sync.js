@@ -220,6 +220,13 @@ async function push() {
     })),
   ), 500);
 
+  await optionalTable(() => pushTable('sessions', store.dirtyRows('sessions'), (part) => client.from('study_sessions').upsert(
+    part.map(({ rec }) => ({
+      id: rec.id, user_id: uid, started_at: rec.started_at, ended_at: rec.ended_at, planned_min: rec.planned_min,
+      actual_sec: rec.actual_sec, device: rec.device || dev, deleted: !!rec.deleted,
+    })),
+  ), 200));
+
   await pushTable('revlog', store.dirtyRows('revlog'), (part) => client.from('revlog').upsert(
     part.map(({ rec }) => ({
       id: rec.id, user_id: uid, card_id: rec.card_id, deck_id: rec.deck_id, time: rec.time, rating: rec.rating,
@@ -228,7 +235,21 @@ async function push() {
   ), 500);
 }
 
-const PULL_TABLES = ['deck_members', 'decks', 'cards', 'card_states', 'revlog'];
+const PULL_TABLES = ['deck_members', 'decks', 'cards', 'card_states', 'revlog', 'study_sessions'];
+const OWN_TABLES = ['card_states', 'revlog', 'study_sessions'];
+
+// Sonradan eklenen tablolar (ör. study_sessions) sunucuda henüz oluşturulmadıysa
+// senkronun geri kalanı bozulmasın: o tablo bu oturumda atlanır, veriler cihazda bekler.
+let missingTables = new Set();
+const isMissingTable = (e) => ['PGRST205', '42P01'].includes(e?.code);
+async function optionalTable(fn, name = 'study_sessions') {
+  if (missingTables.has(name)) return;
+  try { await fn(); } catch (e) {
+    if (!isMissingTable(e)) throw e;
+    missingTables.add(name);
+    console.warn(`Sunucuda ${name} tablosu yok; ilgili SQL çalıştırılınca eşitlenecek.`);
+  }
+}
 const PAGE = 1000;
 const toMs = (ts) => Date.parse(String(ts).replace(/(\.\d{3})\d+/, '$1'));
 
@@ -251,15 +272,19 @@ async function pull() {
   const meta = store.getMeta();
   const firstPull = !meta.cursors.cards;
   for (const table of PULL_TABLES) {
-    const cursor = meta.cursors[table];
-    // 2 dk geriden başla: aynı anda işlenen işlemler kaçmasın (tekrar gelen satırlar zararsız)
-    const since = cursor ? new Date(toMs(cursor) - 120_000).toISOString() : null;
-    const last = await pullAll(table, (q) => {
-      if (since) q = q.gt('updated_at', since);
-      if (table === 'card_states' || table === 'revlog') q = q.eq('user_id', uid);
-      return q;
-    });
-    if (last && (!cursor || toMs(last) > toMs(cursor))) store.setMeta({ cursors: { ...store.getMeta().cursors, [table]: last } });
+    const pullOne = async () => {
+      const cursor = store.getMeta().cursors[table];
+      // 2 dk geriden başla: aynı anda işlenen işlemler kaçmasın (tekrar gelen satırlar zararsız)
+      const since = cursor ? new Date(toMs(cursor) - 120_000).toISOString() : null;
+      const last = await pullAll(table, (q) => {
+        if (since) q = q.gt('updated_at', since);
+        if (OWN_TABLES.includes(table)) q = q.eq('user_id', uid);
+        return q;
+      });
+      if (last && (!cursor || toMs(last) > toMs(cursor))) store.setMeta({ cursors: { ...store.getMeta().cursors, [table]: last } });
+    };
+    if (table === 'study_sessions') await optionalTable(pullOne, table);
+    else await pullOne();
   }
   // Yeni katılınan (ya da yeniden indirilmesi gereken) destelerin tüm içeriği
   for (const deckId of store.decksNeedingFullSync()) {

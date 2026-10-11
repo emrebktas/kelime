@@ -10,6 +10,7 @@ const NativeTTS = plugin('TextToSpeech');
 const NativeApp = plugin('App');
 const NativeFS = plugin('Filesystem');
 const NativeShare = plugin('Share');
+const NativeNotif = plugin('LocalNotifications');
 
 // Başka bir sitenin içine gömülmeyi engelle (tıklama tuzağına karşı)
 if (window.top !== window.self) {
@@ -469,6 +470,7 @@ function showHome() {
           <button class="primary" data-act="new-deck">+ Yeni deste</button>
         </div>
       </div>
+      ${studyTimePanel()}
       ${state.decks.length ? `<div class="tiles">${state.decks.map((d) => `
         <button class="tile" data-deck="${d.id}">
           <span class="t-name">${esc(d.name)}</span>
@@ -1410,6 +1412,315 @@ function backToDeck() {
   openDeck(state.deckId);
 }
 
+/* =========================================================== çalışma sayacı */
+
+// Sayacın durumu cihazda tutulur; uygulama kapanıp açılsa da kaldığı yerden devam eder.
+// Duvar saatine göre hesaplandığı için arka planda geçen süre de sayılır.
+const TIMER_KEY = 'kelime.timer';
+const TIMER_NOTIF_ID = 4242;
+const TIMER_PRESETS = [15, 25, 45, 60, 90];
+const timer = (() => {
+  const base = { status: 'idle', planned: 25, startedAt: 0, runStart: 0, elapsed: 0 };
+  try { return { ...base, ...JSON.parse(localStorage.getItem(TIMER_KEY)) }; } catch { return base; }
+})();
+const saveTimer = () => { try { localStorage.setItem(TIMER_KEY, JSON.stringify(timer)); } catch { /* yok say */ } };
+const timerElapsed = () => timer.elapsed + (timer.status === 'running' ? Date.now() - timer.runStart : 0);
+const timerRemaining = () => Math.max(0, timer.planned * 60_000 - timerElapsed());
+const liveSec = () => (timer.status === 'idle' ? 0 : Math.floor(timerElapsed() / 1000));
+
+function fmtClock(ms) {
+  const s = Math.ceil(ms / 1000);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = String(s % 60).padStart(2, '0');
+  return h ? `${h}:${String(m).padStart(2, '0')}:${sec}` : `${String(m).padStart(2, '0')}:${sec}`;
+}
+function fmtDur(sec) {
+  const m = Math.floor(sec / 60);
+  if (m < 1) return sec > 0 ? '<1 dk' : '0 dk';
+  const h = Math.floor(m / 60);
+  return h ? `${h} sa${m % 60 ? ` ${m % 60} dk` : ''}` : `${m} dk`;
+}
+
+let timerTick = null;
+function syncTimerTick() {
+  clearInterval(timerTick);
+  timerTick = timer.status === 'running' ? setInterval(onTimerTick, 1000) : null;
+}
+function onTimerTick() {
+  if (timer.status === 'running' && timerRemaining() <= 0) { timerFinish(true); return; }
+  renderTimer();
+}
+
+function timerStart() {
+  if (timer.status === 'idle') { timer.startedAt = Date.now(); timer.elapsed = 0; }
+  timer.status = 'running';
+  timer.runStart = Date.now();
+  saveTimer();
+  syncTimerTick();
+  scheduleTimerAlert();
+  renderTimer();
+}
+
+function timerPause() {
+  if (timer.status !== 'running') return;
+  timer.elapsed = timerElapsed();
+  timer.status = 'paused';
+  saveTimer();
+  syncTimerTick();
+  cancelTimerAlert();
+  renderTimer();
+}
+
+function timerReset() {
+  Object.assign(timer, { status: 'idle', startedAt: 0, runStart: 0, elapsed: 0 });
+  saveTimer();
+  syncTimerTick();
+  cancelTimerAlert();
+}
+
+/** Oturumu bitirir ve kaydeder. completed: süre doldu (erken bitirme değil). */
+function timerFinish(completed) {
+  if (timer.status === 'idle') return;
+  const plannedMs = timer.planned * 60_000;
+  const actualMs = completed ? plannedMs : timerElapsed();
+  // Uygulama kapalıyken dolduysa bitiş anı, gerçek dolma anıdır
+  const endedAt = completed && timer.status === 'running' ? timer.runStart + (plannedMs - timer.elapsed) : Date.now();
+  const planned = timer.planned;
+  const startedAt = timer.startedAt;
+  timerReset();
+  if (actualMs >= 60_000) {
+    store.addSession({ startedAt, endedAt, plannedMin: planned, actualSec: Math.round(actualMs / 1000) });
+  } else if (!completed) {
+    toast('1 dakikadan kısa oturumlar kaydedilmez.', 'info');
+  }
+  renderTimer();
+  refreshStudyTime();
+  if (completed) {
+    timerAlarm();
+    const msg = `${planned} dakikalık çalışma tamamlandı. Bugün toplam ${fmtDur(store.studyStats().today)}.`;
+    if (!isNative && document.hidden && 'Notification' in window && Notification.permission === 'granted') {
+      new Notification('Süre doldu 🎉', { body: msg, icon: 'icons/icon-192.png' });
+    }
+    if (!modalOpen() || $('#tm-display')) {
+      openModal(`
+        <div style="text-align:center;font-size:44px">🎉</div>
+        <h2 style="text-align:center">Süre doldu!</h2>
+        <p class="muted" style="text-align:center">${esc(msg)}</p>
+        <div class="modal-actions">
+          <button type="button" data-close>Tamam</button>
+          <button type="submit" class="primary">Yeniden başlat (${planned} dk)</button>
+        </div>`, { onSubmit: () => { timer.planned = planned; timerStart(); } });
+    } else {
+      toast(`Süre doldu! ${msg}`, 'success', 8000);
+    }
+  } else if (actualMs >= 60_000) {
+    toast(`Oturum kaydedildi: ${fmtDur(Math.round(actualMs / 1000))}.`, 'success');
+  }
+}
+
+// Kısa üç bip + titreşim
+function timerAlarm() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [0, 0.35, 0.7].forEach((t) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.frequency.value = 880;
+      o.connect(g);
+      g.connect(ctx.destination);
+      g.gain.setValueAtTime(0.0001, ctx.currentTime + t);
+      g.gain.exponentialRampToValueAtTime(0.3, ctx.currentTime + t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + t + 0.3);
+      o.start(ctx.currentTime + t);
+      o.stop(ctx.currentTime + t + 0.32);
+    });
+  } catch { /* ses çalınamadı */ }
+  navigator.vibrate?.([250, 120, 250, 120, 250]);
+}
+
+// Android: süre dolunca uygulama kapalı ya da ekran kilitliyken de bildirim gelsin
+async function scheduleTimerAlert() {
+  if (NativeNotif) {
+    try {
+      const perm = await NativeNotif.checkPermissions();
+      if (perm.display !== 'granted' && (await NativeNotif.requestPermissions()).display !== 'granted') return;
+      await NativeNotif.cancel({ notifications: [{ id: TIMER_NOTIF_ID }] }).catch(() => {});
+      await NativeNotif.schedule({
+        notifications: [{
+          id: TIMER_NOTIF_ID,
+          title: 'Süre doldu 🎉',
+          body: `${timer.planned} dakikalık çalışma tamamlandı.`,
+          schedule: { at: new Date(Date.now() + timerRemaining()), allowWhileIdle: true },
+        }],
+      });
+    } catch (e) { console.warn('Bildirim planlanamadı', e); }
+  } else if ('Notification' in window && Notification.permission === 'default') {
+    // Bilgisayarda: sekme arka plandayken süre dolunca sistem bildirimi için izin iste
+    Notification.requestPermission().catch(() => {});
+  }
+}
+function cancelTimerAlert() {
+  NativeNotif?.cancel({ notifications: [{ id: TIMER_NOTIF_ID }] }).catch(() => {});
+}
+
+/** Sol menüdeki sayaç kutusu, mobil üst çubuk göstergesi ve açık sayaç penceresi. */
+function renderTimer() {
+  const stats = store.studyStats(liveSec());
+  const idle = timer.status === 'idle';
+  const left = fmtClock(timerRemaining());
+  const pct = idle ? 0 : Math.min(100, (timerElapsed() / (timer.planned * 60_000)) * 100);
+  const widget = $('#timer-widget');
+  widget.classList.toggle('running', timer.status === 'running');
+  widget.classList.toggle('paused', timer.status === 'paused');
+  widget.innerHTML = idle
+    ? `<span class="tw-icon">⏱</span><span class="tw-main">Çalışma sayacı</span>
+       <span class="tw-sub">Bugün <b>${fmtDur(stats.today)}</b>${stats.streak > 1 ? ` · 🔥 ${stats.streak} gün` : ''}</span>`
+    : `<span class="tw-icon">${timer.status === 'paused' ? '⏸' : '⏱'}</span><span class="tw-main tw-clock">${left}</span>
+       <span class="tw-sub">${timer.status === 'paused' ? 'Duraklatıldı' : `${timer.planned} dk oturum`} · Bugün <b>${fmtDur(stats.today)}</b></span>
+       <span class="tw-bar"><span style="width:${pct}%"></span></span>`;
+  const chip = $('#timer-chip');
+  chip.textContent = idle ? '⏱' : `${timer.status === 'paused' ? '⏸' : '⏱'} ${left}`;
+  chip.classList.toggle('active', !idle);
+  document.title = timer.status === 'running' ? `${left} · Kelime` : 'Kelime';
+  const home = $('#home-today');
+  if (home) home.textContent = fmtDur(stats.today);
+  if ($('#tm-display')) renderTimerModal(false);
+}
+
+function timerModal() {
+  const form = openModal(`
+    <h2>⏱ Çalışma sayacı</h2>
+    <div class="tm-display" id="tm-display"></div>
+    <div class="tm-progress"><span id="tm-bar"></span></div>
+    <div id="tm-setup">
+      <label>Süre <small><b id="tm-min">${timer.planned}</b> dakika</small>
+        <input type="range" id="tm-range" min="1" max="180" step="1" value="${timer.planned}"></label>
+      <div class="tm-presets">${TIMER_PRESETS.map((m) => `<button type="button" data-tm-preset="${m}">${m} dk</button>`).join('')}
+        <input type="number" id="tm-number" min="1" max="180" inputmode="numeric" value="${timer.planned}" title="Dakika (1-180)"></div>
+    </div>
+    <div class="tm-actions" id="tm-actions"></div>
+    <div class="tm-summary" id="tm-summary"></div>
+    <h3 class="tm-h">Geçmiş</h3>
+    <div class="tm-history" id="tm-history"></div>
+    <div class="modal-actions"><button type="button" data-close>Kapat</button></div>`, { wide: true });
+
+  const setPlanned = (m) => {
+    timer.planned = Math.min(180, Math.max(1, Math.round(Number(m) || 1)));
+    saveTimer();
+    $('#tm-range', form).value = timer.planned;
+    $('#tm-number', form).value = timer.planned;
+    $('#tm-min', form).textContent = timer.planned;
+    renderTimerModal(false);
+  };
+  $('#tm-range', form).addEventListener('input', (e) => setPlanned(e.target.value));
+  $('#tm-number', form).addEventListener('change', (e) => setPlanned(e.target.value));
+  form.addEventListener('click', (e) => {
+    const preset = e.target.closest('[data-tm-preset]')?.dataset.tmPreset;
+    if (preset) return setPlanned(preset);
+    const act = e.target.closest('[data-tm]')?.dataset.tm;
+    if (act === 'start' || act === 'resume') timerStart();
+    else if (act === 'pause') timerPause();
+    else if (act === 'finish') timerFinish(false);
+    else if (act === 'cancel') {
+      confirmBox('Bu oturum kaydedilmeden iptal edilecek.', { ok: 'İptal et', danger: true }).then((yes) => {
+        if (yes) { timerReset(); renderTimer(); }
+        timerModal();
+      });
+      return;
+    } else {
+      const del = e.target.closest('[data-tm-del]')?.dataset.tmDel;
+      if (del) {
+        confirmBox('Bu oturum geçmişten silinecek.', { ok: 'Sil', danger: true }).then((yes) => {
+          if (yes) { store.deleteSession(del); refreshStudyTime(); renderTimer(); }
+          timerModal();
+        });
+      }
+      return;
+    }
+    renderTimerModal(true);
+  });
+  renderTimerModal(true);
+}
+
+/** full: butonları ve geçmişi de yeniden çiz (her saniye sadece saat güncellenir). */
+function renderTimerModal(full) {
+  const idle = timer.status === 'idle';
+  $('#tm-display').textContent = fmtClock(idle ? timer.planned * 60_000 : timerRemaining());
+  $('#tm-display').classList.toggle('paused', timer.status === 'paused');
+  $('#tm-bar').style.width = `${idle ? 0 : Math.min(100, (timerElapsed() / (timer.planned * 60_000)) * 100)}%`;
+  const st = store.studyStats(liveSec());
+  $('#tm-summary').innerHTML = `<span>Bugün <b>${fmtDur(st.today)}</b></span><span>Bu hafta <b>${fmtDur(st.weekTotal)}</b></span>
+    <span>🔥 Seri <b>${st.streak} gün</b></span>`;
+  if (!full) return;
+  $('#tm-setup').classList.toggle('hidden', !idle);
+  $('#tm-actions').innerHTML = idle
+    ? '<button type="button" class="primary big" data-tm="start">▶ Başlat</button>'
+    : `${timer.status === 'running'
+      ? '<button type="button" class="big" data-tm="pause">⏸ Duraklat</button>'
+      : '<button type="button" class="primary big" data-tm="resume">▶ Devam et</button>'}
+       <button type="button" class="big" data-tm="finish" title="Şu ana kadarki süreyi kaydet">✓ Bitir ve kaydet</button>
+       <button type="button" class="danger-ghost" data-tm="cancel">İptal</button>`;
+  renderTimerHistory();
+}
+
+function renderTimerHistory() {
+  const box = $('#tm-history');
+  if (!box) return;
+  const sessions = store.listSessions(30);
+  if (!sessions.length) {
+    box.innerHTML = '<div class="muted" style="font-size:13px">Henüz kayıtlı oturum yok. İlk oturumunu başlat!</div>';
+    return;
+  }
+  const groups = new Map();
+  for (const s of sessions) {
+    const k = store.dayKey(s.started_at * 1000);
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(s);
+  }
+  const time = (sec) => new Date(sec * 1000).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+  box.innerHTML = [...groups.values()].map((list) => {
+    const total = list.reduce((a, s) => a + s.actual_sec, 0);
+    const label = new Date(list[0].started_at * 1000).toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long' });
+    return `<div class="tm-day"><span>${esc(label)}</span><b>${fmtDur(total)}</b></div>
+      ${list.map((s) => `<div class="tm-item">
+        <span>${time(s.started_at)} – ${time(s.ended_at)}</span>
+        <span><b>${fmtDur(s.actual_sec)}</b>${s.actual_sec < s.planned_min * 60 - 30 ? ` <span class="muted">/ ${s.planned_min} dk</span>` : ''}</span>
+        <span class="muted tm-dev">${esc(s.device || '')}</span>
+        <button type="button" class="icon-btn small" data-tm-del="${s.id}" title="Sil">✕</button>
+      </div>`).join('')}`;
+  }).join('');
+}
+
+/** Ana sayfadaki "Bugün çalıştın" kutusu. */
+function studyTimePanel() {
+  const st = store.studyStats(liveSec());
+  const max = Math.max(...st.week.map((d) => d.sec), 1);
+  const days = ['Pz', 'Pt', 'Sa', 'Ça', 'Pe', 'Cu', 'Ct'];
+  return `
+    <section class="panel study-time" id="study-time">
+      <div class="st-today">
+        <span class="muted">Bugün çalıştın</span>
+        <b id="home-today">${fmtDur(st.today)}</b>
+        <span class="muted st-meta">${st.streak ? `🔥 ${st.streak} gün üst üste · ` : ''}Bu hafta ${fmtDur(st.weekTotal)}</span>
+        <button class="primary" data-act="timer">${timer.status === 'idle' ? '⏱ Sayacı başlat' : '⏱ Sayacı aç'}</button>
+      </div>
+      <div class="st-week" title="Son 7 gün">
+        ${st.week.map((d) => `<div class="st-day ${d.today ? 'today' : ''}" title="${esc(d.date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' }))}: ${fmtDur(d.sec)}">
+          <span class="st-val">${d.sec >= 60 ? Math.round(d.sec / 60) : ''}</span>
+          <span class="st-bar"><span style="height:${Math.max(d.sec ? 6 : 0, (d.sec / max) * 100)}%"></span></span>
+          <span class="st-lbl">${days[d.date.getDay()]}</span>
+        </div>`).join('')}
+      </div>
+    </section>`;
+}
+
+function refreshStudyTime() {
+  const el = $('#study-time');
+  if (el) el.outerHTML = studyTimePanel();
+  renderTimerHistory();
+}
+
 /* =========================================================== Android güncelleme bildirimi */
 
 const RELEASES_API = 'https://api.github.com/repos/emrebktas/kelime/releases/latest';
@@ -1473,6 +1784,8 @@ function onRemoteChange() {
   clearTimeout(remoteTimer);
   remoteTimer = setTimeout(() => {
     refreshDecks();
+    renderTimer();
+    refreshStudyTime();
     if (modalOpen()) return;
     remoteDirty = false;
     if (state.view === 'deck') {
@@ -1527,6 +1840,7 @@ document.addEventListener('click', (e) => {
         savePrefs(); applyTheme(); break;
       }
       case 'speech-settings': speechSettingsModal(); break;
+      case 'timer': timerModal(); break;
       case 'edit-deck': deckForm(deck); break;
       case 'share': await shareModal(deck); break;
       case 'history': await historyModal(deck); break;
@@ -1677,6 +1991,10 @@ async function init() {
   if (prefs.lastDeck && deckById(prefs.lastDeck)) openDeck(prefs.lastDeck);
   else showHome();
   loadProfile();
+  // Sayaç: uygulama kapalıyken süre dolduysa şimdi bitir, çalışıyorsa saymaya devam et
+  syncTimerTick();
+  onTimerTick();
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) onTimerTick(); });
   if (NativeApp) {
     // Android geri tuşu: önce pencere/menü kapanır, sonra bir üst ekrana dönülür, en son uygulamadan çıkılır
     NativeApp.addListener('backButton', () => {
@@ -1686,7 +2004,7 @@ async function init() {
       else if (state.view === 'deck') showHome();
       else NativeApp.exitApp();
     });
-    NativeApp.addListener('resume', () => { sync.schedule(0); checkForUpdate(); });
+    NativeApp.addListener('resume', () => { sync.schedule(0); checkForUpdate(); onTimerTick(); });
     setTimeout(checkForUpdate, 3000);
   }
   // Android uygulamasında dosyalar zaten pakette; önbellek işçisine gerek yok

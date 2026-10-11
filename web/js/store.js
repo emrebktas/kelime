@@ -4,7 +4,7 @@
 import * as srs from './srs.js';
 
 const DB_NAME = 'kelime';
-const TABLES = ['decks', 'members', 'cards', 'states', 'revlog'];
+const TABLES = ['decks', 'members', 'cards', 'states', 'revlog', 'sessions'];
 const LOCAL_UID = 'local';
 
 const mem = Object.fromEntries(TABLES.map((t) => [t, new Map()]));
@@ -31,8 +31,11 @@ const txDone = (tx) => new Promise((res, rej) => { tx.oncomplete = res; tx.onerr
 
 export async function open() {
   idb = await new Promise((res, rej) => {
-    const r = indexedDB.open(DB_NAME, 1);
-    r.onupgradeneeded = () => { for (const t of [...TABLES, 'meta']) r.result.createObjectStore(t); };
+    // Sürüm 2: çalışma sayacı oturumları (sessions) eklendi; eksik tablolar oluşturulur, veriler korunur
+    const r = indexedDB.open(DB_NAME, 2);
+    r.onupgradeneeded = () => {
+      for (const t of [...TABLES, 'meta']) if (!r.result.objectStoreNames.contains(t)) r.result.createObjectStore(t);
+    };
     r.onsuccess = () => res(r.result);
     r.onerror = () => rej(r.error);
   });
@@ -126,6 +129,7 @@ function adoptLocal(newUid) {
   }
   for (const [key, s] of mem.states) setRec('states', key, { ...s, user_id: newUid });
   for (const [key, r] of mem.revlog) setRec('revlog', key, { ...r, user_id: newUid });
+  for (const [key, s] of mem.sessions) setRec('sessions', key, { ...s, user_id: newUid });
 }
 
 /** Çıkış: cihazdaki tüm veriyi siler. */
@@ -158,7 +162,7 @@ export function markClean(table, rows) {
     if (r && r._rev === rev) {
       r._dirty = false;
       r._server = true;
-      if (table === 'cards' && r.deleted) delRec(table, key);
+      if ((table === 'cards' || table === 'sessions') && r.deleted) delRec(table, key);
       else persist(table, key, r);
     }
   }
@@ -195,6 +199,13 @@ export function applyRemote(table, rows) {
       if (r.user_id !== meta.uid || mem.states.get(r.card_id)?._dirty) continue;
       setRec('states', r.card_id, { user_id: r.user_id, card_id: r.card_id, deck_id: r.deck_id, state: r.state,
         due: Number(r.due), ivl: r.ivl, ease: r.ease, step: r.step, reps: r.reps, lapses: r.lapses, _server: true }, false);
+    } else if (table === 'study_sessions') {
+      if (r.user_id !== meta.uid || mem.sessions.get(r.id)?._dirty) continue;
+      if (r.deleted) delRec('sessions', r.id);
+      else {
+        setRec('sessions', r.id, { id: r.id, user_id: r.user_id, started_at: Number(r.started_at), ended_at: Number(r.ended_at),
+          planned_min: r.planned_min, actual_sec: r.actual_sec, device: r.device, deleted: false, _server: true }, false);
+      }
     } else if (table === 'revlog') {
       if (r.user_id !== meta.uid || mem.revlog.get(r.id)?._dirty) continue;
       setRec('revlog', r.id, { id: r.id, user_id: r.user_id, card_id: r.card_id, deck_id: r.deck_id, time: Number(r.time),
@@ -723,4 +734,81 @@ export function undo(deckId) {
   const c = mem.cards.get(cardId);
   if (!c || c.deleted || c.deck_id !== deckId) return nextCard(deckId);
   return payload(deckId, c);
+}
+
+/* ------------------------------------------------------------------ çalışma sayacı */
+
+const clampInt = (n, lo, hi) => Math.min(hi, Math.max(lo, Math.round(Number(n) || 0)));
+
+/** Tamamlanan bir sayaç oturumunu kaydeder (zamanlar milisaniye). */
+export function addSession({ startedAt, endedAt, plannedMin, actualSec }) {
+  const id = uuid();
+  const rec = {
+    id, user_id: meta.uid,
+    started_at: Math.floor(startedAt / 1000), ended_at: Math.floor(endedAt / 1000),
+    planned_min: clampInt(plannedMin, 1, 180), actual_sec: clampInt(actualSec, 0, 86400),
+    device: meta.device, deleted: false,
+  };
+  setRec('sessions', id, rec);
+  return rec;
+}
+
+export function deleteSession(id) {
+  const s = mem.sessions.get(id);
+  if (s) setRec('sessions', id, { ...s, deleted: true });
+}
+
+/** Son `days` günün oturumları, yeniden eskiye. */
+export function listSessions(days = 30) {
+  const since = Math.floor(startOfDay(new Date()).getTime() / 1000) - (days - 1) * 86400;
+  return [...mem.sessions.values()]
+    .filter((s) => !s.deleted && s.started_at >= since)
+    .sort((a, b) => b.started_at - a.started_at);
+}
+
+function startOfDay(d) {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x;
+}
+export const dayKey = (date) => {
+  const d = new Date(date);
+  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+};
+
+/**
+ * Çalışma süresi özeti. `liveSec`: şu an çalışan sayacın süresi (bugüne canlı eklenir).
+ * Oturum, başladığı güne sayılır.
+ */
+export function studyStats(liveSec = 0) {
+  const byDay = new Map();
+  for (const s of mem.sessions.values()) {
+    if (s.deleted) continue;
+    const k = dayKey(s.started_at * 1000);
+    byDay.set(k, (byDay.get(k) || 0) + s.actual_sec);
+  }
+  const today = startOfDay(new Date());
+  const todayKey = dayKey(today);
+  byDay.set(todayKey, (byDay.get(todayKey) || 0) + liveSec);
+
+  const week = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    week.push({ date: d, sec: byDay.get(dayKey(d)) || 0, today: i === 0 });
+  }
+  // Seri: bugünden (bugün henüz çalışılmadıysa dünden) geriye, en az 1 dk çalışılan ardışık günler
+  let streak = 0;
+  const d = new Date(today);
+  if ((byDay.get(todayKey) || 0) < 60) d.setDate(d.getDate() - 1);
+  while ((byDay.get(dayKey(d)) || 0) >= 60) {
+    streak++;
+    d.setDate(d.getDate() - 1);
+  }
+  return {
+    today: byDay.get(todayKey) || 0,
+    week,
+    weekTotal: week.reduce((a, x) => a + x.sec, 0),
+    streak,
+  };
 }
