@@ -637,17 +637,91 @@ textarea.autogrow { resize: none; overflow-y: auto; min-height: 0; }
 .es-hint.es-short { color: var(--hard); font-weight: 600; }
 .es-hint.es-ok { color: var(--good); font-weight: 600; }
 .es-hint.es-long { color: var(--easy); font-weight: 600; }
-.es-body {
-  min-height: 55vh; font: 16px/1.75 Georgia, "Times New Roman", serif; padding: 18px 20px;
-  background: var(--panel); border-radius: var(--radius); resize: vertical;
+/* Yazı alanı + arkasındaki vurgu katmanı birebir aynı metin düzenine sahip olmalı */
+.es-editor { position: relative; background: var(--panel); border-radius: var(--radius); }
+.es-text {
+  font: 16px/1.75 Georgia, "Times New Roman", serif; padding: 18px 20px; margin: 0;
+  border: 1px solid var(--border); border-radius: var(--radius); letter-spacing: normal; word-spacing: normal;
+  white-space: pre-wrap; overflow-wrap: break-word; word-break: normal; tab-size: 4; box-sizing: border-box; width: 100%;
 }
+.es-body {
+  position: relative; z-index: 1; display: block; min-height: 55vh; background: transparent;
+  resize: none; overflow: hidden;
+}
+.es-backdrop {
+  position: absolute; inset: 0; z-index: 0; color: transparent; pointer-events: none; overflow: hidden;
+  border-color: transparent;
+}
+.es-backdrop mark, .lt-ctx mark {
+  background: transparent; color: inherit; padding: 0; border-radius: 0;
+  text-decoration: underline wavy; text-decoration-skip-ink: none; text-underline-offset: 4px; text-decoration-thickness: 1.5px;
+}
+.es-backdrop mark { color: transparent; }
+mark.lt-spelling { text-decoration-color: var(--again); background: color-mix(in srgb, var(--again) 10%, transparent); }
+mark.lt-grammar { text-decoration-color: var(--hard); background: color-mix(in srgb, var(--hard) 10%, transparent); }
+mark.lt-style { text-decoration-color: var(--easy); background: color-mix(in srgb, var(--easy) 8%, transparent); }
+.es-gstate.has { color: var(--hard); font-weight: 600; }
+.es-grammar { margin-top: 12px; }
+.lt-list { display: flex; flex-direction: column; gap: 4px; line-height: 1.5; }
+.lt-item { border-top: 1px solid var(--border); padding: 8px 0 4px; }
+.lt-ctx { background: none; border: none; padding: 0; text-align: left; white-space: normal; font: 14px/1.6 Georgia, serif; color: var(--muted); }
+.lt-ctx:hover { background: none; color: var(--text); }
+.lt-ctx mark { color: var(--text); font-weight: 600; }
+.lt-tag { font: 600 11px/1 system-ui, sans-serif; padding: 2px 6px; border-radius: 4px; margin-right: 6px; color: #fff; }
+.lt-tag.lt-spelling { background: var(--again); }
+.lt-tag.lt-grammar { background: var(--hard); }
+.lt-tag.lt-style { background: var(--easy); }
+.lt-msg { font-size: 13px; margin: 2px 0 6px; }
+.lt-acts { display: flex; gap: 6px; flex-wrap: wrap; }
+.lt-fix { padding: 3px 10px; font-size: 13px; color: var(--good); border-color: color-mix(in srgb, var(--good) 40%, var(--border)); font-weight: 600; }
+.lt-ign { padding: 3px 8px; font-size: 12.5px; color: var(--muted); }
+.es-toolbar .spacer { flex: 1; }
+
+/* ---------- IELTS analiz raporu ---------- */
+.es-report-wait { margin-top: 14px; font-size: 14px; animation: pulse 1.6s infinite; }
+.es-report { margin-top: 16px; display: flex; flex-direction: column; gap: 16px; }
+.rp-head { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+.rp-band {
+  width: 92px; height: 92px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--accent), #b14cf0); color: #fff; flex: none; box-shadow: var(--shadow);
+}
+.rp-band b { font-size: 32px; line-height: 1; }
+.rp-band span { font-size: 12px; opacity: .85; }
+.rp-title { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; }
+.rp-title h3 { font-size: 18px; }
+.rp-stale { color: var(--hard); font-weight: 600; }
+.rp-criteria { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.rp-crit { background: var(--bg); border-radius: 10px; padding: 12px 14px; }
+.rp-crit-head { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; font-size: 13.5px; }
+.rp-score { font-size: 20px; color: var(--accent); }
+.rp-crit p { margin: 8px 0 0; font-size: 13.5px; line-height: 1.55; }
+.rp-bar { display: block; height: 6px; background: var(--hover); border-radius: 6px; overflow: hidden; margin-top: 6px; }
+.rp-bar span { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), #b14cf0); }
+.rp-summary { margin: 0; font-size: 14.5px; line-height: 1.6; }
+.rp-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.rp-block h4 { margin: 0 0 6px; font-size: 14px; }
+.rp-block ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; font-size: 13.5px; line-height: 1.5; }
+.rp-errors { display: flex; flex-direction: column; gap: 6px; }
+.rp-err {
+  display: flex; flex-direction: column; gap: 3px; text-align: left; white-space: normal; padding: 9px 12px;
+  background: var(--bg); border: 1px solid var(--border); border-radius: 10px; font-size: 14px;
+}
+.rp-err:hover { border-color: var(--accent); background: var(--bg); }
+.rp-err del, .rp-example del { color: var(--again); }
+.rp-err ins, .rp-example ins { color: var(--good); text-decoration: none; font-weight: 600; }
+.rp-err small { color: var(--muted); font-size: 12.5px; }
+.rp-etype { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.rp-example { display: flex; flex-direction: column; gap: 6px; background: var(--bg); border-radius: 10px; padding: 10px 12px; font: 15px/1.6 Georgia, serif; }
 .es-insights { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
 .es-tip { font-size: 13px; background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; line-height: 1.9; }
 .es-tip.warn { border-color: color-mix(in srgb, var(--hard) 50%, var(--border)); }
 .es-tip q { font-style: italic; color: var(--muted); margin-right: 6px; }
 .es-tip .chip { font-size: 12px; padding: 1px 8px; }
 @media (max-width: 760px) {
-  .es-body { min-height: 50vh; padding: 14px; font-size: 15.5px; }
+  .es-text { padding: 14px; font-size: 15.5px; }
+  .es-body { min-height: 50vh; }
+  .rp-band { width: 76px; height: 76px; }
+  .rp-band b { font-size: 26px; }
   .es-count b { font-size: 24px; }
   .essay-page .deck-head > .primary { padding: 7px 10px; }
 }

@@ -107,53 +107,69 @@ Deno.serve(async (req) => {
   const { data: userData, error: authError } = await admin.auth.getUser(token);
   const user = userData?.user;
   if (authError || !user) return reply({ error: 'Bu özellik için giriş yapman gerekiyor.' }, 401);
+  const userId = user.id;
 
-  let body: { words?: unknown; language?: unknown };
+  let body: Record<string, unknown>;
   try { body = await req.json(); } catch { return reply({ error: 'Geçersiz istek.' }, 400); }
+
+  // Kişi başı günlük sınır (NVIDIA kotasını korur). Birim: kelime kartı = 1, essay analizi = ESSAY_COST.
+  const useQuota = async (units: number): Promise<Response | null> => {
+    const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+    const { data: usage, error } = await admin.from('ai_usage').select('words').eq('user_id', userId).gte('at', since);
+    if (error) return reply({ error: 'Kullanım bilgisi okunamadı.' }, 500);
+    const used = (usage ?? []).reduce((a, r) => a + (r.words as number), 0);
+    if (used + units > DAILY_LIMIT) {
+      return reply({ error: 'Günlük yapay zekâ sınırına ulaştın. Yarın tekrar dene.' }, 429);
+    }
+    await admin.from('ai_usage').insert({ user_id: userId, words: units });
+    return null;
+  };
+
+  // Modeli çağırır; hata durumunda kullanıcıya gösterilecek cevabı döndürür
+  const callModel = async (messages: unknown[], maxTokens: number, timeoutMs: number): Promise<string | Response> => {
+    let res: Response;
+    try {
+      res = await fetch(NVIDIA_URL, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: MODEL,
+          temperature: 0.2,
+          max_tokens: maxTokens,
+          reasoning_effort: 'low', // uzun "düşünme" aşamasını kapatır: cevap birkaç kat hızlı gelir
+          messages,
+        }),
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+    } catch {
+      return reply({ error: 'Yapay zekâ servisi zamanında cevap vermedi. Tekrar dene.' }, 504);
+    }
+    if (!res.ok) {
+      console.error('NVIDIA hata', res.status, await res.text());
+      const msg = res.status === 429 ? 'Yapay zekâ servisi şu an yoğun. Biraz sonra tekrar dene.' : 'Yapay zekâ servisine ulaşılamadı.';
+      return reply({ error: msg }, 502);
+    }
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content ?? '';
+  };
+
+  if (body.action === 'essay') return evaluateEssay(body, useQuota, callModel, reply);
+
   const language = str(body.language, 12).toLowerCase() || 'en';
   const words = [...new Set((Array.isArray(body.words) ? body.words : [])
     .map((w) => str(w, 80)).filter(Boolean))].slice(0, MAX_WORDS);
   if (!words.length) return reply({ error: 'En az bir kelime gir.' }, 400);
-
-  // Kişi başı günlük sınır (NVIDIA kotasını korur)
-  const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
-  const { data: usage, error: usageError } = await admin.from('ai_usage').select('words').eq('user_id', user.id).gte('at', since);
-  if (usageError) return reply({ error: 'Kullanım bilgisi okunamadı.' }, 500);
-  const used = (usage ?? []).reduce((a, r) => a + (r.words as number), 0);
-  if (used + words.length > DAILY_LIMIT) {
-    return reply({ error: `Günlük yapay zekâ sınırına ulaştın (${DAILY_LIMIT} kelime). Yarın tekrar dene.` }, 429);
-  }
-  await admin.from('ai_usage').insert({ user_id: user.id, words: words.length });
+  const quota = await useQuota(words.length);
+  if (quota) return quota;
 
   const langName = LANG_NAMES[language] ?? language;
-  let res: Response;
+  const out = await callModel([
+    { role: 'system', content: SYSTEM_PROMPT },
+    { role: 'user', content: `Öğrenilen dil: ${langName}\nKelimeler:\n${words.map((w) => `- ${w}`).join('\n')}` },
+  ], 250 * words.length + 200, 110_000);
+  if (out instanceof Response) return out;
   try {
-    res = await fetch(NVIDIA_URL, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: MODEL,
-        temperature: 0.2,
-        max_tokens: 250 * words.length + 200,
-        reasoning_effort: 'low', // uzun "düşünme" aşamasını kapatır: cevap birkaç kat hızlı gelir
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: `Öğrenilen dil: ${langName}\nKelimeler:\n${words.map((w) => `- ${w}`).join('\n')}` },
-        ],
-      }),
-      signal: AbortSignal.timeout(110_000),
-    });
-  } catch {
-    return reply({ error: 'Yapay zekâ servisi zamanında cevap vermedi. Tekrar dene.' }, 504);
-  }
-  if (!res.ok) {
-    console.error('NVIDIA hata', res.status, await res.text());
-    const msg = res.status === 429 ? 'Yapay zekâ servisi şu an yoğun. Biraz sonra tekrar dene.' : 'Yapay zekâ servisine ulaşılamadı.';
-    return reply({ error: msg }, 502);
-  }
-  try {
-    const data = await res.json();
-    const cards = parseModelJson(data.choices?.[0]?.message?.content ?? '')
+    const cards = parseModelJson(out)
       .map((c) => cleanCard(c ?? {}))
       .filter((c): c is NonNullable<typeof c> => !!c);
     return reply({ cards });
@@ -162,3 +178,113 @@ Deno.serve(async (req) => {
     return reply({ error: 'Yapay zekâ anlaşılır bir cevap vermedi. Tekrar dene.' }, 502);
   }
 });
+
+/* ------------------------------------------------------------------ IELTS essay değerlendirmesi */
+
+const ESSAY_COST = 25; // günlük sınırdan düşülen birim
+const ESSAY_TASKS: Record<string, { label: string; min: number; criterion: string }> = {
+  task2: { label: 'IELTS Writing Task 2 (essay)', min: 250, criterion: 'Task Response' },
+  task1: { label: 'IELTS Academic Writing Task 1 (rapor)', min: 150, criterion: 'Task Achievement' },
+  gt1: { label: 'IELTS General Training Writing Task 1 (mektup)', min: 150, criterion: 'Task Achievement' },
+  free: { label: 'Serbest yazı (IELTS Task 2 ölçütleriyle)', min: 0, criterion: 'Task Response' },
+};
+
+const ESSAY_PROMPT = `Sen deneyimli, resmi IELTS Writing band tanımlayıcılarını (public band descriptors) çok iyi bilen bir sınav değerlendiricisisin.
+Verilen yazıyı gerçek bir IELTS sınavındaki gibi değerlendir: ne cömert ne aşırı sert, dürüst ve tutarlı ol.
+
+Sadece geçerli JSON döndür, açıklama ya da kod bloğu ekleme:
+{
+  "criteria": {
+    "task": {"band": 6.5, "comment": "..."},
+    "coherence": {"band": 6, "comment": "..."},
+    "lexical": {"band": 6, "comment": "..."},
+    "grammar": {"band": 5.5, "comment": "..."}
+  },
+  "summary": "2-3 cümlelik genel değerlendirme",
+  "strengths": ["..."],
+  "improvements": ["en önemli 3-5 somut öneri"],
+  "errors": [{"original": "...", "correction": "...", "type": "grammar", "explanation": "..."}],
+  "band9_tips": ["..."],
+  "improved_sentence": {"original": "...", "improved": "..."}
+}
+
+Kurallar:
+- Bantlar 0-9 arası, yarım puan adımlı. "task" ölçütü Task 2'de Task Response, Task 1'de Task Achievement'tır.
+- Yorumlarda band tanımlayıcılarına somut atıf yap (ör. "pozisyon net ama fikirler yeterince geliştirilmemiş").
+- Kelime sayısı alt sınırın altındaysa task puanını buna göre düşür ve bunu belirt.
+- errors: yazıdaki gerçek hatalar (en fazla 15, en önemlileri önce). "original" yazıdan BİREBİR alıntı olsun; type: grammar, vocabulary, spelling, punctuation ya da style.
+- band9_tips: bu yazıyı daha yüksek banda taşıyacak 2-4 somut ipucu.
+- improved_sentence: yazıdaki zayıf bir cümleyi Band 8-9 seviyesinde yeniden yaz.
+- Tüm yorumları, açıklamaları ve önerileri TÜRKÇE yaz; düzeltmeler, alıntılar ve örnek cümleler İngilizce kalsın.`;
+
+const band = (v: unknown) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? Math.min(9, Math.max(0, Math.round(n * 2) / 2)) : null;
+};
+const strList = (v: unknown, max: number, len: number) =>
+  (Array.isArray(v) ? v : []).map((s) => str(s, len)).filter(Boolean).slice(0, max);
+
+async function evaluateEssay(
+  body: Record<string, unknown>,
+  useQuota: (units: number) => Promise<Response | null>,
+  callModel: (messages: unknown[], maxTokens: number, timeoutMs: number) => Promise<string | Response>,
+  reply: (b: unknown, status?: number) => Response,
+): Promise<Response> {
+  const task = ESSAY_TASKS[String(body.task)] ?? ESSAY_TASKS.task2;
+  const essay = typeof body.body === 'string' ? body.body.trim().slice(0, 15000) : '';
+  const prompt = typeof body.prompt === 'string' ? body.prompt.trim().slice(0, 3000) : '';
+  const count = essay.split(/\s+/).filter((t) => /[\p{L}\p{N}]/u.test(t)).length;
+  if (count < 30) return reply({ error: 'Analiz için en az 30 kelimelik bir yazı gerekli.' }, 400);
+  const quota = await useQuota(ESSAY_COST);
+  if (quota) return quota;
+
+  const out = await callModel([
+    { role: 'system', content: ESSAY_PROMPT },
+    {
+      role: 'user',
+      content: `Görev türü: ${task.label}${task.min ? ` · alt sınır ${task.min} kelime` : ''}\nKelime sayısı: ${count}\n\n`
+        + `SORU:\n${prompt || '(soru verilmedi; yazının konusundan çıkar)'}\n\nYAZI:\n${essay}`,
+    },
+  ], 4000, 140_000);
+  if (out instanceof Response) return out;
+
+  try {
+    const m = out.match(/\{[\s\S]*\}/);
+    if (!m) throw new Error('JSON yok');
+    const raw = JSON.parse(m[0]);
+    const criteria: Record<string, { band: number; comment: string }> = {};
+    for (const k of ['task', 'coherence', 'lexical', 'grammar']) {
+      const c = raw.criteria?.[k] ?? {};
+      const b = band(c.band);
+      if (b === null) throw new Error(`${k} bandı yok`);
+      criteria[k] = { band: b, comment: str(c.comment, 800) };
+    }
+    // IELTS gibi: dört ölçütün ortalaması, en yakın yarım banda yuvarlanır (x.25 → x.5, x.75 → x+1)
+    const avg = Object.values(criteria).reduce((a, c) => a + c.band, 0) / 4;
+    const errors = (Array.isArray(raw.errors) ? raw.errors : []).slice(0, 20).map((e: Record<string, unknown>) => ({
+      original: str(e?.original, 300),
+      correction: str(e?.correction, 300),
+      type: ['grammar', 'vocabulary', 'spelling', 'punctuation', 'style'].includes(String(e?.type)) ? String(e.type) : 'grammar',
+      explanation: str(e?.explanation, 400),
+    })).filter((e: { original: string; correction: string }) => e.original && e.correction);
+    const report = {
+      overall: Math.round(avg * 2) / 2,
+      criterion_name: task.criterion,
+      criteria,
+      summary: str(raw.summary, 1000),
+      strengths: strList(raw.strengths, 6, 400),
+      improvements: strList(raw.improvements, 6, 400),
+      errors,
+      band9_tips: strList(raw.band9_tips, 5, 400),
+      improved_sentence: raw.improved_sentence?.original && raw.improved_sentence?.improved
+        ? { original: str(raw.improved_sentence.original, 500), improved: str(raw.improved_sentence.improved, 600) }
+        : null,
+      words: count,
+      model: MODEL,
+    };
+    return reply({ report });
+  } catch (e) {
+    console.error('Essay değerlendirmesi çözülemedi', e, out.slice(0, 500));
+    return reply({ error: 'Yapay zekâ anlaşılır bir değerlendirme vermedi. Tekrar dene.' }, 502);
+  }
+}

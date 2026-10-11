@@ -205,7 +205,8 @@ export function applyRemote(table, rows) {
       if (r.deleted) delRec('essays', r.id);
       else {
         setRec('essays', r.id, { id: r.id, user_id: r.user_id, title: r.title, task: r.task, prompt: r.prompt, body: r.body,
-          words: r.words, created_at: Number(r.created_at), edited_at: Number(r.edited_at), deleted: false, _server: true }, false);
+          words: r.words, created_at: Number(r.created_at), edited_at: Number(r.edited_at), deleted: false,
+          report: r.report ?? null, report_at: r.report_at ? Number(r.report_at) : null, _server: true }, false);
       }
     } else if (table === 'study_sessions') {
       if (r.user_id !== meta.uid || mem.sessions.get(r.id)?._dirty) continue;
@@ -861,4 +862,13 @@ export function saveEssay(id, patch) {
 export function deleteEssay(id) {
   const e = mem.essays.get(id);
   if (e) setRec('essays', id, { ...e, deleted: true });
+}
+
+/** Yapay zekâ IELTS analiz raporunu yazıyla birlikte saklar. */
+export function saveEssayReport(id, report) {
+  const e = getEssay(id);
+  if (!e) throw new Error('Yazı bulunamadı.');
+  const rec = { ...e, report, report_at: Math.floor(Date.now() / 1000) };
+  setRec('essays', id, rec);
+  return rec;
 }

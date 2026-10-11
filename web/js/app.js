@@ -1895,16 +1895,24 @@ function openEssay(id) {
       <div class="es-toolbar">
         <select id="es-task">${Object.entries(ESSAY_TASKS).map(([k, t]) => `<option value="${k}" ${k === e.task ? 'selected' : ''}>${esc(t.label)}</option>`).join('')}</select>
         <button type="button" data-act="essay-timer" id="es-timer-btn"></button>
-        <label class="radio es-check"><input type="checkbox" id="es-spell" ${prefs.essaySpell ? 'checked' : ''}> Yazım denetimi</label>
+        <label class="radio es-check" title="Tarayıcının kırmızı yazım altı çizgisi (sınavda yoktur)"><input type="checkbox" id="es-spell" ${prefs.essaySpell ? 'checked' : ''}> Yazım denetimi</label>
+        <label class="radio es-check" title="Yazarken dilbilgisi ve yazım hatalarını işaretler (LanguageTool)"><input type="checkbox" id="es-grammar-on" ${prefs.essayGrammar !== false ? 'checked' : ''}> Canlı dilbilgisi</label>
+        <span class="spacer"></span>
+        <button type="button" class="ai-btn" data-act="essay-report" id="es-report-btn">🎓 IELTS analizi</button>
       </div>
       <details class="es-prompt" ${e.prompt ? 'open' : ''}>
         <summary>Soru / görev metni <small class="muted">isteğe bağlı · kopyalanan kısımlar sayılmaz</small></summary>
         <textarea id="es-prompt" rows="3" maxlength="5000" placeholder="Görev metnini buraya yapıştır…">${esc(e.prompt)}</textarea>
       </details>
       <div class="es-status" id="es-status"></div>
-      <textarea id="es-body" class="es-body" lang="en" spellcheck="${prefs.essaySpell ? 'true' : 'false'}" autocapitalize="sentences"
-        placeholder="Yazmaya başla… Paragraflar arasında bir satır boşluk bırak.">${esc(e.body)}</textarea>
+      <div class="es-editor">
+        <div class="es-backdrop es-text" id="es-backdrop" aria-hidden="true"></div>
+        <textarea id="es-body" class="es-body es-text" lang="en" spellcheck="${prefs.essaySpell ? 'true' : 'false'}" autocapitalize="sentences"
+          placeholder="Yazmaya başla… Paragraflar arasında bir satır boşluk bırak.">${esc(e.body)}</textarea>
+      </div>
+      <div class="es-grammar" id="es-grammar"></div>
       <div class="es-insights" id="es-insights"></div>
+      <div id="es-report"></div>
     </div>`;
 
   const body = $('#es-body');
@@ -1926,6 +1934,14 @@ function openEssay(id) {
     essaySaveTimer = setTimeout(save, 600);
   };
   for (const el of [body, title, prompt]) el.addEventListener('input', changed);
+  body.addEventListener('input', () => { autoGrow(body); renderGrammar(); scheduleGrammar(); });
+  $('#es-grammar-on').addEventListener('change', (ev) => {
+    prefs.essayGrammar = ev.target.checked;
+    savePrefs();
+    grammar.matches = [];
+    renderGrammar();
+    if (ev.target.checked) scheduleGrammar(true);
+  });
   task.addEventListener('change', () => { save(); renderEssayTimerBtn(); });
   title.addEventListener('change', () => setTitle(essayTitle(store.getEssay(id))));
   $('#es-spell').addEventListener('change', (ev) => {
@@ -1939,6 +1955,12 @@ function openEssay(id) {
   state.flushEssay = () => { if (!saved && store.getEssay(id)) save(); };
   renderEssayStatus(analyzeEssay(body.value, prompt.value), task.value, true);
   renderEssayTimerBtn();
+  autoGrow(body);
+  grammar.matches = [];
+  grammar.ignored = new Set();
+  renderGrammar();
+  scheduleGrammar(true);
+  renderEssayReport();
   if (!isMobile()) body.focus();
 }
 
@@ -1965,6 +1987,7 @@ function renderEssayStatus(a, taskKey, saved) {
     <div class="es-meta">
       ${hint ? `<span class="es-hint es-${level}">${hint}</span>` : ''}
       <span>${a.paragraphs} paragraf · ${a.sentences} cümle</span>
+      <span id="es-grammar-state"></span>
       <span class="muted">${saved ? '✓ Kaydedildi' : 'Kaydediliyor…'}</span>
     </div>`;
   const tips = [];
@@ -1979,9 +2002,250 @@ function renderEssayStatus(a, taskKey, saved) {
     tips.push(`<div class="es-tip"><b>Çok tekrar edilenler</b> (eş anlamlılarla çeşitlendir): ${a.repeated.map(([w, c]) => `<span class="chip">${esc(w)} ×${c}</span>`).join(' ')}</div>`);
   }
   $('#es-insights').innerHTML = tips.join('');
+  setGrammarState(grammar.state);
+}
+
+/* ---- canlı dilbilgisi denetimi (LanguageTool) */
+
+const LT_URL = 'https://api.languagetool.org/v2/check';
+const LT_MIN_GAP = 3500; // ücretsiz API: dakikada ~20 istek
+const grammar = { matches: [], ignored: new Set(), timer: null, last: 0, seq: 0, state: '' };
+const grammarOn = () => prefs.essayGrammar !== false;
+
+function autoGrow(el) {
+  el.style.height = 'auto';
+  el.style.height = `${el.scrollHeight + 2}px`;
+}
+
+function scheduleGrammar(now = false) {
+  clearTimeout(grammar.timer);
+  if (!grammarOn() || !$('#es-body')) return;
+  grammar.timer = setTimeout(runGrammar, now ? 0 : 1500);
+}
+
+async function runGrammar() {
+  const body = $('#es-body');
+  if (!body || !grammarOn()) return;
+  const text = body.value;
+  if (!text.trim()) { grammar.matches = []; setGrammarState(''); renderGrammar(); return; }
+  if (!navigator.onLine) { setGrammarState('offline'); return; }
+  if (text.length > 18000) { setGrammarState('long'); return; }
+  const wait = LT_MIN_GAP - (Date.now() - grammar.last);
+  if (wait > 0) { grammar.timer = setTimeout(runGrammar, wait); return; }
+  grammar.last = Date.now();
+  const seq = ++grammar.seq;
+  setGrammarState('checking');
+  try {
+    const res = await fetch(LT_URL, { method: 'POST', body: new URLSearchParams({ text, language: 'en-GB', level: 'default' }) });
+    if (res.status === 429) { setGrammarState('limit'); grammar.timer = setTimeout(runGrammar, 30_000); return; }
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (seq !== grammar.seq || !$('#es-body')) return; // bu arada yeni bir denetim başladı
+    grammar.matches = (data.matches || []).map((m) => ({
+      offset: m.offset, length: m.length, text: text.substr(m.offset, m.length),
+      message: m.message, replacements: (m.replacements || []).slice(0, 3).map((r) => r.value),
+      type: m.rule?.issueType === 'misspelling' ? 'spelling' : ['style', 'typographical', 'whitespace'].includes(m.rule?.issueType) ? 'style' : 'grammar',
+      rule: m.rule?.id || '',
+    })).filter((m) => m.length > 0);
+    setGrammarState('ok');
+  } catch (e) {
+    console.warn('Dilbilgisi denetimi yapılamadı', e);
+    setGrammarState('error');
+  }
+  renderGrammar();
+}
+
+// Metin değiştiyse eski konumlar kayar: sadece hâlâ aynı yerde duran ve yoksayılmayan uyarıları göster
+function liveMatches() {
+  const text = $('#es-body')?.value || '';
+  return grammar.matches.filter((m) => text.substr(m.offset, m.length) === m.text && !grammar.ignored.has(`${m.rule}|${m.text}`));
+}
+
+function setGrammarState(st) {
+  grammar.state = st;
+  const el = $('#es-grammar-state');
+  if (!el) return;
+  const n = liveMatches().length;
+  el.className = `es-gstate ${st === 'ok' && n ? 'has' : ''}`;
+  el.textContent = !grammarOn() ? '' : {
+    checking: 'Dilbilgisi denetleniyor…',
+    ok: n ? `${n} dilbilgisi uyarısı` : 'Dilbilgisi ✓',
+    offline: 'Dilbilgisi: çevrimdışı',
+    limit: 'Dilbilgisi: kısa bir mola (sınır)',
+    error: 'Dilbilgisi denetlenemedi',
+    long: 'Dilbilgisi: metin çok uzun',
+  }[st] || '';
+}
+
+const LT_LABEL = { spelling: 'Yazım', grammar: 'Dilbilgisi', style: 'Üslup' };
+
+function renderGrammar() {
+  const body = $('#es-body');
+  const back = $('#es-backdrop');
+  const panel = $('#es-grammar');
+  if (!body || !back || !panel) return;
+  const text = body.value;
+  const list = grammarOn() ? liveMatches().sort((a, b) => a.offset - b.offset) : [];
+  // Arka katman: metnin şeffaf kopyası, hatalı kısımlar dalgalı çizgiyle
+  let html = '';
+  let pos = 0;
+  for (const m of list) {
+    if (m.offset < pos) continue;
+    html += esc(text.slice(pos, m.offset)) + `<mark class="lt-${m.type}">${esc(m.text)}</mark>`;
+    pos = m.offset + m.length;
+  }
+  back.innerHTML = `${html}${esc(text.slice(pos))}\n`;
+  setGrammarState(grammar.state);
+  panel.innerHTML = list.length ? `
+    <div class="es-tip lt-list"><b>Dilbilgisi ve yazım uyarıları</b>
+      ${list.slice(0, 30).map((m) => {
+        const i = grammar.matches.indexOf(m);
+        const before = text.slice(Math.max(0, m.offset - 30), m.offset);
+        const after = text.slice(m.offset + m.length, m.offset + m.length + 30);
+        return `<div class="lt-item">
+          <button type="button" class="lt-ctx" data-act="lt-goto" data-i="${i}" title="Metinde göster">
+            <span class="lt-tag lt-${m.type}">${LT_LABEL[m.type]}</span>
+            …${esc(before)}<mark class="lt-${m.type}">${esc(m.text)}</mark>${esc(after)}…</button>
+          <div class="lt-msg">${esc(m.message)}</div>
+          <div class="lt-acts">${m.replacements.map((r, k) => `<button type="button" class="lt-fix" data-act="lt-fix" data-i="${i}" data-r="${k}">${esc(r) || '(sil)'}</button>`).join('')}
+            <button type="button" class="ghost lt-ign" data-act="lt-ignore" data-i="${i}">Yoksay</button></div>
+        </div>`;
+      }).join('')}
+    </div>` : '';
+}
+
+function grammarGoto(i) {
+  const m = grammar.matches[i];
+  const body = $('#es-body');
+  if (!m || !body) return;
+  body.focus();
+  body.setSelectionRange(m.offset, m.offset + m.length);
+  // Seçili yeri ekranın ortasına getir (alan kendi kendine büyüdüğü için sayfa kayar)
+  const before = body.value.slice(0, m.offset).split('\n').length;
+  const lineH = parseFloat(getComputedStyle(body).lineHeight) || 28;
+  main.scrollTo({ top: body.offsetTop + before * lineH - main.clientHeight / 2, behavior: 'smooth' });
+}
+
+function grammarFix(i, k) {
+  const m = grammar.matches[i];
+  const body = $('#es-body');
+  if (!m || !body || body.value.substr(m.offset, m.length) !== m.text) return;
+  const rep = m.replacements[k] ?? '';
+  body.setRangeText(rep, m.offset, m.offset + m.length, 'end');
+  // Sonraki uyarıların konumunu kaydır; asıl güncel liste bir sonraki denetimde gelir
+  const delta = rep.length - m.length;
+  grammar.matches = grammar.matches.filter((x) => x !== m).map((x) => (x.offset > m.offset ? { ...x, offset: x.offset + delta } : x));
+  body.dispatchEvent(new Event('input'));
+}
+
+/* ---- IELTS analiz raporu (yapay zekâ) */
+
+const CRITERIA = (taskName) => [
+  ['task', taskName, taskName === 'Task Achievement' ? 'Görevi karşılama' : 'Soruya yanıt'],
+  ['coherence', 'Coherence & Cohesion', 'Tutarlılık ve bağlantı'],
+  ['lexical', 'Lexical Resource', 'Kelime kullanımı'],
+  ['grammar', 'Grammatical Range & Accuracy', 'Dilbilgisi çeşitliliği ve doğruluğu'],
+];
+const ERR_TYPES = { grammar: 'Dilbilgisi', vocabulary: 'Kelime', spelling: 'Yazım', punctuation: 'Noktalama', style: 'Üslup' };
+
+let reportBusy = false;
+async function runEssayReport() {
+  if (reportBusy) return;
+  state.flushEssay?.();
+  const e = store.getEssay(state.essayId);
+  if (!e) return;
+  if (!sync.user()) { toast('IELTS analizi için giriş yapman gerekiyor.', 'info'); return authModal(); }
+  const a = analyzeEssay(e.body, e.prompt);
+  if (a.words < 30) { toast('Analiz için en az 30 kelime yaz.', 'info'); return; }
+  const t = ESSAY_TASKS[e.task] || ESSAY_TASKS.task2;
+  if (t.min && a.net < t.min) {
+    const ok = await confirmBox(`Yazın ${a.net} kelime; ${t.label} için alt sınır ${t.min}. IELTS'te bu, görev puanını düşürür ve analizde de öyle değerlendirilir. Yine de analiz edilsin mi?`, { ok: 'Analiz et', title: 'Kelime sınırının altında' });
+    if (!ok) return;
+  }
+  reportBusy = true;
+  const started = Date.now();
+  const tick = setInterval(() => {
+    const btn = $('#es-report-btn');
+    if (btn) btn.textContent = `🎓 Analiz ediliyor… ${Math.round((Date.now() - started) / 1000)} sn`;
+  }, 1000);
+  const btn = $('#es-report-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '🎓 Analiz ediliyor…'; }
+  const box = $('#es-report');
+  if (box) box.innerHTML = '<div class="panel es-report-wait">🎓 Yazın IELTS ölçütlerine göre değerlendiriliyor. Bu genelde 20-60 saniye sürer; bu sırada yazmaya devam edebilirsin.</div>';
+  try {
+    const report = await sync.aiEssayReport({ task: e.task, prompt: e.prompt, body: e.body });
+    store.saveEssayReport(e.id, report);
+    toast(`Analiz hazır: tahmini Band ${report.overall.toFixed(1)}`, 'success');
+    if (state.view === 'essay' && state.essayId === e.id) {
+      renderEssayReport();
+      $('#es-report')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  } catch (err) {
+    toast(err.message, 'error', 7000);
+    renderEssayReport();
+  } finally {
+    clearInterval(tick);
+    reportBusy = false;
+    const b = $('#es-report-btn');
+    if (b) { b.disabled = false; b.textContent = '🎓 IELTS analizi'; }
+  }
+}
+
+function renderEssayReport() {
+  const box = $('#es-report');
+  const e = store.getEssay(state.essayId);
+  if (!box || !e) return;
+  const r = e.report;
+  if (!r) { box.innerHTML = ''; return; }
+  const changed = (e.edited_at || 0) > (e.report_at || 0);
+  const when = new Date((e.report_at || 0) * 1000).toLocaleString('tr-TR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+  const bandBar = (b) => `<span class="rp-bar"><span style="width:${(b / 9) * 100}%"></span></span>`;
+  const list = (title, items, cls = '') => (items?.length ? `<div class="rp-block ${cls}"><h4>${title}</h4><ul>${items.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>` : '');
+  box.innerHTML = `
+    <section class="panel es-report">
+      <div class="rp-head">
+        <div class="rp-band"><b>${r.overall.toFixed(1)}</b><span>/ 9</span></div>
+        <div class="rp-title">
+          <h3>Tahmini IELTS bandı</h3>
+          <span class="muted">${esc(when)} · ${r.words} kelimeyle · yapay zekâ değerlendirmesidir, resmi puan değildir</span>
+          ${changed ? '<span class="rp-stale">Yazı bu analizden sonra değişti</span>' : ''}
+        </div>
+        <button type="button" data-act="essay-report">↻ Yeniden analiz et</button>
+      </div>
+      <div class="rp-criteria">${CRITERIA(r.criterion_name || 'Task Response').map(([k, en, tr]) => {
+        const c = r.criteria?.[k];
+        return c ? `<div class="rp-crit">
+          <div class="rp-crit-head"><span><b>${esc(en)}</b> <small class="muted">${esc(tr)}</small></span><b class="rp-score">${c.band.toFixed(1)}</b></div>
+          ${bandBar(c.band)}
+          <p>${esc(c.comment)}</p>
+        </div>` : '';
+      }).join('')}</div>
+      ${r.summary ? `<p class="rp-summary">${esc(r.summary)}</p>` : ''}
+      <div class="rp-cols">${list('✅ Güçlü yanlar', r.strengths, 'good')}${list('🔧 Geliştirilecekler', r.improvements, 'warn')}</div>
+      ${r.errors?.length ? `<div class="rp-block"><h4>✏️ Hatalar ve doğruları <small class="muted">(metinde göstermek için tıkla)</small></h4>
+        <div class="rp-errors">${r.errors.map((x) => `
+          <button type="button" class="rp-err" data-act="rp-goto" data-text="${esc(x.original)}">
+            <span class="rp-etype">${esc(ERR_TYPES[x.type] || x.type)}</span>
+            <span><del>${esc(x.original)}</del> → <ins>${esc(x.correction)}</ins></span>
+            ${x.explanation ? `<small>${esc(x.explanation)}</small>` : ''}
+          </button>`).join('')}</div></div>` : ''}
+      ${list('🚀 Daha yüksek band için', r.band9_tips)}
+      ${r.improved_sentence ? `<div class="rp-block"><h4>✨ Örnek: cümleni yükselt</h4>
+        <div class="rp-example"><del>${esc(r.improved_sentence.original)}</del><ins>${esc(r.improved_sentence.improved)}</ins></div></div>` : ''}
+    </section>`;
+}
+
+function reportGoto(text) {
+  const body = $('#es-body');
+  if (!body || !text) return;
+  const i = body.value.indexOf(text);
+  if (i < 0) { toast('Bu ifade metinde artık bulunamadı (düzeltilmiş olabilir).', 'info'); return; }
+  grammarGoto(grammar.matches.push({ offset: i, length: text.length, text, message: '', replacements: [], type: 'grammar', rule: '__goto' }) - 1);
+  grammar.matches.pop();
 }
 
 function leaveEssay() {
+  clearTimeout(grammar.timer);
   state.flushEssay?.();
   state.flushEssay = null;
 }
@@ -2138,6 +2402,16 @@ document.addEventListener('click', (e) => {
         $('#es-body')?.focus();
         break;
       }
+      case 'essay-report': await runEssayReport(); break;
+      case 'lt-goto': grammarGoto(+el.dataset.i); break;
+      case 'lt-fix': grammarFix(+el.dataset.i, +el.dataset.r); break;
+      case 'lt-ignore': {
+        const m = grammar.matches[+el.dataset.i];
+        if (m) grammar.ignored.add(`${m.rule}|${m.text}`);
+        renderGrammar();
+        break;
+      }
+      case 'rp-goto': reportGoto(el.dataset.text); break;
       case 'essay-copy': {
         await navigator.clipboard.writeText($('#es-body').value);
         toast('Metin kopyalandı.', 'success', 1500);

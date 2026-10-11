@@ -227,12 +227,22 @@ async function push() {
     })),
   ), 200), 'study_sessions');
 
-  await optionalTable(() => pushTable('essays', store.dirtyRows('essays'), (part) => client.from('essays').upsert(
-    part.map(({ rec }) => ({
-      id: rec.id, user_id: uid, title: rec.title || '', task: rec.task, prompt: rec.prompt || '', body: rec.body || '',
-      words: rec.words || 0, created_at: rec.created_at, edited_at: rec.edited_at, deleted: !!rec.deleted,
-    })),
-  ), 20), 'essays');
+  // Rapor sütunları sonradan eklendi: sunucuda yoksa (PGRST204) yazılar raporsuz eşitlenir
+  const essayRow = (rec, withReport) => ({
+    id: rec.id, user_id: uid, title: rec.title || '', task: rec.task, prompt: rec.prompt || '', body: rec.body || '',
+    words: rec.words || 0, created_at: rec.created_at, edited_at: rec.edited_at, deleted: !!rec.deleted,
+    ...(withReport ? { report: rec.report ?? null, report_at: rec.report_at ?? null } : {}),
+  });
+  const pushEssays = () => pushTable('essays', store.dirtyRows('essays'),
+    (part) => client.from('essays').upsert(part.map(({ rec }) => essayRow(rec, !noReportColumn))), 20);
+  await optionalTable(async () => {
+    try { await pushEssays(); } catch (e) {
+      if (e?.code !== 'PGRST204' || noReportColumn) throw e;
+      noReportColumn = true;
+      console.warn('Sunucuda essays.report sütunu yok; ilgili SQL çalıştırılınca raporlar da eşitlenecek.');
+      await pushEssays();
+    }
+  }, 'essays');
 
   await pushTable('revlog', store.dirtyRows('revlog'), (part) => client.from('revlog').upsert(
     part.map(({ rec }) => ({
@@ -249,6 +259,7 @@ const OPTIONAL_TABLES = ['study_sessions', 'essays'];
 // Sonradan eklenen tablolar (ör. study_sessions) sunucuda henüz oluşturulmadıysa
 // senkronun geri kalanı bozulmasın: o tablo bu oturumda atlanır, veriler cihazda bekler.
 let missingTables = new Set();
+let noReportColumn = false;
 const isMissingTable = (e) => ['PGRST205', '42P01'].includes(e?.code);
 async function optionalTable(fn, name) {
   if (missingTables.has(name)) return;
@@ -321,6 +332,23 @@ export async function aiCards(words, language) {
     throw new Error(message({ message: msg }));
   }
   return data?.cards || [];
+}
+
+/** Yazıyı IELTS ölçütlerine göre değerlendirir (sunucudaki kelime-ai fonksiyonu). */
+export async function aiEssayReport({ task, prompt, body }) {
+  if (!enabled || !session) throw new Error('Yapay zekâ analizi için giriş yapman gerekiyor.');
+  if (!navigator.onLine) throw new Error('Yapay zekâ analizi için internet bağlantısı gerekiyor.');
+  const timeout = new Promise((_, reject) => setTimeout(
+    () => reject(new Error('Analiz çok uzun sürdü. Biraz sonra tekrar dene.')), 170_000));
+  const { data, error } = await Promise.race([
+    client.functions.invoke('kelime-ai', { body: { action: 'essay', task, prompt, body } }), timeout]);
+  if (error) {
+    let msg = error.message;
+    try { msg = (await error.context?.json?.())?.error || msg; } catch { /* gövde JSON değil */ }
+    throw new Error(message({ message: msg }));
+  }
+  if (!data?.report) throw new Error('Yapay zekâ bir değerlendirme döndürmedi. Sunucu fonksiyonu güncel mi?');
+  return data.report;
 }
 
 /* ------------------------------------------------------------------ paylaşım ve geçmiş */
