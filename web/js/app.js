@@ -554,8 +554,6 @@ function openDeck(id) {
   if (state.deckId !== id) { state.search = ''; state.selected.clear(); }
   state.deckId = id;
   state.view = 'deck';
-  prefs.lastDeck = id;
-  savePrefs();
   document.body.classList.remove('menu-open');
   renderSidebar();
   renderDeck();
@@ -2988,8 +2986,7 @@ async function init() {
   // Önce cihazdaki verilerle hemen aç. Senkron arka planda başlar: oturumun süresi dolmuşken
   // çevrimdışıysak Supabase oturumu yenilemeyi uzun süre dener; arayüz bunu beklememeli.
   refreshDecks();
-  if (prefs.lastDeck && deckById(prefs.lastDeck)) openDeck(prefs.lastDeck);
-  else showHome();
+  showHome(); // açılışta (ve F5'te) her zaman ana sayfa
   sync.init()
     .then(() => { refreshDecks(); renderAccount(); loadProfile(); })
     .catch((e) => console.warn('Senkron başlatılamadı', e));
