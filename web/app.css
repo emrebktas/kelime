@@ -172,7 +172,29 @@ pre.code {
 }
 
 /* ---------- deste sayfası ---------- */
-.deck-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 20px; }
+.deck-head { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 20px; }
+.deck-head .deck-title { flex: 1; min-width: 0; }
+.head-btn { width: 40px; height: 40px; flex: none; border: 1px solid var(--border); background: var(--panel); color: var(--text); }
+.head-btn svg { width: 20px; height: 20px; }
+.head-btn[aria-expanded=true] { background: var(--accent-soft); color: var(--accent); }
+.menu-wrap { position: relative; flex: none; }
+.menu-pop {
+  position: absolute; right: 0; top: calc(100% + 6px); z-index: 30; min-width: 220px;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .25); padding: 6px; display: flex; flex-direction: column;
+  animation: pop .12s ease-out;
+}
+.menu-pop button {
+  display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+  background: transparent; border: none; border-radius: 8px; padding: 9px 10px; font-size: 14px;
+}
+.menu-pop button:hover, .menu-pop button:focus-visible { background: var(--hover); outline: none; }
+.menu-pop button svg { width: 17px; height: 17px; color: var(--muted); flex: none; }
+.menu-pop button.danger { color: var(--danger); background: transparent; }
+.menu-pop button.danger svg { color: var(--danger); }
+.menu-pop button.danger:hover { background: color-mix(in srgb, var(--danger) 12%, transparent); }
+.menu-pop hr { border: none; border-top: 1px solid var(--border); margin: 4px 6px; }
+.menu-pop hr:first-child, .menu-pop hr + hr { display: none; }
 .deck-head h1 { font-size: 26px; word-break: break-word; }
 .deck-head .sub { color: var(--muted); margin-top: 4px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .badge {
@@ -428,7 +450,6 @@ body.dragging #drop-overlay { display: grid; }
   .page { padding: 18px 16px calc(32px + env(safe-area-inset-bottom)); }
   .hero { flex-direction: column; align-items: stretch; }
   .hero h1, .deck-head h1 { font-size: 22px; }
-  .deck-head { flex-direction: column; gap: 10px; }
   .head-actions { justify-content: flex-start; }
   .head-actions button { padding: 6px 10px; font-size: 13px; }
   .study-panel { padding: 16px; gap: 16px; }

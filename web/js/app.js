@@ -49,6 +49,15 @@ const ICON = {
   edit: svg('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>'),
   back: svg('<path d="m15 18-6-6 6-6"/>', 'width="16" height="16" style="vertical-align:-3px"'),
   users: svg('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>', 'class="shared-ic"'),
+  usersMenu: svg('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>'),
+  home: svg('<path d="m3 10 9-7 9 7"/><path d="M5 9v11h5v-6h4v6h5V9"/>'),
+  gear: svg('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>'),
+  sliders: svg('<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>'),
+  history: svg('<path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/>'),
+  upload: svg('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/>'),
+  download: svg('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/>'),
+  trash: svg('<path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/>'),
+  leave: svg('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>'),
 };
 
 const prefs = (() => {
@@ -513,7 +522,8 @@ function renderDeck() {
   main.innerHTML = `
     <div class="page">
       <header class="deck-head">
-        <div>
+        <button class="icon-btn head-btn" data-act="home" title="Ana sayfaya dön (Esc)" aria-label="Ana sayfaya dön">${ICON.home}</button>
+        <div class="deck-title">
           <h1>${esc(d.name)}</h1>
           <div class="sub">
             <span class="badge">${esc(langName(d.language))}</span>
@@ -521,13 +531,18 @@ function renderDeck() {
             <span>${d.total} kart · günde ${d.new_per_day} yeni · ${DIRECTIONS[d.direction] || ''}</span>
           </div>
         </div>
-        <div class="head-actions">
-          ${editable ? '<button data-act="import-into">İçe aktar</button>' : ''}
-          <button data-act="export">Dışa aktar</button>
-          ${sync.enabled ? `<button data-act="share">${d.role === 'owner' ? 'Paylaş' : 'Üyeler'}</button>` : ''}
-          ${signedIn ? '<button data-act="history">Geçmiş</button>' : ''}
-          <button data-act="edit-deck">Ayarlar</button>
-          <button class="danger-ghost" data-act="delete-deck">${d.role === 'owner' ? 'Sil' : 'Ayrıl'}</button>
+        <div class="menu-wrap">
+          <button class="icon-btn head-btn" data-act="deck-menu" title="Deste işlemleri" aria-label="Deste işlemleri" aria-haspopup="menu">${ICON.gear}</button>
+          <div class="menu-pop hidden" id="deck-menu" role="menu">
+            <button role="menuitem" data-act="edit-deck">${ICON.sliders}<span>Deste ayarları</span></button>
+            ${sync.enabled ? `<button role="menuitem" data-act="share">${ICON.usersMenu}<span>${d.role === 'owner' ? 'Paylaş' : 'Üyeler'}</span></button>` : ''}
+            ${signedIn ? `<button role="menuitem" data-act="history">${ICON.history}<span>Değişiklik geçmişi</span></button>` : ''}
+            <hr>
+            ${editable ? `<button role="menuitem" data-act="import-into">${ICON.upload}<span>İçe aktar</span></button>` : ''}
+            <button role="menuitem" data-act="export">${ICON.download}<span>Dışa aktar</span></button>
+            <hr>
+            <button role="menuitem" class="danger" data-act="delete-deck">${d.role === 'owner' ? ICON.trash : ICON.leave}<span>${d.role === 'owner' ? 'Desteyi sil' : 'Desteden ayrıl'}</span></button>
+          </div>
         </div>
       </header>
 
@@ -1807,7 +1822,19 @@ function onRemoteChange() {
 
 /* =========================================================== olaylar */
 
+const deckMenu = () => $('#deck-menu');
+const deckMenuOpen = () => deckMenu() && !deckMenu().classList.contains('hidden');
+function toggleDeckMenu(open) {
+  const m = deckMenu();
+  if (!m) return;
+  m.classList.toggle('hidden', !open);
+  $('[data-act=deck-menu]')?.setAttribute('aria-expanded', String(open));
+  if (open) m.querySelector('button')?.focus({ preventScroll: true });
+}
+
 document.addEventListener('click', (e) => {
+  // Deste menüsü: ⚙ dışında bir yere (ya da bir seçeneğe) tıklanınca kapanır
+  if (deckMenuOpen() && !e.target.closest('[data-act=deck-menu]')) toggleDeckMenu(false);
   const chkCell = e.target.closest('td.chk, th.chk');
   if (chkCell) {
     if (e.target.tagName !== 'INPUT') chkCell.querySelector('input')?.click();
@@ -1827,6 +1854,7 @@ document.addEventListener('click', (e) => {
   guard(async () => {
     switch (act) {
       case 'menu': document.body.classList.toggle('menu-open'); break;
+      case 'deck-menu': toggleDeckMenu(!deckMenuOpen()); break;
       case 'menu-close': break;
       case 'home': showHome(); break;
       case 'new-deck': deckForm(); break;
@@ -1907,6 +1935,10 @@ document.addEventListener('change', (e) => {
 });
 
 document.addEventListener('keydown', (e) => {
+  if (deckMenuOpen()) {
+    if (e.key === 'Escape') { e.preventDefault(); toggleDeckMenu(false); $('[data-act=deck-menu]')?.focus(); }
+    return;
+  }
   if (modalOpen()) {
     if (e.key === 'Escape') { e.preventDefault(); closeModal(); }
     return;
@@ -1942,7 +1974,8 @@ document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') document.activeElement.blur();
       return;
     }
-    if (e.key === 'Enter' && tag !== 'BUTTON') { e.preventDefault(); guard(startStudy); }
+    if (e.key === 'Escape') { e.preventDefault(); showHome(); }
+    else if (e.key === 'Enter' && tag !== 'BUTTON') { e.preventDefault(); guard(startStudy); }
     else if (key === 'n' && !e.ctrlKey && store.canEdit(state.deckId)) {
       e.preventDefault();
       cardForm(null, state.deckId, () => { refreshDecks(); renderDeck(); });
