@@ -2,15 +2,15 @@
   "appId": "io.github.emrebktas.kelime",
   "appName": "Kelime",
   "webDir": "web",
-  "backgroundColor": "#14161b",
+  "backgroundColor": "#1e1b18",
   "android": {
     "adjustMarginsForEdgeToEdge": "force",
-    "backgroundColor": "#14161b"
+    "backgroundColor": "#1e1b18"
   },
   "plugins": {
     "LocalNotifications": {
       "smallIcon": "ic_stat_kelime",
-      "iconColor": "#4f5bd5"
+      "iconColor": "#b65d37"
     }
   }
 }

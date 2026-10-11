@@ -105,7 +105,7 @@ function applyTheme() {
   const mode = prefs.theme || 'system';
   const dark = mode === 'dark' || (mode === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
   document.documentElement.dataset.theme = dark ? 'dark' : 'light';
-  $('meta[name=theme-color]').content = dark ? '#181a20' : '#eceef3';
+  $('meta[name=theme-color]').content = dark ? '#221f1b' : '#ece5d8';
   $('#btn-theme').textContent = { system: '◐ Sistem', light: '☀ Açık', dark: '☾ Koyu' }[mode];
   const vol = Math.round((prefs.volume ?? 1) * 100);
   $('#btn-autospeak').textContent = `${vol === 0 ? '🔇' : prefs.autoSpeak ? '🔊' : '🔈'} Ses %${vol}`;
@@ -2607,11 +2607,14 @@ async function init() {
     refreshDecks();
     if (state.view === 'home') showHome();
   });
-  await sync.init();
+  // Önce cihazdaki verilerle hemen aç. Senkron arka planda başlar: oturumun süresi dolmuşken
+  // çevrimdışıysak Supabase oturumu yenilemeyi uzun süre dener; arayüz bunu beklememeli.
   refreshDecks();
   if (prefs.lastDeck && deckById(prefs.lastDeck)) openDeck(prefs.lastDeck);
   else showHome();
-  loadProfile();
+  sync.init()
+    .then(() => { refreshDecks(); renderAccount(); loadProfile(); })
+    .catch((e) => console.warn('Senkron başlatılamadı', e));
   // Sayaç: uygulama kapalıyken süre dolduysa şimdi bitir, çalışıyorsa saymaya devam et
   syncTimerTick();
   onTimerTick();
