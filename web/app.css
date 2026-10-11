@@ -615,9 +615,29 @@ textarea.autogrow { resize: none; overflow-y: auto; min-height: 0; }
 .es-toolbar select { width: auto; }
 .es-check { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); cursor: pointer; }
 .es-check input { width: auto; }
-.es-prompt { margin-bottom: 10px; }
-.es-prompt summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--muted); padding: 4px 0; }
-.es-prompt textarea { margin-top: 6px; font-size: 14px; }
+.es-prompt-box {
+  margin-bottom: 12px; background: var(--panel); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+  border-radius: 10px; padding: 8px 14px 12px;
+}
+.es-prompt-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.es-prompt-head .spacer { flex: 1; }
+.es-prompt-title { background: none; border: none; padding: 4px 0; font-weight: 650; font-size: 13.5px; color: var(--text); }
+.es-prompt-title:hover { background: none; color: var(--accent); }
+.es-prompt-title .chev { display: inline-block; transition: transform .15s; color: var(--muted); }
+.es-prompt-box.collapsed .chev { transform: rotate(-90deg); }
+.es-prompt-head small { font-size: 11.5px; }
+.es-prompt-btn { padding: 4px 12px; font-size: 12.5px; }
+.es-prompt-box .pa-done, .es-prompt-box.editing .pa-edit, .es-prompt-box.collapsed .pa-edit { display: none; }
+.es-prompt-box.editing .pa-done { display: inline-block; }
+.es-prompt-view {
+  font: 15px/1.7 "Segoe UI Variable Text", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif; color: var(--text); margin-top: 6px; cursor: text;
+}
+.es-prompt-view p { margin: 0 0 8px; }
+.es-prompt-view p:last-child { margin-bottom: 0; }
+.es-prompt-input { display: none; margin-top: 6px; font: 15px/1.6 "Segoe UI Variable Text", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif; resize: none; overflow: hidden; }
+.es-prompt-box.editing .es-prompt-input { display: block; }
+.es-prompt-box.editing .es-prompt-view, .es-prompt-box.collapsed .es-prompt-view { display: none; }
+.es-prompt-box.collapsed { padding-bottom: 8px; }
 .es-status {
   position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
   background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(6px);
@@ -641,7 +661,7 @@ textarea.autogrow { resize: none; overflow-y: auto; min-height: 0; }
 /* Yazı alanı + arkasındaki vurgu katmanı birebir aynı metin düzenine sahip olmalı */
 .es-editor { position: relative; background: var(--panel); border-radius: var(--radius); }
 .es-text {
-  font: 16px/1.75 Georgia, "Times New Roman", serif; padding: 18px 20px; margin: 0;
+  font: 16.5px/1.75 "Segoe UI Variable Text", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif; padding: 18px 20px; margin: 0;
   border: 1px solid var(--border); border-radius: var(--radius); letter-spacing: normal; word-spacing: normal;
   white-space: pre-wrap; overflow-wrap: break-word; word-break: normal; tab-size: 4; box-sizing: border-box; width: 100%;
 }
@@ -665,7 +685,7 @@ mark.lt-style { text-decoration-color: var(--easy); background: color-mix(in srg
 .es-grammar { margin-top: 12px; }
 .lt-list { display: flex; flex-direction: column; gap: 4px; line-height: 1.5; }
 .lt-item { border-top: 1px solid var(--border); padding: 8px 0 4px; }
-.lt-ctx { background: none; border: none; padding: 0; text-align: left; white-space: normal; font: 14px/1.6 Georgia, serif; color: var(--muted); }
+.lt-ctx { background: none; border: none; padding: 0; text-align: left; white-space: normal; font: 14px/1.6 "Segoe UI Variable Text", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif; color: var(--muted); }
 .lt-ctx:hover { background: none; color: var(--text); }
 .lt-ctx mark { color: var(--text); font-weight: 600; }
 .lt-tag { font: 600 11px/1 system-ui, sans-serif; padding: 2px 6px; border-radius: 4px; margin-right: 6px; color: var(--on-accent); }
@@ -712,7 +732,7 @@ mark.lt-style { text-decoration-color: var(--easy); background: color-mix(in srg
 .rp-err ins, .rp-example ins { color: var(--good); text-decoration: none; font-weight: 600; }
 .rp-err small { color: var(--muted); font-size: 12.5px; }
 .rp-etype { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
-.rp-example { display: flex; flex-direction: column; gap: 6px; background: var(--bg); border-radius: 10px; padding: 10px 12px; font: 15px/1.6 Georgia, serif; }
+.rp-example { display: flex; flex-direction: column; gap: 6px; background: var(--bg); border-radius: 10px; padding: 10px 12px; font: 15px/1.6 "Segoe UI Variable Text", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif; }
 .es-insights { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
 .es-tip { font-size: 13px; background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; line-height: 1.9; }
 .es-tip.warn { border-color: color-mix(in srgb, var(--hard) 50%, var(--border)); }

@@ -1904,10 +1904,18 @@ function openEssay(id) {
         <label class="es-toggle" title="Yazarken dilbilgisi ve yazım hatalarını işaretler (LanguageTool)"><input type="checkbox" id="es-grammar-on" ${prefs.essayGrammar !== false ? 'checked' : ''}><span>Canlı dilbilgisi</span></label>
         <label class="es-toggle" title="Tarayıcının kırmızı yazım altı çizgisi (sınavda yoktur)"><input type="checkbox" id="es-spell" ${prefs.essaySpell ? 'checked' : ''}><span>Yazım denetimi</span></label>
       </div>
-      <details class="es-prompt" ${e.prompt ? 'open' : ''}>
-        <summary>Soru / görev metni <small class="muted">isteğe bağlı · kopyalanan kısımlar sayılmaz</small></summary>
-        <textarea id="es-prompt" rows="3" maxlength="5000" placeholder="Görev metnini buraya yapıştır…">${esc(e.prompt)}</textarea>
-      </details>
+      <section class="es-prompt-box ${e.prompt ? '' : 'editing'} ${e.prompt && prefs.essayPromptHidden ? 'collapsed' : ''}" id="es-prompt-box">
+        <div class="es-prompt-head">
+          <button type="button" class="es-prompt-title" data-pa="collapse" title="Gizle / göster"><span class="chev">▾</span> Soru / görev metni</button>
+          <small class="muted">isteğe bağlı · sorudan kopyalanan kısımlar sayılmaz</small>
+          <span class="spacer"></span>
+          <button type="button" class="es-prompt-btn pa-edit" data-pa="edit">Düzenle</button>
+          <button type="button" class="primary es-prompt-btn pa-done" data-pa="done">Bitti</button>
+        </div>
+        <div class="es-prompt-view" id="es-prompt-view" title="Düzenlemek için çift tıkla"></div>
+        <textarea id="es-prompt" class="es-prompt-input" rows="3" maxlength="5000"
+          placeholder="IELTS sorusunu buraya yapıştır, sonra “Bitti”ye bas…">${esc(e.prompt)}</textarea>
+      </section>
       <div class="es-status" id="es-status"></div>
       <div class="es-editor">
         <div class="es-backdrop es-text" id="es-backdrop" aria-hidden="true"></div>
@@ -1939,6 +1947,42 @@ function openEssay(id) {
   };
   for (const el of [body, title, prompt]) el.addEventListener('input', changed);
   body.addEventListener('input', () => { autoGrow(body); renderGrammar(); scheduleGrammar(); });
+  // Soru metni: düzenlerken kutu, bitince okunaklı metin olarak gösterilir
+  const promptBox = $('#es-prompt-box');
+  const renderPromptView = () => {
+    const v = prompt.value.trim();
+    $('#es-prompt-view').innerHTML = v.split(/\n\s*\n/).filter(Boolean)
+      .map((p) => `<p>${esc(p.trim()).replace(/\n/g, '<br>')}</p>`).join('');
+  };
+  const setPromptEditing = (on, focus = true) => {
+    if (!on && !prompt.value.trim()) on = true; // boşken yazma kutusu açık kalsın
+    promptBox.classList.toggle('editing', on);
+    if (on) {
+      promptBox.classList.remove('collapsed');
+      autoGrow(prompt);
+      if (focus) prompt.focus();
+    } else {
+      renderPromptView();
+    }
+  };
+  renderPromptView();
+  prompt.addEventListener('input', () => autoGrow(prompt));
+  // Kutudan çıkınca (ör. yazı alanına geçince) okuma görünümüne dön
+  prompt.addEventListener('blur', (ev) => {
+    if (!ev.relatedTarget?.closest?.('#es-prompt-box')) setPromptEditing(false);
+  });
+  $('#es-prompt-view').addEventListener('dblclick', () => setPromptEditing(true));
+  promptBox.addEventListener('click', (ev) => {
+    const act = ev.target.closest('[data-pa]')?.dataset.pa;
+    if (act === 'edit') setPromptEditing(true);
+    else if (act === 'done') { setPromptEditing(false); body.focus(); }
+    else if (act === 'collapse' && !promptBox.classList.contains('editing')) {
+      promptBox.classList.toggle('collapsed');
+      prefs.essayPromptHidden = promptBox.classList.contains('collapsed');
+      savePrefs();
+    }
+  });
+
   // Kelime sayacı ve öneriler ayrı ayrı açılıp kapatılır; tercih cihazda hatırlanır
   for (const [boxId, key] of [['es-counter-on', 'essayCounter'], ['es-tips-on', 'essayTips']]) {
     $(`#${boxId}`).addEventListener('change', (ev) => {
