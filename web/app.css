@@ -797,3 +797,20 @@ mark.lt-style { text-decoration-color: var(--easy); background: color-mix(in srg
 @media (max-width: 760px) {
   .es-prompt-view, .es-prompt-input { font-size: 17.5px; }
 }
+
+/* Soru metni, okuma modunda: kutu yok; sayfa zemininde kalın, başlık gibi */
+.es-prompt-box:not(.editing) {
+  background: transparent; border: none; border-radius: 0; padding: 4px 0 6px; margin-bottom: 14px;
+}
+.es-prompt-box:not(.editing) .es-prompt-view {
+  font-weight: 650; color: var(--text); letter-spacing: -.005em; line-height: 1.5; margin-top: 2px;
+}
+.es-prompt-box:not(.editing) .es-prompt-head { gap: 6px; }
+.es-prompt-box:not(.editing) .es-prompt-title {
+  font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
+}
+.es-prompt-box:not(.editing) .es-prompt-head small { display: none; }
+.es-prompt-box:not(.editing) .pa-edit {
+  background: transparent; border-color: transparent; color: var(--muted); padding: 2px 8px; font-size: 12px;
+}
+.es-prompt-box:not(.editing) .pa-edit:hover { color: var(--text); background: var(--hover); }
