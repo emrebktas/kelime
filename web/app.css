@@ -880,3 +880,19 @@ mark.lt-style { text-decoration-color: var(--easy); background: color-mix(in srg
   .board-name .board-live { display: none; }
   .board-stat { font-size: 12.5px; }
 }
+
+/* Pano: küçük bilgi kartı */
+.board.panel { padding: 10px 14px; box-shadow: none; margin-bottom: 16px; }
+.board-head { margin-bottom: 4px; }
+.board-head h3 { font: 700 11.5px/1.4 "Segoe UI Variable Text", "Segoe UI", -apple-system, Roboto, sans-serif; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.board-head .muted { font-size: 11.5px; }
+.board-row { padding: 4px 4px; gap: 8px; grid-template-columns: auto 1fr auto auto; border-top: none; }
+.board-rank { display: none; }
+.board-row.me { border-radius: 8px; }
+.avatar.sm { width: 22px; height: 22px; font-size: 11px; }
+.presence { width: 8px; height: 8px; border-width: 1.5px; right: -2px; bottom: -2px; }
+.board-name { font-size: 13px; font-weight: 600; }
+.board-live { font-size: 10.5px; padding: 0 6px; }
+.board-stat { font-size: 12px; }
+.board-more { font-size: 11.5px; margin: 2px 0 0 34px; }
+.board-empty { font-size: 11.5px; margin: 4px 0 0; }

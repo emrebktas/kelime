@@ -1776,21 +1776,24 @@ async function loadBoard() {
   const me = rows.find((r) => r.is_me);
   if (me) board.myVisibility = me.visibility;
   const now = Date.now();
-  const live = (r) => (r.studying_since ? Math.max(0, Math.floor(now / 1000) - Number(r.studying_since)) : 0);
+  const isOnline = (r) => !!r.last_seen && now - new Date(r.last_seen).getTime() < ONLINE_WINDOW;
+  // Canlı süre sadece çevrimiçi ve sayacı çalışan kişide eklenir (uygulamayı kapatanınki donar)
+  const live = (r) => (r.studying_since && isOnline(r) ? Math.max(0, Math.floor(now / 1000) - Number(r.studying_since)) : 0);
   const list = rows.map((r) => ({
     ...r,
     // kendi satırında cihazdaki gerçek değerleri kullan (henüz eşitlenmemiş olabilir)
     seconds: r.is_me ? store.studyStats(liveSec()).today : r.seconds_today + live(r),
-    online: r.is_me || (r.last_seen && now - new Date(r.last_seen).getTime() < ONLINE_WINDOW),
-    studying: r.is_me ? timer.status === 'running' : !!r.studying_since && now - new Date(r.last_seen).getTime() < ONLINE_WINDOW,
+    online: r.is_me || isOnline(r),
+    studying: r.is_me ? timer.status === 'running' : !!r.studying_since && isOnline(r),
   })).sort((a, b) => b.seconds - a.seconds || b.words_today - a.words_today);
+  const onlineOthers = list.filter((r) => r.online && !r.is_me).length;
   const others = list.filter((r) => !r.is_me).length;
   box.innerHTML = `
     <div class="board-head">
       <h3>👥 Bugün</h3>
-      <span class="muted">${others ? `${list.filter((r) => r.online && !r.is_me).length} kişi çevrimiçi` : ''}</span>
+      <span class="muted">${onlineOthers ? `${onlineOthers} kişi çevrimiçi` : ''}</span>
     </div>
-    <div class="board-list">${list.map((r, i) => `
+    <div class="board-list">${list.slice(0, 5).map((r, i) => `
       <div class="board-row ${r.is_me ? 'me' : ''}">
         <span class="board-rank">${i + 1}</span>
         <span class="avatar sm">${esc((r.display_name || '?').charAt(0).toLocaleUpperCase('tr'))}<i class="presence ${r.online ? 'on' : ''}" title="${r.online ? 'Çevrimiçi' : 'Çevrimdışı'}"></i></span>
@@ -1800,7 +1803,8 @@ async function loadBoard() {
         <span class="board-stat" title="Bugün çalışma süresi">⏱ <b>${fmtDur(r.seconds)}</b></span>
       </div>`).join('')}
     </div>
-    ${others ? '' : `<p class="muted board-empty">Henüz burada sadece sen varsın. Bir desteni paylaş (deste › ⚙ › Paylaş) ya da hesap ayarlarından panoda görünürlüğünü “Herkes” yap; arkadaşların burada görünsün.</p>`}`;
+    ${list.length > 5 ? `<div class="muted board-more">+${list.length - 5} kişi daha</div>` : ''}
+    ${others ? '' : `<p class="muted board-empty">Arkadaşların burada görünsün: bir desteni paylaş ya da hesap ayarlarından panoda “Herkes”i seç.</p>`}`;
   // Ana sayfa açıkken dakikada bir yenile
   board.timer = setTimeout(() => { if (state.view === 'home' && !document.hidden) loadBoard(); }, 60_000);
 }
