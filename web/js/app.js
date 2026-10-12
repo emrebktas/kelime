@@ -2074,6 +2074,7 @@ function openEssay(id) {
           <small class="muted">isteğe bağlı · sorudan kopyalanan kısımlar sayılmaz</small>
           <span class="spacer"></span>
           <button type="button" class="es-prompt-btn pa-img" data-pa="image" title="Grafik, tablo ya da diyagram görseli ekle (yapıştırmak için Ctrl+V)">🖼 Görsel ekle</button>
+          <button type="button" class="es-prompt-btn pa-img" data-pa="image-paste" title="Kopyaladığın görseli yapıştır (bilgisayarda Ctrl+V de olur)">📋 Yapıştır</button>
           <button type="button" class="es-prompt-btn pa-edit" data-pa="edit">Düzenle</button>
           <button type="button" class="primary es-prompt-btn pa-done" data-pa="done">Bitti</button>
         </div>
@@ -2152,6 +2153,7 @@ function openEssay(id) {
     const act = ev.target.closest('[data-pa]')?.dataset.pa;
     if (act === 'edit') setPromptEditing(true);
     else if (act === 'image') $('#es-image-input').click();
+    else if (act === 'image-paste') guard(() => pasteEssayImage(id));
     else if (act === 'image-remove') {
       confirmBox('Görsel bu yazıdan kaldırılacak.', { ok: 'Kaldır', danger: true }).then((yes) => {
         if (yes) { store.setEssayImage(id, ''); renderEssayImage(id); }
@@ -2192,12 +2194,6 @@ function openEssay(id) {
     ev.target.value = '';
     if (file) guard(() => attachEssayImage(id, file));
   });
-  promptBox.addEventListener('paste', (ev) => {
-    const file = [...(ev.clipboardData?.files || [])].find((f) => f.type.startsWith('image/'));
-    if (!file) return;
-    ev.preventDefault();
-    guard(() => attachEssayImage(id, file));
-  });
   renderEssayImage(id);
   title.addEventListener('change', () => setTitle(essayTitle(store.getEssay(id))));
   $('#es-spell').addEventListener('change', (ev) => {
@@ -2226,13 +2222,14 @@ function renderEssayImage(id) {
   if (!box) return;
   const data = store.getEssayImage(id);
   const task = $('#es-task')?.value;
-  $('[data-pa=image]')?.classList.toggle('hidden', !!data || (task !== 'task1' && task !== 'free'));
+  for (const b of $$('.es-prompt-head [data-pa=image], .es-prompt-head [data-pa=image-paste]')) b.classList.toggle('hidden', !!data || (task !== 'task1' && task !== 'free'));
   if (box.dataset.src === String(data.length) + data.slice(-32)) return; // aynı görsel
   box.dataset.src = String(data.length) + data.slice(-32);
   box.innerHTML = data
     ? `<button type="button" class="es-figure-img" data-pa="image-view" title="Büyütmek için tıkla"><img src="${data}" alt="Görev görseli"></button>
        <div class="es-figure-actions">
          <button type="button" class="ghost" data-pa="image">Değiştir</button>
+         <button type="button" class="ghost" data-pa="image-paste" title="Kopyaladığın görselle değiştir (Ctrl+V)">📋 Yapıştır</button>
          <button type="button" class="ghost danger-ghost" data-pa="image-remove">Kaldır</button>
        </div>`
     : '';
@@ -2270,6 +2267,46 @@ async function attachEssayImage(id, file) {
   if (state.view === 'essay' && state.essayId === id) renderEssayImage(id);
   toast('Görsel eklendi.', 'success', 1500);
 }
+
+/** Panodaki görseli bul (yapıştırma olayı ya da sürükle-bırak verisinden). */
+function imageFromTransfer(dt) {
+  const files = [...(dt?.files || [])];
+  const items = [...(dt?.items || [])].filter((i) => i.kind === 'file').map((i) => i.getAsFile()).filter(Boolean);
+  return [...files, ...items].find((f) => f.type.startsWith('image/')) || null;
+}
+
+/** "Yapıştır" düğmesi: panoyu doğrudan okur (izin isteyebilir). */
+async function pasteEssayImage(id) {
+  let items;
+  try { items = await navigator.clipboard.read(); } catch {
+    throw new Error(isMobile()
+      ? 'Panoya erişilemedi. Görseli kaydedip “Görsel ekle” ile seçebilirsin.'
+      : 'Panoya erişilemedi. Görseli kopyaladıktan sonra Ctrl+V tuşlarına bas.');
+  }
+  for (const item of items) {
+    const type = item.types.find((t) => t.startsWith('image/'));
+    if (type) {
+      const blob = await item.getType(type);
+      return attachEssayImage(id, new File([blob], 'pano', { type }));
+    }
+  }
+  throw new Error('Panoda görsel yok. Önce bir görseli kopyala (sağ tık › Resmi kopyala ya da ekran görüntüsü).');
+}
+
+// Yazı sayfasında Ctrl+V: panoda görsel varsa (yazı alanındayken bile) yazının görseli olur.
+// Panoda metin varsa normal yapıştırma olur.
+document.addEventListener('paste', (ev) => {
+  if (state.view !== 'essay' || modalOpen()) return;
+  const file = imageFromTransfer(ev.clipboardData);
+  if (!file) return;
+  ev.preventDefault();
+  const id = state.essayId;
+  const replace = !!store.getEssayImage(id);
+  guard(async () => {
+    if (replace && !(await confirmBox('Yazının mevcut görseli yapıştırdığınla değiştirilsin mi?', { ok: 'Değiştir', title: 'Görseli değiştir' }))) return;
+    await attachEssayImage(id, file);
+  });
+});
 
 function essayImageViewer(data) {
   if (!data) return;
@@ -3338,7 +3375,12 @@ document.addEventListener('keydown', (e) => {
 // Sürükle-bırak ile JSON içe aktarma
 let dragDepth = 0;
 const hasFiles = (e) => [...(e.dataTransfer?.types || [])].includes('Files');
-document.addEventListener('dragenter', (e) => { if (hasFiles(e)) { dragDepth++; document.body.classList.add('dragging'); } });
+document.addEventListener('dragenter', (e) => {
+  if (!hasFiles(e)) return;
+  dragDepth++;
+  $('#drop-overlay div').textContent = state.view === 'essay' ? 'Görseli buraya bırak' : 'JSON dosyasını buraya bırak';
+  document.body.classList.add('dragging');
+});
 document.addEventListener('dragleave', (e) => { if (hasFiles(e) && --dragDepth <= 0) { dragDepth = 0; document.body.classList.remove('dragging'); } });
 document.addEventListener('dragover', (e) => { if (hasFiles(e)) e.preventDefault(); });
 document.addEventListener('drop', async (e) => {
@@ -3348,6 +3390,10 @@ document.addEventListener('drop', async (e) => {
   document.body.classList.remove('dragging');
   const file = e.dataTransfer.files[0];
   if (!file) return;
+  if (state.view === 'essay') {
+    const img = imageFromTransfer(e.dataTransfer);
+    if (img) { guard(() => attachEssayImage(state.essayId, img)); return; }
+  }
   if (state.view === 'study') { toast('İçe aktarmak için önce çalışmadan çık.', 'info'); return; }
   importText(file.name, await file.text(), state.view === 'deck' ? state.deckId : null);
 });
