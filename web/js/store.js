@@ -4,7 +4,7 @@
 import * as srs from './srs.js';
 
 const DB_NAME = 'kelime';
-const TABLES = ['decks', 'members', 'cards', 'states', 'revlog', 'sessions', 'essays'];
+const TABLES = ['decks', 'members', 'cards', 'states', 'revlog', 'sessions', 'essays', 'images'];
 const LOCAL_UID = 'local';
 
 const mem = Object.fromEntries(TABLES.map((t) => [t, new Map()]));
@@ -31,8 +31,8 @@ const txDone = (tx) => new Promise((res, rej) => { tx.oncomplete = res; tx.onerr
 
 export async function open() {
   idb = await new Promise((res, rej) => {
-    // Sürüm 2: çalışma sayacı oturumları, 3: yazılar; eksik tablolar oluşturulur, veriler korunur
-    const r = indexedDB.open(DB_NAME, 3);
+    // Sürüm 2: çalışma sayacı oturumları, 3: yazılar, 4: yazı görselleri; eksik tablolar oluşturulur, veriler korunur
+    const r = indexedDB.open(DB_NAME, 4);
     r.onupgradeneeded = () => {
       for (const t of [...TABLES, 'meta']) if (!r.result.objectStoreNames.contains(t)) r.result.createObjectStore(t);
     };
@@ -131,6 +131,7 @@ function adoptLocal(newUid) {
   for (const [key, r] of mem.revlog) setRec('revlog', key, { ...r, user_id: newUid });
   for (const [key, s] of mem.sessions) setRec('sessions', key, { ...s, user_id: newUid });
   for (const [key, e] of mem.essays) setRec('essays', key, { ...e, user_id: newUid });
+  for (const [key, i] of mem.images) setRec('images', key, { ...i, user_id: newUid });
 }
 
 /** Çıkış: cihazdaki tüm veriyi siler. */
@@ -163,7 +164,7 @@ export function markClean(table, rows) {
     if (r && r._rev === rev) {
       r._dirty = false;
       r._server = true;
-      if (['cards', 'sessions', 'essays'].includes(table) && r.deleted) delRec(table, key);
+      if (['cards', 'sessions', 'essays', 'images'].includes(table) && r.deleted) delRec(table, key);
       else persist(table, key, r);
     }
   }
@@ -208,6 +209,12 @@ export function applyRemote(table, rows) {
           words: r.words, created_at: Number(r.created_at), edited_at: Number(r.edited_at), deleted: false,
           report: r.report ?? null, report_at: r.report_at ? Number(r.report_at) : null, _server: true }, false);
       }
+    } else if (table === 'essay_images') {
+      if (r.user_id !== meta.uid || mem.images.get(r.essay_id)?._dirty) continue;
+      const cur = mem.images.get(r.essay_id);
+      if (r.deleted || !r.data) { if (!cur) continue; delRec('images', r.essay_id); }
+      else if (cur?.data === r.data) continue; // aynı görsel tekrar geldi (değişiklik yok)
+      else setRec('images', r.essay_id, { essay_id: r.essay_id, user_id: r.user_id, data: r.data, deleted: false, _server: true }, false);
     } else if (table === 'study_sessions') {
       if (r.user_id !== meta.uid || mem.sessions.get(r.id)?._dirty) continue;
       if (r.deleted) delRec('sessions', r.id);
@@ -862,6 +869,26 @@ export function saveEssay(id, patch) {
 export function deleteEssay(id) {
   const e = mem.essays.get(id);
   if (e) setRec('essays', id, { ...e, deleted: true });
+  const img = mem.images.get(id);
+  if (img) setRec('images', id, { ...img, data: '', deleted: true });
+}
+
+// Yazının görseli (ör. Academic Task 1 grafiği): küçültülmüş "data:image/...;base64,..." metni
+const IMAGE_MAX = 2_800_000;
+export function getEssayImage(id) {
+  const r = mem.images.get(id);
+  return r && !r.deleted ? r.data : '';
+}
+export function setEssayImage(id, data) {
+  if (!getEssay(id)) throw new Error('Yazı bulunamadı.');
+  const cur = mem.images.get(id);
+  if (!data) {
+    if (cur && !cur.deleted) setRec('images', id, { ...cur, data: '', deleted: true });
+    return;
+  }
+  if (!/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(data)) throw new Error('Bu görsel biçimi desteklenmiyor.');
+  if (data.length > IMAGE_MAX) throw new Error('Görsel çok büyük.');
+  setRec('images', id, { essay_id: id, user_id: meta.uid, data, deleted: false });
 }
 
 /** Yapay zekâ IELTS analiz raporunu yazıyla birlikte saklar. */

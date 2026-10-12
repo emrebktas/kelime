@@ -2073,12 +2073,15 @@ function openEssay(id) {
           <button type="button" class="es-prompt-title" data-pa="collapse" title="Gizle / göster"><span class="chev">▾</span> Soru / görev metni</button>
           <small class="muted">isteğe bağlı · sorudan kopyalanan kısımlar sayılmaz</small>
           <span class="spacer"></span>
+          <button type="button" class="es-prompt-btn pa-img" data-pa="image" title="Grafik, tablo ya da diyagram görseli ekle (yapıştırmak için Ctrl+V)">🖼 Görsel ekle</button>
           <button type="button" class="es-prompt-btn pa-edit" data-pa="edit">Düzenle</button>
           <button type="button" class="primary es-prompt-btn pa-done" data-pa="done">Bitti</button>
         </div>
         <div class="es-prompt-view" id="es-prompt-view" title="Düzenlemek için çift tıkla"></div>
         <textarea id="es-prompt" class="es-prompt-input" rows="3" maxlength="5000"
           placeholder="IELTS sorusunu buraya yapıştır, sonra “Bitti”ye bas…">${esc(e.prompt)}</textarea>
+        <div class="es-figure" id="es-figure"></div>
+        <input type="file" id="es-image-input" accept="image/*" hidden>
       </section>
       <div class="es-status" id="es-status"></div>
       <div class="es-editor">
@@ -2116,11 +2119,12 @@ function openEssay(id) {
   const promptBox = $('#es-prompt-box');
   const renderPromptView = () => {
     const v = prompt.value.trim();
-    $('#es-prompt-view').innerHTML = v.split(/\n\s*\n/).filter(Boolean)
-      .map((p) => `<p>${esc(p.trim()).replace(/\n/g, '<br>')}</p>`).join('');
+    promptBox.classList.toggle('empty', !v);
+    $('#es-prompt-view').innerHTML = v
+      ? v.split(/\n\s*\n/).filter(Boolean).map((p) => `<p>${esc(p.trim()).replace(/\n/g, '<br>')}</p>`).join('')
+      : '<p class="es-prompt-empty">+ Soruyu eklemek için dokun (isteğe bağlı)</p>';
   };
   const setPromptEditing = (on, focus = true) => {
-    if (!on && !prompt.value.trim()) on = true; // boşken yazma kutusu açık kalsın
     promptBox.classList.toggle('editing', on);
     if (on) {
       promptBox.classList.remove('collapsed');
@@ -2132,14 +2136,27 @@ function openEssay(id) {
   };
   renderPromptView();
   prompt.addEventListener('input', () => autoGrow(prompt));
-  // Kutudan çıkınca (ör. yazı alanına geçince) okuma görünümüne dön
+  // Kutudan çıkınca (ör. yazı alanına geçince) okuma görünümüne dön. Uygulama arka plana geçtiğinde
+  // (soruyu başka uygulamadan kopyalarken) de odak kaybolur; o durumda kutu açık kalır.
   prompt.addEventListener('blur', (ev) => {
-    if (!ev.relatedTarget?.closest?.('#es-prompt-box')) setPromptEditing(false);
+    if (ev.relatedTarget?.closest?.('#es-prompt-box')) return;
+    setTimeout(() => {
+      if (document.hidden || !document.hasFocus()) return;
+      if (promptBox.contains(document.activeElement)) return;
+      setPromptEditing(false);
+    }, 0);
   });
   $('#es-prompt-view').addEventListener('dblclick', () => setPromptEditing(true));
+  $('#es-prompt-view').addEventListener('click', () => { if (!prompt.value.trim()) setPromptEditing(true); });
   promptBox.addEventListener('click', (ev) => {
     const act = ev.target.closest('[data-pa]')?.dataset.pa;
     if (act === 'edit') setPromptEditing(true);
+    else if (act === 'image') $('#es-image-input').click();
+    else if (act === 'image-remove') {
+      confirmBox('Görsel bu yazıdan kaldırılacak.', { ok: 'Kaldır', danger: true }).then((yes) => {
+        if (yes) { store.setEssayImage(id, ''); renderEssayImage(id); }
+      });
+    } else if (act === 'image-view') essayImageViewer(store.getEssayImage(id));
     else if (act === 'done') { setPromptEditing(false); body.focus(); }
     else if (act === 'collapse' && !promptBox.classList.contains('editing')) {
       promptBox.classList.toggle('collapsed');
@@ -2168,7 +2185,20 @@ function openEssay(id) {
     renderGrammar();
     if (ev.target.checked) scheduleGrammar(true);
   });
-  task.addEventListener('change', () => { save(); renderEssayTimerBtn(); });
+  task.addEventListener('change', () => { save(); renderEssayTimerBtn(); renderEssayImage(id); });
+  // Görsel: dosyadan seç ya da ekran görüntüsünü yapıştır (Ctrl+V)
+  $('#es-image-input').addEventListener('change', (ev) => {
+    const file = ev.target.files?.[0];
+    ev.target.value = '';
+    if (file) guard(() => attachEssayImage(id, file));
+  });
+  promptBox.addEventListener('paste', (ev) => {
+    const file = [...(ev.clipboardData?.files || [])].find((f) => f.type.startsWith('image/'));
+    if (!file) return;
+    ev.preventDefault();
+    guard(() => attachEssayImage(id, file));
+  });
+  renderEssayImage(id);
   title.addEventListener('change', () => setTitle(essayTitle(store.getEssay(id))));
   $('#es-spell').addEventListener('change', (ev) => {
     prefs.essaySpell = ev.target.checked;
@@ -2188,6 +2218,63 @@ function openEssay(id) {
   scheduleGrammar(true);
   renderEssayReport();
   if (!isMobile()) body.focus();
+}
+
+/** Soru kutusundaki görsel ve "Görsel ekle" düğmesi (Academic Task 1'de ya da görsel varken görünür). */
+function renderEssayImage(id) {
+  const box = $('#es-figure');
+  if (!box) return;
+  const data = store.getEssayImage(id);
+  const task = $('#es-task')?.value;
+  $('[data-pa=image]')?.classList.toggle('hidden', !!data || (task !== 'task1' && task !== 'free'));
+  if (box.dataset.src === String(data.length) + data.slice(-32)) return; // aynı görsel
+  box.dataset.src = String(data.length) + data.slice(-32);
+  box.innerHTML = data
+    ? `<button type="button" class="es-figure-img" data-pa="image-view" title="Büyütmek için tıkla"><img src="${data}" alt="Görev görseli"></button>
+       <div class="es-figure-actions">
+         <button type="button" class="ghost" data-pa="image">Değiştir</button>
+         <button type="button" class="ghost danger-ghost" data-pa="image-remove">Kaldır</button>
+       </div>`
+    : '';
+}
+
+/** Görseli küçültüp sıkıştırır (en uzun kenar 1600 px) ve yazıya ekler. */
+async function attachEssayImage(id, file) {
+  if (!file.type.startsWith('image/')) throw new Error('Lütfen bir görsel dosyası seç.');
+  if (file.size > 25 * 1024 * 1024) throw new Error('Görsel 25 MB’tan büyük olamaz.');
+  let bmp;
+  try { bmp = await createImageBitmap(file); } catch {
+    bmp = await new Promise((res, rej) => {
+      const img = new Image();
+      img.onload = () => res(img);
+      img.onerror = () => rej(new Error('Görsel açılamadı. Başka bir dosya dene.'));
+      img.src = URL.createObjectURL(file);
+    });
+  }
+  const encode = (maxSide, q) => {
+    const scale = Math.min(1, maxSide / Math.max(bmp.width, bmp.height));
+    const c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(bmp.width * scale));
+    c.height = Math.max(1, Math.round(bmp.height * scale));
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#fff'; // saydam PNG'ler (grafikler) beyaz zeminde kalsın
+    ctx.fillRect(0, 0, c.width, c.height);
+    ctx.drawImage(bmp, 0, 0, c.width, c.height);
+    const webp = c.toDataURL('image/webp', q);
+    return webp.startsWith('data:image/webp') ? webp : c.toDataURL('image/jpeg', q);
+  };
+  let data = encode(1600, 0.85);
+  if (data.length > 1_500_000) data = encode(1200, 0.75);
+  if (data.length > 2_700_000) throw new Error('Görsel çok büyük. Daha küçük bir görsel dene.');
+  store.setEssayImage(id, data);
+  if (state.view === 'essay' && state.essayId === id) renderEssayImage(id);
+  toast('Görsel eklendi.', 'success', 1500);
+}
+
+function essayImageViewer(data) {
+  if (!data) return;
+  openModal(`<div class="img-viewer"><img src="${data}" alt="Görev görseli"></div>
+    <div class="modal-actions"><button type="button" data-close>Kapat</button></div>`, { wide: true });
 }
 
 function renderEssayTimerBtn() {
@@ -2996,8 +3083,15 @@ function onRemoteChange() {
     } else if (state.view === 'essay') {
       // Yazarken ekranı yenileme; sadece başka cihazda değiştiyse ve şu an yazılmıyorsa
       if (!store.getEssay(state.essayId)) { toast('Bu yazı başka bir cihazda silindi.', 'info'); showEssays(); return; }
+      // Kendi kaydımız sunucudan geri geldiğinde ya da sadece rapor/görsel değiştiğinde sayfayı baştan çizme:
+      // açık soru kutusu, kaydırma yeri ve odak korunur.
+      const e = store.getEssay(state.essayId);
+      const same = $('#es-body')?.value === e.body && $('#es-title')?.value === e.title
+        && $('#es-prompt')?.value === e.prompt && $('#es-task')?.value === e.task;
       const active = document.activeElement;
-      if (!active || !['es-body', 'es-title', 'es-prompt'].includes(active.id)) openEssay(state.essayId);
+      const editingPrompt = $('#es-prompt-box')?.classList.contains('editing') && e.prompt;
+      if (same || editingPrompt) { renderEssayReport(); renderEssayImage(state.essayId); }
+      else if (!active || !['es-body', 'es-title', 'es-prompt'].includes(active.id)) openEssay(state.essayId);
     } else if (state.view === 'home') {
       refreshHome();
     } else if (state.view === 'study') {

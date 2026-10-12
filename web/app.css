@@ -1005,3 +1005,17 @@ mark.lt-style { text-decoration-color: var(--easy); background: color-mix(in srg
   .chat-back { display: inline-grid; }
   .msg { max-width: 85%; }
 }
+
+/* Soru kutusu boşken: tek satırlık davet; görsel (Task 1 grafiği) */
+.es-prompt-empty { font-weight: 500 !important; color: var(--muted); font-size: 15px; cursor: pointer; }
+.es-prompt-box.empty:not(.editing) .pa-edit { display: none; }
+.es-prompt-box.collapsed .es-figure { display: none; }
+.es-figure { margin-top: 10px; }
+.es-figure:empty { display: none; }
+.es-figure-img { display: block; padding: 0; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: #fff; max-width: 100%; cursor: zoom-in; }
+.es-figure-img:hover { border-color: var(--accent); background: #fff; }
+.es-figure-img img { display: block; max-width: 100%; max-height: 460px; object-fit: contain; }
+.es-figure-actions { display: flex; gap: 6px; margin-top: 6px; }
+.es-figure-actions button { padding: 3px 10px; font-size: 12.5px; }
+.img-viewer { overflow: auto; max-height: 75vh; background: #fff; border-radius: 8px; }
+.img-viewer img { display: block; max-width: 100%; margin: 0 auto; }
