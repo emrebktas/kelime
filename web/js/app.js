@@ -2159,6 +2159,7 @@ function openEssay(id) {
         if (yes) { store.setEssayImage(id, ''); renderEssayImage(id); }
       });
     } else if (act === 'image-view') essayImageViewer(store.getEssayImage(id));
+    else if (act === 'image-reset') { saveFigureLayout(id, null); renderEssayImage(id, true); }
     else if (act === 'done') { setPromptEditing(false); body.focus(); }
     else if (act === 'collapse' && !promptBox.classList.contains('editing')) {
       promptBox.classList.toggle('collapsed');
@@ -2195,13 +2196,6 @@ function openEssay(id) {
     if (file) guard(() => attachEssayImage(id, file));
   });
   renderEssayImage(id);
-  // Görsel boyutu: kaydırınca anında değişir, cihazda hatırlanır
-  promptBox.addEventListener('input', (ev) => {
-    if (!ev.target.matches('[data-fig-size]')) return;
-    prefs.essayImageWidth = Number(ev.target.value);
-    $('#es-figure').style.setProperty('--fig-w', `${prefs.essayImageWidth}%`);
-  });
-  promptBox.addEventListener('change', (ev) => { if (ev.target.matches('[data-fig-size]')) savePrefs(); });
   title.addEventListener('change', () => setTitle(essayTitle(store.getEssay(id))));
   $('#es-spell').addEventListener('change', (ev) => {
     prefs.essaySpell = ev.target.checked;
@@ -2224,28 +2218,124 @@ function openEssay(id) {
 }
 
 /** Soru kutusundaki görsel ve "Görsel ekle" düğmesi (Academic Task 1'de ya da görsel varken görünür). */
-function renderEssayImage(id) {
+/** Soru kutusundaki görsel ve "Görsel ekle" düğmesi (Academic Task 1'de ya da görsel varken görünür). */
+function renderEssayImage(id, force = false) {
   const box = $('#es-figure');
   if (!box) return;
   const data = store.getEssayImage(id);
   const task = $('#es-task')?.value;
   for (const b of $$('.es-prompt-head [data-pa=image], .es-prompt-head [data-pa=image-paste]')) b.classList.toggle('hidden', !!data || (task !== 'task1' && task !== 'free'));
-  if (box.dataset.src === String(data.length) + data.slice(-32)) return; // aynı görsel
-  box.dataset.src = String(data.length) + data.slice(-32);
-  box.style.setProperty('--fig-w', `${essayImageWidth()}%`);
+  const sig = String(data.length) + data.slice(-32);
+  if (!force && box.dataset.src === sig) return; // aynı görsel
+  box.dataset.src = sig;
   box.innerHTML = data
-    ? `<button type="button" class="es-figure-img" data-pa="image-view" title="Büyütmek için tıkla"><img src="${data}" alt="Görev görseli"></button>
+    ? `<div class="es-stage" id="es-stage">
+         <div class="es-fig" id="es-fig" title="Taşımak için sürükle · boyutlandırmak için köşelerden çek · büyütmek için çift tıkla">
+           <img src="${data}" alt="Görev görseli" draggable="false">
+           ${['nw', 'ne', 'sw', 'se', 'e', 'w'].map((h) => `<span class="fig-h fig-${h}" data-h="${h}"></span>`).join('')}
+         </div>
+       </div>
        <div class="es-figure-actions">
-         <label class="es-fig-size" title="Görselin boyutu">Boyut
-           <input type="range" min="20" max="100" step="5" value="${essayImageWidth()}" data-fig-size aria-label="Görsel boyutu"></label>
+         <button type="button" class="ghost" data-pa="image-view">🔍 Büyüt</button>
+         <button type="button" class="ghost" data-pa="image-reset" title="Konumu ve boyutu sıfırla">↺ Sıfırla</button>
          <button type="button" class="ghost" data-pa="image">Değiştir</button>
          <button type="button" class="ghost" data-pa="image-paste" title="Kopyaladığın görselle değiştir (Ctrl+V)">📋 Yapıştır</button>
          <button type="button" class="ghost danger-ghost" data-pa="image-remove">Kaldır</button>
        </div>`
     : '';
+  if (data) setupFigure(id);
 }
 
-const essayImageWidth = () => Math.min(100, Math.max(20, Number(prefs.essayImageWidth) || 70));
+// Görselin konumu ve boyutu, alan genişliğine oranla (ekran boyu değişse de yerinde kalır); cihazda yazı başına hatırlanır
+const FIG_DEFAULT = { x: 0, y: 0, w: 0.7 };
+const FIG_MIN_PX = 80;
+const FIG_MAX_Y = 1.2; // alan genişliğinin en fazla bu katı kadar aşağı taşınabilir
+function figureLayout(id) {
+  const l = prefs.figLayouts?.[id];
+  return l && [l.x, l.y, l.w].every(Number.isFinite) ? l : { ...FIG_DEFAULT };
+}
+function saveFigureLayout(id, l) {
+  const all = { ...(prefs.figLayouts || {}) };
+  if (l) all[id] = l; else delete all[id];
+  // en son kullanılan 50 yazının düzeni yeter
+  prefs.figLayouts = Object.fromEntries(Object.entries(all).slice(-50));
+  savePrefs();
+}
+
+function setupFigure(id) {
+  const stage = $('#es-stage');
+  const fig = $('#es-fig');
+  const img = $('img', fig);
+  let l = figureLayout(id);
+  const ratio = () => (img.naturalWidth ? img.naturalHeight / img.naturalWidth : 0.6);
+  // Düzeni piksele çevirip uygular; taşma olmasın diye sınırlar
+  const apply = () => {
+    const W = stage.clientWidth;
+    if (!W) return;
+    const w = Math.min(W, Math.max(FIG_MIN_PX, l.w * W));
+    const x = Math.min(Math.max(0, l.x * W), W - w);
+    const y = Math.min(Math.max(0, l.y * W), FIG_MAX_Y * W);
+    const h = w * ratio();
+    Object.assign(fig.style, { left: `${x}px`, top: `${y}px`, width: `${w}px`, height: `${h}px` });
+    stage.style.height = `${y + h}px`;
+  };
+  img.addEventListener('load', apply);
+  apply();
+  new ResizeObserver(apply).observe(stage);
+
+  fig.addEventListener('dblclick', () => essayImageViewer(store.getEssayImage(id)));
+  fig.addEventListener('dragstart', (e) => e.preventDefault()); // tarayıcının kendi sürüklemesi (görseli yeniden ekliyordu)
+  fig.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    const handle = e.target.closest('[data-h]')?.dataset.h || '';
+    const W = stage.clientWidth;
+    const r = ratio();
+    const sx = e.clientX;
+    const sy = e.clientY;
+    const x0 = fig.offsetLeft;
+    const y0 = fig.offsetTop;
+    const w0 = fig.offsetWidth;
+    const h0 = fig.offsetHeight;
+    fig.setPointerCapture(e.pointerId);
+    stage.classList.add('active');
+    const move = (ev) => {
+      const dx = ev.clientX - sx;
+      const dy = ev.clientY - sy;
+      let x = x0;
+      let y = y0;
+      let w = w0;
+      if (!handle) {
+        x = Math.min(Math.max(0, x0 + dx), W - w0);
+        y = Math.min(Math.max(0, y0 + dy), FIG_MAX_Y * W);
+      } else {
+        // Oran korunur (grafik bozulmasın); batı tarafı tutulduysa sağ kenar sabit kalır
+        const west = handle.includes('w');
+        const north = handle.includes('n');
+        const fromX = west ? -dx : dx;
+        // Köşede: farenin daha çok hareket ettiği yön belirler (büyütme de küçültme de)
+        const fromY = handle.length === 2 ? (north ? -dy : dy) / r : 0;
+        w = w0 + (Math.abs(fromX) >= Math.abs(fromY) ? fromX : fromY);
+        const maxW = west ? x0 + w0 : W - x0;
+        w = Math.min(maxW, Math.max(FIG_MIN_PX, w));
+        if (west) x = x0 + w0 - w;
+        if (north) y = Math.max(0, y0 + h0 - w * r);
+      }
+      l = { x: x / W, y: y / W, w: w / W };
+      apply();
+    };
+    const up = () => {
+      fig.removeEventListener('pointermove', move);
+      fig.removeEventListener('pointerup', up);
+      fig.removeEventListener('pointercancel', up);
+      stage.classList.remove('active');
+      saveFigureLayout(id, l);
+    };
+    fig.addEventListener('pointermove', move);
+    fig.addEventListener('pointerup', up);
+    fig.addEventListener('pointercancel', up);
+  });
+}
 
 /** Yapay zekâya gidecek kopya: JPEG, küçük boyut (görüntü servisleri büyük gömülü görselleri reddedebilir). */
 async function imageForAi(data) {
@@ -3416,7 +3506,10 @@ document.addEventListener('keydown', (e) => {
 
 // Sürükle-bırak ile JSON içe aktarma
 let dragDepth = 0;
-const hasFiles = (e) => [...(e.dataTransfer?.types || [])].includes('Files');
+let innerDrag = false; // sürükleme sayfanın içinden başladıysa (görsel, metin) dosya bırakma değildir
+document.addEventListener('dragstart', () => { innerDrag = true; });
+document.addEventListener('dragend', () => { innerDrag = false; });
+const hasFiles = (e) => !innerDrag && [...(e.dataTransfer?.types || [])].includes('Files');
 document.addEventListener('dragenter', (e) => {
   if (!hasFiles(e)) return;
   dragDepth++;

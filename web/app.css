@@ -1012,20 +1012,38 @@ mark.lt-style { text-decoration-color: var(--easy); background: color-mix(in srg
 .es-prompt-box.collapsed .es-figure { display: none; }
 .es-figure { margin-top: 10px; }
 .es-figure:empty { display: none; }
-.es-figure-img { display: block; padding: 0; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: #fff; max-width: 100%; cursor: zoom-in; }
-.es-figure-img:hover { border-color: var(--accent); background: #fff; }
-.es-figure-img img { display: block; max-width: 100%; max-height: 460px; object-fit: contain; }
 .es-figure-actions { display: flex; gap: 6px; margin-top: 6px; }
 .es-figure-actions button { padding: 3px 10px; font-size: 12.5px; }
 .img-viewer { overflow: auto; max-height: 75vh; background: #fff; border-radius: 8px; }
 .img-viewer img { display: block; max-width: 100%; margin: 0 auto; }
 
-/* Görsel boyutu (kaydırıcı) */
-.es-figure .es-figure-img { width: var(--fig-w, 70%); min-width: 120px; }
-.es-figure .es-figure-img img { width: 100%; height: auto; max-height: none; }
+/* Görsel: alan içinde taşınır, köşelerinden boyutlandırılır */
 .es-figure-actions { align-items: center; flex-wrap: wrap; }
-.es-fig-size { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted); margin-right: 6px; }
-.es-fig-size input { width: 120px; padding: 0; accent-color: var(--slate); }
+.es-stage { position: relative; width: 100%; min-height: 60px; border-radius: 8px; outline: 1px dashed transparent; outline-offset: 3px; transition: outline-color .15s; }
+.es-stage:hover, .es-stage.active { outline-color: var(--border); }
+.es-fig {
+  position: absolute; left: 0; top: 0; cursor: move; touch-action: none; user-select: none; -webkit-user-select: none;
+  border: 1px solid var(--border); border-radius: 6px; background: #fff; box-shadow: var(--shadow);
+}
+.es-fig img { display: block; width: 100%; height: 100%; object-fit: contain; border-radius: 6px; pointer-events: none; -webkit-user-drag: none; }
+.es-stage.active .es-fig { border-color: var(--slate); }
+.fig-h {
+  position: absolute; width: 14px; height: 14px; border-radius: 50%; background: var(--panel);
+  border: 2px solid var(--slate); opacity: 0; transition: opacity .15s; touch-action: none;
+}
+.es-fig:hover .fig-h, .es-stage.active .fig-h { opacity: 1; }
+.fig-nw { left: -7px; top: -7px; cursor: nwse-resize; }
+.fig-ne { right: -7px; top: -7px; cursor: nesw-resize; }
+.fig-sw { left: -7px; bottom: -7px; cursor: nesw-resize; }
+.fig-se { right: -7px; bottom: -7px; cursor: nwse-resize; }
+.fig-e { right: -6px; top: 50%; margin-top: -14px; width: 10px; height: 28px; border-radius: 6px; cursor: ew-resize; }
+.fig-w { left: -6px; top: 50%; margin-top: -14px; width: 10px; height: 28px; border-radius: 6px; cursor: ew-resize; }
+@media (hover: none) {
+  .fig-h { opacity: 1; width: 20px; height: 20px; } /* dokunmatikte tutamaklar hep görünür ve daha büyük */
+  .fig-nw { left: -10px; top: -10px; } .fig-ne { right: -10px; top: -10px; }
+  .fig-sw { left: -10px; bottom: -10px; } .fig-se { right: -10px; bottom: -10px; }
+  .fig-e, .fig-w { width: 12px; height: 34px; margin-top: -17px; }
+}
 .rp-figure summary { cursor: pointer; font-weight: 650; }
 .rp-figure p { white-space: pre-wrap; font-size: 13.5px; line-height: 1.5; margin: 8px 0 0; }
 .rp-fig-fail { display: block; margin: 0 0 12px; }
