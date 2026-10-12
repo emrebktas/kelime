@@ -1019,3 +1019,13 @@ mark.lt-style { text-decoration-color: var(--easy); background: color-mix(in srg
 .es-figure-actions button { padding: 3px 10px; font-size: 12.5px; }
 .img-viewer { overflow: auto; max-height: 75vh; background: #fff; border-radius: 8px; }
 .img-viewer img { display: block; max-width: 100%; margin: 0 auto; }
+
+/* Görsel boyutu (kaydırıcı) */
+.es-figure .es-figure-img { width: var(--fig-w, 70%); min-width: 120px; }
+.es-figure .es-figure-img img { width: 100%; height: auto; max-height: none; }
+.es-figure-actions { align-items: center; flex-wrap: wrap; }
+.es-fig-size { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted); margin-right: 6px; }
+.es-fig-size input { width: 120px; padding: 0; accent-color: var(--slate); }
+.rp-figure summary { cursor: pointer; font-weight: 650; }
+.rp-figure p { white-space: pre-wrap; font-size: 13.5px; line-height: 1.5; margin: 8px 0 0; }
+.rp-fig-fail { display: block; margin: 0 0 12px; }

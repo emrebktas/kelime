@@ -340,13 +340,13 @@ export async function aiCards(words, language) {
 }
 
 /** Yazıyı IELTS ölçütlerine göre değerlendirir (sunucudaki kelime-ai fonksiyonu). */
-export async function aiEssayReport({ task, prompt, body, targetWords = [] }) {
+export async function aiEssayReport({ task, prompt, body, targetWords = [], image = '' }) {
   if (!enabled || !session) throw new Error('Yapay zekâ analizi için giriş yapman gerekiyor.');
   if (!navigator.onLine) throw new Error('Yapay zekâ analizi için internet bağlantısı gerekiyor.');
   const timeout = new Promise((_, reject) => setTimeout(
     () => reject(new Error('Analiz çok uzun sürdü. Biraz sonra tekrar dene.')), 170_000));
   const { data, error } = await Promise.race([
-    client.functions.invoke('kelime-ai', { body: { action: 'essay', task, prompt, body, target_words: targetWords } }), timeout]);
+    client.functions.invoke('kelime-ai', { body: { action: 'essay', task, prompt, body, target_words: targetWords, ...(image ? { image } : {}) } }), timeout]);
   if (error) {
     let msg = error.message;
     try { msg = (await error.context?.json?.())?.error || msg; } catch { /* gövde JSON değil */ }

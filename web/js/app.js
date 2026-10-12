@@ -2195,6 +2195,13 @@ function openEssay(id) {
     if (file) guard(() => attachEssayImage(id, file));
   });
   renderEssayImage(id);
+  // Görsel boyutu: kaydırınca anında değişir, cihazda hatırlanır
+  promptBox.addEventListener('input', (ev) => {
+    if (!ev.target.matches('[data-fig-size]')) return;
+    prefs.essayImageWidth = Number(ev.target.value);
+    $('#es-figure').style.setProperty('--fig-w', `${prefs.essayImageWidth}%`);
+  });
+  promptBox.addEventListener('change', (ev) => { if (ev.target.matches('[data-fig-size]')) savePrefs(); });
   title.addEventListener('change', () => setTitle(essayTitle(store.getEssay(id))));
   $('#es-spell').addEventListener('change', (ev) => {
     prefs.essaySpell = ev.target.checked;
@@ -2225,14 +2232,43 @@ function renderEssayImage(id) {
   for (const b of $$('.es-prompt-head [data-pa=image], .es-prompt-head [data-pa=image-paste]')) b.classList.toggle('hidden', !!data || (task !== 'task1' && task !== 'free'));
   if (box.dataset.src === String(data.length) + data.slice(-32)) return; // aynı görsel
   box.dataset.src = String(data.length) + data.slice(-32);
+  box.style.setProperty('--fig-w', `${essayImageWidth()}%`);
   box.innerHTML = data
     ? `<button type="button" class="es-figure-img" data-pa="image-view" title="Büyütmek için tıkla"><img src="${data}" alt="Görev görseli"></button>
        <div class="es-figure-actions">
+         <label class="es-fig-size" title="Görselin boyutu">Boyut
+           <input type="range" min="20" max="100" step="5" value="${essayImageWidth()}" data-fig-size aria-label="Görsel boyutu"></label>
          <button type="button" class="ghost" data-pa="image">Değiştir</button>
          <button type="button" class="ghost" data-pa="image-paste" title="Kopyaladığın görselle değiştir (Ctrl+V)">📋 Yapıştır</button>
          <button type="button" class="ghost danger-ghost" data-pa="image-remove">Kaldır</button>
        </div>`
     : '';
+}
+
+const essayImageWidth = () => Math.min(100, Math.max(20, Number(prefs.essayImageWidth) || 70));
+
+/** Yapay zekâya gidecek kopya: JPEG, küçük boyut (görüntü servisleri büyük gömülü görselleri reddedebilir). */
+async function imageForAi(data) {
+  const img = await new Promise((res, rej) => {
+    const i = new Image();
+    i.onload = () => res(i);
+    i.onerror = () => rej(new Error('Görsel açılamadı.'));
+    i.src = data;
+  });
+  let out = '';
+  for (const [side, q] of [[1280, 0.85], [1024, 0.8], [800, 0.72], [640, 0.65]]) {
+    const scale = Math.min(1, side / Math.max(img.naturalWidth, img.naturalHeight));
+    const c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(img.naturalWidth * scale));
+    c.height = Math.max(1, Math.round(img.naturalHeight * scale));
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, c.width, c.height);
+    ctx.drawImage(img, 0, 0, c.width, c.height);
+    out = c.toDataURL('image/jpeg', q);
+    if (out.length <= 180_000) break;
+  }
+  return out.length <= 400_000 ? out : '';
 }
 
 /** Görseli küçültüp sıkıştırır (en uzun kenar 1600 px) ve yazıya ekler. */
@@ -2637,7 +2673,10 @@ async function runEssayReport() {
   const box = $('#es-report');
   if (box) box.innerHTML = '<div class="panel es-report-wait">🎓 Yazın IELTS ölçütlerine göre değerlendiriliyor. Bu genelde 20-60 saniye sürer; bu sırada yazmaya devam edebilirsin.</div>';
   try {
-    const report = await sync.aiEssayReport({ task: e.task, prompt: e.prompt, body: e.body, targetWords: essayTargetWords() });
+    // Academic Task 1: görsel de gönderilir (yapay zekâ grafikteki verileri okuyup yazıyla karşılaştırır)
+    const img = e.task === 'task1' ? store.getEssayImage(e.id) : '';
+    const image = img ? await imageForAi(img).catch(() => '') : '';
+    const report = await sync.aiEssayReport({ task: e.task, prompt: e.prompt, body: e.body, targetWords: essayTargetWords(), image });
     store.saveEssayReport(e.id, report);
     const here = state.view === 'essay' && state.essayId === e.id;
     if (here) {
@@ -2729,6 +2768,9 @@ function renderEssayReport() {
         </div>` : '';
       }).join('')}</div>
       ${r.summary ? `<p class="rp-summary">${esc(r.summary)}</p>` : ''}
+      ${r.figure_status === 'used' && r.figure_notes ? `<details class="rp-block rp-figure"><summary>🖼 Yapay zekânın görselden okudukları <small class="muted">(rakamlar buna göre kontrol edildi)</small></summary>
+        <p>${esc(r.figure_notes)}</p></details>` : ''}
+      ${r.figure_status === 'failed' ? '<p class="rp-stale rp-fig-fail">🖼 Görsel bu analizde okunamadı; değerlendirme sadece soru metnine göre yapıldı. Tekrar analiz etmeyi deneyebilirsin.</p>' : ''}
       <div class="rp-cols">${list('✅ Güçlü yanlar', r.strengths, 'good')}${list('🔧 Geliştirilecekler', r.improvements, 'warn')}</div>
       ${r.errors?.length ? `<div class="rp-block"><h4>✏️ Hatalar ve doğruları <small class="muted">(metinde göstermek için tıkla)</small></h4>
         <div class="rp-errors">${r.errors.map((x) => `

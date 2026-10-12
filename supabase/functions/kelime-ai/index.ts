@@ -10,6 +10,15 @@ import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2';
 
 const NVIDIA_URL = 'https://integrate.api.nvidia.com/v1/chat/completions';
 const MODEL = Deno.env.get('NVIDIA_MODEL') ?? 'z-ai/glm-5.3-flash';
+// Task 1 görselini (grafik/tablo/diyagram) okuyan görüntü modeli; okuduklarını yukarıdaki modele metin olarak verir
+const VISION_MODEL = Deno.env.get('NVIDIA_VISION_MODEL') ?? 'meta/llama-4-maverick-17b-128e-instruct';
+const FIGURE_PROMPT = `This image is the visual from an IELTS Academic Writing Task 1 question.
+Transcribe it accurately for an examiner who cannot see it. Plain text, no tables, at most 350 words:
+1. Type of visual, its title/subject, units and time period(s).
+2. Every category/label and every data value you can read (write "approx." when estimated). If there are several charts, cover each one.
+3. For a process or diagram: every stage in order. For maps: every feature and every change.
+4. Key features an overview should mention: main trends, highest/lowest values, biggest changes, notable comparisons.
+Describe only what is shown. Do not invent values you cannot read.`;
 const DAILY_LIMIT = Number(Deno.env.get('AI_DAILY_LIMIT') ?? 300); // kişi başı, son 24 saatte kelime
 const MAX_WORDS = 15; // tek istekte
 
@@ -126,17 +135,18 @@ Deno.serve(async (req) => {
   };
 
   // Modeli çağırır; hata durumunda kullanıcıya gösterilecek cevabı döndürür
-  const callModel = async (messages: unknown[], maxTokens: number, timeoutMs: number, temperature = 0.2): Promise<string | Response> => {
+  const callModel = async (messages: unknown[], maxTokens: number, timeoutMs: number, temperature = 0.2, model = MODEL): Promise<string | Response> => {
     let res: Response;
     try {
       res = await fetch(NVIDIA_URL, {
         method: 'POST',
         headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: MODEL,
+          model,
           temperature,
           max_tokens: maxTokens,
-          reasoning_effort: 'low', // uzun "düşünme" aşamasını kapatır: cevap birkaç kat hızlı gelir
+          // uzun "düşünme" aşamasını kapatır: cevap birkaç kat hızlı gelir (görüntü modeli bu ayarı tanımayabilir)
+          ...(model === MODEL ? { reasoning_effort: 'low' } : {}),
           messages,
         }),
         signal: AbortSignal.timeout(timeoutMs),
@@ -145,7 +155,7 @@ Deno.serve(async (req) => {
       return reply({ error: 'Yapay zekâ servisi zamanında cevap vermedi. Tekrar dene.' }, 504);
     }
     if (!res.ok) {
-      console.error('NVIDIA hata', res.status, await res.text());
+      console.error('NVIDIA hata', model, res.status, await res.text());
       const msg = res.status === 429 ? 'Yapay zekâ servisi şu an yoğun. Biraz sonra tekrar dene.' : 'Yapay zekâ servisine ulaşılamadı.';
       return reply({ error: msg }, 502);
     }
@@ -315,10 +325,14 @@ async function evaluateEssay(
   body: Record<string, unknown>,
   admin: SupabaseClient,
   useQuota: (units: number) => Promise<Response | null>,
-  callModel: (messages: unknown[], maxTokens: number, timeoutMs: number, temperature?: number) => Promise<string | Response>,
+  callModel: (messages: unknown[], maxTokens: number, timeoutMs: number, temperature?: number, model?: string) => Promise<string | Response>,
   reply: (b: unknown, status?: number) => Response,
 ): Promise<Response> {
+  const started = Date.now();
   const task = ESSAY_TASKS[String(body.task)] ?? ESSAY_TASKS.task2;
+  // Academic Task 1 görseli (uygulamada küçültülmüş JPEG/PNG/WebP)
+  const image = String(body.task) === 'task1' && typeof body.image === 'string' && body.image.length <= 400_000
+    && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(body.image) ? body.image : '';
   const essay = typeof body.body === 'string' ? body.body.trim().slice(0, 15000) : '';
   const prompt = typeof body.prompt === 'string' ? body.prompt.trim().slice(0, 3000) : '';
   const count = essay.split(/\s+/).filter((t) => /[\p{L}\p{N}]/u.test(t)).length;
@@ -330,12 +344,40 @@ async function evaluateEssay(
   const quota = await useQuota(ESSAY_COST);
   if (quota) return quota;
 
+  // 1) Görsel varsa önce görüntü modeli verileri okur. Okuyamazsa analiz yine de sadece soru metniyle yapılır.
+  let figure = '';
+  let figureStatus: 'none' | 'used' | 'failed' = 'none';
+  if (image) {
+    const seen = await callModel([{
+      role: 'user',
+      content: [
+        { type: 'image_url', image_url: { url: image } },
+        { type: 'text', text: FIGURE_PROMPT },
+      ],
+    }], 1200, 45_000, 0.1, VISION_MODEL);
+    if (typeof seen === 'string' && seen.trim().length > 40) {
+      figure = seen.trim().slice(0, 4000);
+      figureStatus = 'used';
+    } else {
+      figureStatus = 'failed';
+    }
+  }
+  const figureText = figure
+    ? '\n\nGÖREV GÖRSELİ — bir görüntü modelinin görselden okuduğu veriler. Yazıdaki rakamları, karşılaştırmaları ve '
+      + 'genel bakışı (overview) bunlarla karşılaştır: yanlış ya da uydurma veri, eksik ana eğilim/önemli özellik veya '
+      + 'overview yoksa Task Achievement puanına yansıt. Okumada küçük belirsizlikler olabilir; küçük sayı farklarını ceza sebebi yapma.\n'
+      + figure
+    : figureStatus === 'failed'
+      ? '\n\n(Görevin görseli okunamadı. Sadece soru metnine göre değerlendir; verilerin doğruluğu hakkında kesin hüküm verme.)'
+      : '';
+
+  // 2) Değerlendirme. Supabase fonksiyonları ~150 sn'de kesilir: görsel okuma süresi buradan düşülür.
   const out = await callModel([
     { role: 'system', content: essayPrompt(String(body.task), await officialDescriptors(admin)) },
     {
       role: 'user',
       content: `Görev türü: ${task.label}${task.min ? ` · alt sınır ${task.min} kelime` : ''}\nKelime sayısı: ${count}\n\n`
-        + `SORU:\n${prompt || '(soru verilmedi; yazının konusundan çıkar)'}\n\nYAZI:\n${essay}`
+        + `SORU:\n${prompt || '(soru verilmedi; yazının konusundan çıkar)'}${figureText}\n\nYAZI:\n${essay}`
         + (targets.length
           ? `\n\nÖĞRENCİNİN ÇALIŞTIĞI KELİMELER (destesinden):\n${targets.map((t: { word: string; translation: string }) => `- ${t.word}${t.translation ? ` (${t.translation})` : ''}`).join('\n')}\n\n`
             + 'Bu listedeki kelimelerden, yazıdaki bir cümleye anlamı bozmadan ve doğal şekilde oturanları bul; '
@@ -344,7 +386,7 @@ async function evaluateEssay(
             + '"why" kısa Türkçe açıklama. Uygun yer yoksa boş dizi ver.'
           : ''),
     },
-  ], 5500, 140_000, 0.1);
+  ], 5500, Math.max(60_000, 140_000 - (Date.now() - started)), 0.1);
   if (out instanceof Response) return out;
 
   try {
@@ -387,6 +429,8 @@ async function evaluateEssay(
       words: count,
       model: MODEL,
       descriptor_source: descriptorCache ? 'official-2023' : 'summary',
+      figure_status: figureStatus,
+      figure_notes: figure.slice(0, 2500),
       vocab_suggestions: (() => {
         const allowed = new Set(targets.map((t: { word: string }) => t.word.toLowerCase()));
         return (Array.isArray(raw.vocab_suggestions) ? raw.vocab_suggestions : []).slice(0, 10)
