@@ -361,6 +361,8 @@ async function readFigure(apiKey: string, image: string, budgetMs = 115_000): Pr
           model,
           temperature: 0.1,
           max_tokens: 1200,
+          // GLM'de uzun "düşünme" aşaması kapatılır (cevap birkaç kat hızlı); diğer modeller bu ayarı tanımayabilir
+          ...(model.startsWith('z-ai/') ? { reasoning_effort: 'low' } : {}),
           messages: [{
             role: 'user',
             content: [
