@@ -2289,6 +2289,14 @@ function openEssay(id) {
   renderEssayStatus(analyzeEssay(body.value, prompt.value), task.value, true);
   renderEssayTimerBtn();
   autoGrow(body);
+  // Genişlik değişince (görsel paneli açılıp kapanınca, pencere boyutu) yükseklik yeniden hesaplanır
+  let bodyWidth = body.clientWidth;
+  new ResizeObserver(() => {
+    if (body.clientWidth === bodyWidth) return;
+    bodyWidth = body.clientWidth;
+    autoGrow(body);
+    renderGrammar();
+  }).observe(body);
   grammar.matches = [];
   grammar.ignored = new Set();
   renderGrammar();
@@ -2323,7 +2331,7 @@ function renderEssayImage(id, force = false) {
 /* ---- görsel yazarken hep görünsün: bilgisayarda sağda sabit panel, telefonda yüzen pencere */
 
 const figMode = () => (isMobile() ? 'float' : 'side');
-const figPanelWidth = () => Math.round(Math.max(Math.min(420, innerWidth * 0.5), innerWidth * 0.46)); // ekranın yaklaşık yarısı
+const figPanelWidth = () => Math.round(Math.min(640, Math.max(380, innerWidth * 0.4))); // ekranın ~%40'ı; yazıya yer kalsın
 
 /** Yazı sayfası dışında paneli kaldırır (görünüm her değiştiğinde çağrılır). */
 function checkFigDock() {

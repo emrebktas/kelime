@@ -1089,3 +1089,13 @@ body.fig-side-on #app { padding-right: var(--fig-side-w, 400px); }
   .act-list { grid-template-columns: auto max-content minmax(0, 1fr) auto; column-gap: 8px; }
   .act-ic, .act-deckcol { display: none; }
 }
+
+/* Yan panel açıkken yazı sayfası: sol menü gizlenir (geri düğmesi var), yazı alanı geniş kalır;
+   soru metni zaten panelde olduğu için yazının üstünde tekrar gösterilmez */
+@media (min-width: 761px) {
+  body.fig-side-on #app { grid-template-columns: 1fr; }
+  body.fig-side-on #sidebar { display: none; }
+  body.fig-side-on .essay-page { padding-left: 24px; padding-right: 24px; }
+  body.fig-side-on .es-prompt-box:not(.editing) .es-prompt-view { display: none; }
+  body.fig-side-on .es-prompt-box:not(.editing) { padding-bottom: 0; margin-bottom: 8px; }
+}
