@@ -480,6 +480,7 @@ function showHome() {
   setTitle('Kelime');
   main.innerHTML = homeHtml();
   loadBoard();
+  loadActivity();
 }
 
 /** Başka cihazdan değişiklik gelince: ekranı baştan çizmeden sadece değişen parçaları yenile
@@ -490,13 +491,19 @@ function refreshHome() {
   tmp.innerHTML = homeHtml();
   const fresh = tmp.firstElementChild;
   if (!page || !fresh) { showHome(); return; }
-  const hadBoard = !!$('#board');
+  // Pano ve akış kendi verisini kendisi yükler: üst bir bölüm baştan çizilse bile dolu hâlleri korunur
+  const live = { board: [$('#board'), loadBoard], activity: [$('#activity'), loadActivity] };
   patchNode(page, fresh);
-  if (!hadBoard && $('#board')) loadBoard();
+  for (const [id, [before, load]] of Object.entries(live)) {
+    const now = $(`#${id}`);
+    if (!now) continue;
+    if (before && now !== before) now.replaceWith(before);
+    else if (!before) load();
+  }
 }
 
 function patchNode(old, fresh) {
-  if (old.id === 'board' && fresh.id === 'board') return; // pano kendi kendini yeniler
+  if (old.id && old.id === fresh.id && ['board', 'activity'].includes(old.id)) return; // pano ve akış kendi kendini yeniler
   if (old.outerHTML === fresh.outerHTML) return;
   const sameShell = old.tagName === fresh.tagName && old.className === fresh.className
     && old.children.length === fresh.children.length && old.children.length > 0
@@ -527,6 +534,7 @@ function homeHtml() {
           ${sync.enabled ? '<button data-act="join">Kodla katıl</button>' : ''}
           <button data-act="import">JSON içe aktar</button>
           <button class="primary" data-act="new-deck">+ Yeni deste</button>
+          <button class="ghost json-help-btn" data-act="json-help" title="JSON dosya formatı">{ } JSON formatı</button>
         </div>
       </div>
       <div class="home-row">
@@ -539,16 +547,26 @@ function homeHtml() {
           <span class="t-sub">${esc(langName(d.language))} · ${d.total} kart${d.role !== 'owner' ? ` · ${ROLES[d.role]}` : d.shared ? ' · paylaşılıyor' : ''}</span>
           <span class="counts">${num(d.new, 'n-new')}${num(d.learn, 'n-learn')}${num(d.review, 'n-review')}</span>
         </button>`).join('')}</div>` : ''}
-      <div class="panel">
-        <h3>JSON formatı</h3>
-        <div class="muted">Dosyayı pencereye sürükleyip bırakabilir ya da “İçe aktar” butonunu kullanabilirsin.
-          Alan adları esnektir: <code>word</code>/<code>kelime</code>, <code>translation</code>/<code>turkish</code>,
-          <code>sentence</code>/<code>example</code>, <code>synonyms</code>. Bunların dışındaki alanlar
-          (ör. <code>article</code>, <code>plural</code>) kartın arkasında ek bilgi olarak gösterilir.
-          Sadece kart dizisi (<code>[ {...}, {...} ]</code>) de kabul edilir.</div>
-        <pre class="code">${esc(EXAMPLE_JSON)}</pre>
-      </div>
+      ${sync.enabled && sync.user() ? `<section class="panel activity" id="activity">
+        <div class="act-head"><h3>📰 Destedekilerin son etkinlikleri</h3><span class="muted">son 7 gün</span></div>
+        <div class="muted">Yükleniyor…</div>
+      </section>` : ''}
     </div>`;
+}
+
+function jsonHelpModal() {
+  openModal(`
+    <h2>JSON formatı</h2>
+    <div class="muted">Dosyayı pencereye sürükleyip bırakabilir ya da “İçe aktar” butonunu kullanabilirsin.
+      Alan adları esnektir: <code>word</code>/<code>kelime</code>, <code>translation</code>/<code>turkish</code>,
+      <code>sentence</code>/<code>example</code>, <code>synonyms</code>. Bunların dışındaki alanlar
+      (ör. <code>article</code>, <code>plural</code>) kartın arkasında ek bilgi olarak gösterilir.
+      Sadece kart dizisi (<code>[ {...}, {...} ]</code>) de kabul edilir.</div>
+    <pre class="code">${esc(EXAMPLE_JSON)}</pre>
+    <div class="modal-actions">
+      <button type="button" data-close>Kapat</button>
+      <button type="button" class="primary" data-act="import" data-close>JSON içe aktar</button>
+    </div>`, { wide: true });
 }
 
 /* =========================================================== deste sayfası */
@@ -1867,6 +1885,67 @@ async function loadBoard() {
     ${others ? '' : '<p class="muted board-empty">Desteni paylaş, arkadaşların burada görünsün.</p>'}`;
   // Ana sayfa açıkken dakikada bir yenile
   board.timer = setTimeout(() => { if (state.view === 'home' && !document.hidden) loadBoard(); }, 60_000);
+}
+
+/* ---- etkinlik akışı: ortak destedekiler ne ekledi, ne kadar çalıştı */
+
+const activity = { groups: [], limit: 12, timer: null };
+const ACT_GROUP_GAP = 2 * 3600 * 1000; // aynı kişinin aynı desteye 2 saat içinde eklediği kelimeler tek satır
+
+async function loadActivity() {
+  const box = $('#activity');
+  if (!box) return;
+  clearTimeout(activity.timer);
+  let rows;
+  try { rows = await sync.fetchActivity(7); } catch (e) {
+    if (!activity.groups.length) box.innerHTML = `<div class="act-head"><h3>📰 Destedekilerin son etkinlikleri</h3></div><div class="muted">Etkinlikler yüklenemedi: ${esc(e.message)}</div>`;
+    return;
+  }
+  if (!$('#activity')) return;
+  if (rows === null) { box.remove(); return; } // sunucuda fonksiyon henüz yok
+  // Satırlar yeniden eskiye gelir; art arda gelen aynı kişi + aynı deste kelime eklemeleri birleştirilir
+  const groups = [];
+  for (const r of rows) {
+    const t = new Date(r.at).getTime();
+    const last = groups[groups.length - 1];
+    if (r.kind === 'card' && last?.kind === 'card' && last.user_id === r.user_id && last.deck_id === r.deck_id
+        && last.oldest - t < ACT_GROUP_GAP) {
+      last.words.push(r.word);
+      last.oldest = t;
+    } else if (r.kind === 'card') {
+      groups.push({ kind: 'card', user_id: r.user_id, name: r.display_name, deck_id: r.deck_id, deck: r.deck_name, at: t, oldest: t, words: [r.word] });
+    } else {
+      groups.push({ kind: 'study', user_id: r.user_id, name: r.display_name, at: t, seconds: r.seconds });
+    }
+  }
+  activity.groups = groups;
+  renderActivity();
+  activity.timer = setTimeout(() => { if (state.view === 'home' && !document.hidden) loadActivity(); }, 120_000);
+}
+
+function renderActivity() {
+  const box = $('#activity');
+  if (!box) return;
+  const list = activity.groups.slice(0, activity.limit);
+  const who = (g) => `<b>${esc(g.name || 'Biri')}</b>`;
+  const body = list.length
+    ? `<div class="act-list">${list.map((g) => {
+      const initial = esc((g.name || '?').charAt(0).toLocaleUpperCase('tr'));
+      const text = g.kind === 'card'
+        ? `${who(g)}, <button type="button" class="link-btn act-deck" data-deck="${g.deck_id}">${esc(g.deck)}</button> destesine
+           ${g.words.length > 1 ? `<b>${g.words.length}</b> kelime` : 'kelime'} ekledi
+           <span class="act-words">${g.words.slice(0, 6).map((w) => `<span class="act-word">${esc(w)}</span>`).join('')}${g.words.length > 6 ? `<span class="muted">+${g.words.length - 6}</span>` : ''}</span>`
+        : `${who(g)} <b>${fmtDur(g.seconds)}</b> çalıştı`;
+      return `<div class="act-row ${g.kind}">
+        <span class="avatar sm">${initial}</span>
+        <span class="act-ic">${g.kind === 'card' ? '📝' : '⏱'}</span>
+        <div class="act-text">${text}</div>
+        <span class="act-time" title="${esc(new Date(g.at).toLocaleString('tr-TR'))}">${timeAgo(g.at)}</span>
+      </div>`;
+    }).join('')}</div>
+    ${activity.groups.length > list.length ? '<button type="button" class="link-btn act-more" data-act="activity-more">Daha fazla göster</button>' : ''}`
+    : '<p class="muted act-empty">Son 7 günde ortak destelerinde etkinlik yok. Bir desteni paylaş (deste › ⚙ › Paylaş); katılanların eklediği kelimeler ve çalışmaları burada görünür.</p>';
+  box.innerHTML = `<div class="act-head"><h3>📰 Destedekilerin son etkinlikleri</h3><span class="muted">son 7 gün</span></div>${body}`;
 }
 
 /** Ana sayfadaki "Bugün çalıştın" kutusu. */
@@ -3328,6 +3407,8 @@ document.addEventListener('click', (e) => {
       case 'timer': timerModal(); break;
       case 'essays': showEssays(); break;
       case 'chat': showChat(); break;
+      case 'json-help': jsonHelpModal(); break;
+      case 'activity-more': activity.limit += 20; renderActivity(); break;
       case 'chat-open':
         if (state.view === 'chat') openThread(el.dataset.peer);
         else showChat(el.dataset.peer, el.dataset.name);

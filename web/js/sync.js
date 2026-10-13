@@ -392,6 +392,18 @@ export async function fetchBoard(since) {
   return data || [];
 }
 
+/** Ortak destedekilerin son etkinlikleri (kelime ekleme, çalışma); sunucuda fonksiyon yoksa null. */
+let activityMissing = false;
+export async function fetchActivity(days = 7) {
+  if (!session || activityMissing) return null;
+  const { data, error } = await client.rpc('activity_feed', { p_days: days });
+  if (error) {
+    if (isMissingFn(error)) { activityMissing = true; return null; }
+    throw new Error(message(error));
+  }
+  return data || [];
+}
+
 export async function setBoardVisibility(visibility) {
   await rpc('set_board_visibility', { p_visibility: visibility });
 }

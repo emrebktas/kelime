@@ -1060,3 +1060,27 @@ body.fig-side-on #app { padding-right: var(--fig-side-w, 400px); }
 }
 .fig-dock.float .fd-tab { border-radius: 10px; border-right: 1px solid var(--border); }
 .fd-tab:hover { background: var(--primary); color: var(--on-primary); }
+
+/* ---------- ana sayfa: etkinlik akışı ---------- */
+.json-help-btn { font-size: 12.5px; padding: 6px 10px; color: var(--muted); }
+.activity .act-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+.activity .act-head span { font-size: 12px; }
+.act-list { display: flex; flex-direction: column; }
+.act-row {
+  display: grid; grid-template-columns: auto auto 1fr auto; gap: 10px; align-items: start;
+  padding: 9px 4px; border-top: 1px solid var(--border);
+}
+.act-row:first-child { border-top: none; }
+.act-row .avatar.sm { width: 28px; height: 28px; font-size: 12.5px; grid-row: auto; }
+.act-ic { font-size: 14px; line-height: 28px; }
+.act-text { font-size: 13.5px; line-height: 1.55; padding-top: 3px; min-width: 0; }
+.act-deck { font-size: inherit; font-weight: 600; color: var(--slate); }
+.act-words { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; align-items: center; }
+.act-word { font-size: 12px; padding: 1px 8px; border-radius: 999px; background: var(--hover); color: var(--text); }
+.act-time { font-size: 11.5px; color: var(--muted); white-space: nowrap; padding-top: 5px; }
+.act-more { margin-top: 6px; }
+.act-empty { font-size: 13px; margin: 0; }
+@media (max-width: 760px) {
+  .act-row { grid-template-columns: auto 1fr auto; }
+  .act-ic { display: none; }
+}
