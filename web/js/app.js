@@ -302,6 +302,7 @@ function renderSidebar() {
     : '<div class="empty-side">Henüz deste yok. “+ Yeni deste” ile oluştur ya da bir JSON dosyası içe aktar.</div>';
   $('#btn-join').classList.toggle('hidden', !sync.enabled);
   $('#nav-essays')?.classList.toggle('active', state.view === 'essays' || state.view === 'essay');
+  $('#nav-phrases')?.classList.toggle('active', state.view === 'phrases');
   renderChatBadges();
   checkFigDock();
   renderAccount();
@@ -2065,6 +2066,7 @@ function showEssays() {
           <h1>Yazılarım</h1>
           <div class="sub">IELTS Writing · ${essays.length} yazı</div>
         </div>
+        <button data-act="phrases" title="Task 1 kolokasyon rehberi">📚 Task 1 ifadeleri</button>
         <button class="primary" data-act="essay-new">+ Yeni yazı</button>
       </header>
       ${essays.length ? `<div class="essay-list">${essays.map((e) => {
@@ -2139,6 +2141,7 @@ function openEssay(id) {
         <button type="button" data-act="essay-timer" id="es-timer-btn"></button>
         <select id="es-deck" title="Önerilerde kullanılacak kelime destesi">${essayDeckOptions()}</select>
         <span class="spacer"></span>
+        <button type="button" data-act="phrases-modal" id="es-phrases-btn" class="${e.task === 'task1' ? '' : 'hidden'}" title="Task 1 ifadeleri: tıkla, yazına eklensin">📚 İfadeler</button>
         <button type="button" class="ai-btn" data-act="essay-report" id="es-report-btn">🎓 IELTS analizi</button>
       </div>
       <div class="es-toggles" role="group" aria-label="Yazarken gösterilecekler">
@@ -2268,7 +2271,7 @@ function openEssay(id) {
     renderGrammar();
     if (ev.target.checked) scheduleGrammar(true);
   });
-  task.addEventListener('change', () => { save(); renderEssayTimerBtn(); renderEssayImage(id); });
+  task.addEventListener('change', () => { save(); renderEssayTimerBtn(); renderEssayImage(id); $('#es-phrases-btn').classList.toggle('hidden', task.value !== 'task1'); });
   // Görsel: dosyadan seç ya da ekran görüntüsünü yapıştır (Ctrl+V)
   $('#es-image-input').addEventListener('change', (ev) => {
     const file = ev.target.files?.[0];
@@ -3344,6 +3347,201 @@ async function sendChat() {
   loadContacts();
 }
 
+/* =========================================================== Task 1 ifadeleri (kolokasyon rehberi) */
+
+// İçerik web/content/task1-collocations.json dosyasından gelir (uygulamayla birlikte paketlenir, çevrimdışı da çalışır).
+// Task 2 için aynı biçimde ikinci bir dosya eklenebilir.
+const PHRASE_SETS = { task1: 'content/task1-collocations.json' };
+const phrases = { data: null, loading: null, tab: null, query: '' };
+const PHR_EXTRA_TABS = [['ref', 'Tablolar'], ['grammar', 'Gramer ve hatalar'], ['study', 'Çalışma listesi']];
+
+function loadPhrases() {
+  if (phrases.data) return Promise.resolve(phrases.data);
+  phrases.loading ||= fetch(PHRASE_SETS.task1).then((r) => {
+    if (!r.ok) throw new Error('İfade listesi yüklenemedi.');
+    return r.json();
+  }).then((d) => { phrases.data = d; return d; }).finally(() => { phrases.loading = null; });
+  return phrases.loading;
+}
+
+const phrTabTitle = (c) => c.title.split(' – ')[0].replace('Bütün soru tiplerinde kullanılabilecek ifadeler', 'Genel');
+
+/** Sayfa ya da (yazı yazarken) pencere içinde ifade rehberi. insert: tıklanan ifade yazıya eklenir. */
+async function renderPhrases(box, { insert = null } = {}) {
+  box.innerHTML = '<div class="muted">Yükleniyor…</div>';
+  let d;
+  try { d = await loadPhrases(); } catch (e) { box.innerHTML = `<div class="muted">${esc(e.message)}</div>`; return; }
+  const cats = Object.entries(d.categories);
+  phrases.tab ||= prefs.phrTab && (d.categories[prefs.phrTab] || PHR_EXTRA_TABS.some(([k]) => k === prefs.phrTab)) ? prefs.phrTab : cats[0][0];
+  box.innerHTML = `
+    <div class="phr-top">
+      <input type="search" class="phr-search" placeholder="İfade ara (İngilizce ya da Türkçe)…" value="${esc(phrases.query)}" aria-label="İfade ara">
+      <span class="muted phr-hint">${insert ? 'İfadeye tıkla: yazına eklenir' : 'İfadeye tıkla: kopyalanır'}</span>
+    </div>
+    <div class="phr-tabs" role="tablist">
+      ${cats.map(([k, c]) => `<button type="button" role="tab" data-phr-tab="${k}">${esc(phrTabTitle(c))}</button>`).join('')}
+      ${PHR_EXTRA_TABS.map(([k, t]) => `<button type="button" role="tab" class="extra" data-phr-tab="${k}">${t}</button>`).join('')}
+    </div>
+    <div class="phr-body"></div>`;
+  const body = $('.phr-body', box);
+  const draw = () => {
+    $$('[data-phr-tab]', box).forEach((b) => b.classList.toggle('on', !phrases.query && b.dataset.phrTab === phrases.tab));
+    body.innerHTML = phrases.query ? phrSearchHtml(d, phrases.query) : phrTabHtml(d, phrases.tab);
+  };
+  draw();
+  $('.phr-search', box).addEventListener('input', (e) => { phrases.query = e.target.value.trim(); draw(); });
+  box.addEventListener('click', (e) => {
+    const tab = e.target.closest('[data-phr-tab]')?.dataset.phrTab;
+    if (tab) {
+      phrases.tab = tab;
+      phrases.query = '';
+      $('.phr-search', box).value = '';
+      prefs.phrTab = tab;
+      savePrefs();
+      draw();
+      body.scrollIntoView({ block: 'nearest' });
+      return;
+    }
+    const text = e.target.closest('[data-phr]')?.dataset.phr;
+    if (text) {
+      if (insert) { insert(text); return; }
+      navigator.clipboard?.writeText(text).then(() => toast(`Kopyalandı: ${text}`, 'success', 1400), () => toast('Kopyalanamadı.', 'error'));
+    }
+  });
+  box.addEventListener('change', (e) => {
+    const id = e.target.dataset.phrCheck;
+    if (!id) return;
+    prefs.phrChecklist = { ...(prefs.phrChecklist || {}), [id]: e.target.checked };
+    if (!e.target.checked) delete prefs.phrChecklist[id];
+    savePrefs();
+    const done = Object.keys(prefs.phrChecklist).length;
+    const counter = $('.phr-check-count', box);
+    if (counter) counter.textContent = `${done} / ${d.study_checklist.length}`;
+  });
+}
+
+function phrEntryHtml(en, tr, example) {
+  return `<div class="phr-entry">
+    <button type="button" class="phr-en" data-phr="${esc(en)}" title="${esc(en)}">${esc(en)}</button>
+    <span class="phr-tr">${esc(tr || '')}</span>
+    ${example ? `<button type="button" class="phr-ex" data-phr="${esc(example)}">${esc(example)}</button>` : ''}
+  </div>`;
+}
+
+function phrTabHtml(d, tab) {
+  const c = d.categories[tab];
+  if (c) {
+    return `<div class="phr-groups">${c.groups.map((g) => `
+      <section class="phr-group">
+        <h4>${esc(g.title)} <small class="muted">${g.entries.length}</small></h4>
+        ${g.entries.map((x) => phrEntryHtml(x.en, x.tr, x.example)).join('')}
+      </section>`).join('')}</div>
+      ${c.model_sentences?.length ? `<section class="phr-group phr-models">
+        <h4>Örnek cümleler</h4>
+        ${c.model_sentences.map((m) => `<button type="button" class="phr-model" data-phr="${esc(m)}">${esc(m)}</button>`).join('')}
+      </section>` : ''}`;
+  }
+  if (tab === 'ref') {
+    const r = d.reference_tables || {};
+    return `<div class="phr-groups">
+      <section class="phr-group"><h4>Pie chart: yüzde → kesir</h4>
+        <table class="phr-table">${(r.pie_chart_fractions || []).map((x) => `<tr><td>${esc(x.percentage)}</td><td><button type="button" class="phr-en" data-phr="${esc(x.expression)}">${esc(x.expression)}</button></td></tr>`).join('')}</table>
+      </section>
+      <section class="phr-group"><h4>Process: fiiller (passive için 3. hâl)</h4>
+        <table class="phr-table">${(r.process_verbs || []).map((x) => `<tr><td><b>${esc(x.base)}</b></td><td><button type="button" class="phr-en" data-phr="${esc(x.past_participle)}">${esc(x.past_participle)}</button></td><td class="muted">${esc(x.tr)}</td></tr>`).join('')}</table>
+      </section>
+    </div>`;
+  }
+  if (tab === 'grammar') {
+    return `<div class="phr-groups">
+      <section class="phr-group"><h4>Gramer notları</h4>
+        ${(d.grammar_notes || []).map((n) => `<div class="phr-note">
+          <b>${esc(n.topic)}</b>
+          ${n.rule ? `<div class="phr-rule">${esc(n.rule)}</div>` : ''}
+          ${n.note_tr ? `<div class="muted">${esc(n.note_tr)}</div>` : ''}
+          ${(n.examples || []).map((x) => `<div class="phr-pair"><span>${esc(x.en)}</span><span class="muted">${esc(x.tr)}</span></div>`).join('')}
+          ${n.incorrect ? `<div class="phr-wrong">✗ ${esc(n.incorrect)}</div>` : ''}
+          ${(n.correct || []).map((x) => `<div class="phr-right">✓ ${esc(x)}</div>`).join('')}
+        </div>`).join('')}
+      </section>
+      <section class="phr-group"><h4>Sık yapılan hatalar</h4>
+        ${(d.common_mistakes || []).map((m) => `<div class="phr-note"><div class="phr-wrong">✗ ${esc(m.incorrect)}</div><div class="phr-right">✓ ${esc(m.correct)}</div></div>`).join('')}
+      </section>
+      <section class="phr-group phr-wide"><h4>Cümleni yükselt</h4>
+        ${(d.sentence_upgrades || []).map((u) => `<div class="phr-upgrade">
+          <span class="phr-ctx">${esc(phrTabTitle(d.categories[u.context] || { title: u.context }))}</span>
+          <div><small class="muted">Temel</small> ${esc(u.basic)}</div>
+          <div><small class="muted">İyi</small> ${esc(u.improved)}</div>
+          <div class="phr-adv"><small class="muted">İleri</small> <button type="button" class="phr-model" data-phr="${esc(u.advanced)}">${esc(u.advanced)}</button></div>
+        </div>`).join('')}
+      </section>
+    </div>`;
+  }
+  // Çalışma listesi: işaretler cihazda hatırlanır
+  const checked = prefs.phrChecklist || {};
+  const done = (d.study_checklist || []).filter((x) => checked[x.id]).length;
+  return `<div class="phr-groups">
+    <section class="phr-group"><h4>Çalışma listesi <span class="phr-check-count muted">${done} / ${(d.study_checklist || []).length}</span></h4>
+      ${(d.study_checklist || []).map((x) => `<label class="phr-check"><input type="checkbox" data-phr-check="${x.id}" ${checked[x.id] ? 'checked' : ''}><span>${esc(x.phrase)}</span></label>`).join('')}
+    </section>
+    <section class="phr-group"><h4>Neye odaklanmalı?</h4>
+      ${Object.entries(d.study_strategy || {}).map(([k, v]) => `<div class="phr-note"><b>${esc(k.replace(/_/g, ' / '))}</b><div class="muted">${esc(v)}</div></div>`).join('')}
+      ${(d.additional_notes_tr || []).map((n) => `<div class="phr-note">💡 ${esc(n)}</div>`).join('')}
+    </section>
+  </div>`;
+}
+
+function phrSearchHtml(d, q) {
+  const needle = q.toLocaleLowerCase('tr');
+  const hit = (...xs) => xs.some((x) => x && String(x).toLocaleLowerCase('tr').includes(needle));
+  const sections = Object.values(d.categories).map((c) => {
+    const rows = c.groups.flatMap((g) => g.entries.filter((x) => hit(x.en, x.tr, x.example)).map((x) => ({ ...x, group: g.title })));
+    return rows.length ? `<section class="phr-group"><h4>${esc(phrTabTitle(c))} <small class="muted">${rows.length}</small></h4>
+      ${rows.map((x) => phrEntryHtml(x.en, x.tr, x.example)).join('')}</section>` : '';
+  }).join('');
+  return sections ? `<div class="phr-groups">${sections}</div>` : `<p class="muted">“${esc(q)}” için ifade bulunamadı.</p>`;
+}
+
+function showPhrases() {
+  leaveStudy();
+  state.view = 'phrases';
+  document.body.classList.remove('menu-open');
+  renderSidebar();
+  setTitle('Task 1 ifadeleri');
+  main.innerHTML = `
+    <div class="page phrases-page">
+      <header class="deck-head">
+        <button class="icon-btn head-btn" data-act="home" title="Ana sayfaya dön (Esc)" aria-label="Ana sayfaya dön">${ICON.home}</button>
+        <div class="deck-title">
+          <h1>Task 1 ifadeleri</h1>
+          <div class="sub">IELTS Academic Writing Task 1 · soru tiplerine göre kolokasyonlar · hedef Band 7–9</div>
+        </div>
+        <button data-act="essays">✍️ Yazılarım</button>
+      </header>
+      <div id="phr-root"></div>
+    </div>`;
+  renderPhrases($('#phr-root'));
+}
+
+/** Yazı yazarken: ifadeler penceresi; tıklanan ifade imlecin olduğu yere eklenir. */
+function phrasesModal() {
+  const ta = $('#es-body');
+  const pos = ta ? [ta.selectionStart, ta.selectionEnd] : null;
+  const form = openModal('<h2>📚 Task 1 ifadeleri</h2><div id="phr-modal"></div><div class="modal-actions"><button type="button" data-close>Kapat</button></div>', { wide: true });
+  renderPhrases($('#phr-modal', form), {
+    insert: (text) => {
+      const body = $('#es-body');
+      if (!body || !pos) return;
+      const before = body.value.slice(0, pos[0]);
+      const pad = before && !/\s$/.test(before) ? ' ' : '';
+      body.setRangeText(`${pad}${text} `, pos[0], pos[1], 'end');
+      pos[0] = pos[1] = body.selectionEnd;
+      body.dispatchEvent(new Event('input', { bubbles: true }));
+      toast(`Eklendi: ${text}`, 'success', 1200);
+    },
+  });
+}
+
 /* =========================================================== uzaktan gelen değişiklikler */
 
 let remoteTimer = null;
@@ -3439,6 +3637,8 @@ document.addEventListener('click', (e) => {
       case 'speech-settings': speechSettingsModal(); break;
       case 'timer': timerModal(); break;
       case 'essays': showEssays(); break;
+      case 'phrases': showPhrases(); break;
+      case 'phrases-modal': phrasesModal(); break;
       case 'chat': showChat(); break;
       case 'json-help': jsonHelpModal(); break;
       case 'activity-more': activity.limit += 20; renderActivity(); break;
@@ -3597,7 +3797,7 @@ document.addEventListener('keydown', (e) => {
       if (typing) document.activeElement.blur();
       else showEssays();
     }
-  } else if (state.view === 'essays') {
+  } else if (state.view === 'essays' || state.view === 'phrases') {
     if (e.key === 'Escape' && !typing) showHome();
   } else if (state.view === 'chat') {
     if (e.key !== 'Escape') return;
@@ -3697,7 +3897,7 @@ async function init() {
       else if (state.view === 'study') backToDeck();
       else if (state.view === 'chat' && chat.peer) closeThread();
       else if (state.view === 'essay') showEssays();
-      else if (['deck', 'essays', 'chat'].includes(state.view)) showHome();
+      else if (['deck', 'essays', 'chat', 'phrases'].includes(state.view)) showHome();
       else NativeApp.exitApp();
     });
     NativeApp.addListener('resume', () => { sync.schedule(0); checkForUpdate(); onTimerTick(); });
