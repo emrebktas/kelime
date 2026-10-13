@@ -1145,3 +1145,6 @@ body.fig-side-on #app { padding-right: var(--fig-side-w, 400px); }
   .phr-groups { grid-template-columns: 1fr; }
   .phr-entry { grid-template-columns: 1fr; }
 }
+.essays-tabs { display: inline-flex; gap: 4px; padding: 3px; border-radius: 10px; background: var(--hover); margin: 0 0 16px; }
+.essays-tabs button { border: none; background: none; padding: 6px 14px; font-size: 13.5px; border-radius: 8px; font-weight: 600; color: var(--muted); }
+.essays-tabs button.on { background: var(--panel); color: var(--text); box-shadow: var(--shadow); }

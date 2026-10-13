@@ -301,8 +301,7 @@ function renderSidebar() {
       </button>`).join('')
     : '<div class="empty-side">Henüz deste yok. “+ Yeni deste” ile oluştur ya da bir JSON dosyası içe aktar.</div>';
   $('#btn-join').classList.toggle('hidden', !sync.enabled);
-  $('#nav-essays')?.classList.toggle('active', state.view === 'essays' || state.view === 'essay');
-  $('#nav-phrases')?.classList.toggle('active', state.view === 'phrases');
+  $('#nav-essays')?.classList.toggle('active', ['essays', 'essay', 'phrases'].includes(state.view));
   renderChatBadges();
   checkFigDock();
   renderAccount();
@@ -2066,9 +2065,9 @@ function showEssays() {
           <h1>Yazılarım</h1>
           <div class="sub">IELTS Writing · ${essays.length} yazı</div>
         </div>
-        <button data-act="phrases" title="Task 1 kolokasyon rehberi">📚 Task 1 ifadeleri</button>
         <button class="primary" data-act="essay-new">+ Yeni yazı</button>
       </header>
+      ${essaysTabs('essays')}
       ${essays.length ? `<div class="essay-list">${essays.map((e) => {
         const t = ESSAY_TASKS[e.task] || ESSAY_TASKS.free;
         const ok = !t.min || e.words >= t.min;
@@ -3502,6 +3501,14 @@ function phrSearchHtml(d, q) {
   return sections ? `<div class="phr-groups">${sections}</div>` : `<p class="muted">“${esc(q)}” için ifade bulunamadı.</p>`;
 }
 
+/** Yazılarım bölümünün sekmeleri: yazılar ve Task 1 ifadeleri. */
+function essaysTabs(active) {
+  return `<div class="seg essays-tabs" role="tablist">
+    <button type="button" role="tab" data-act="essays" class="${active === 'essays' ? 'on' : ''}">✍️ Yazılarım</button>
+    <button type="button" role="tab" data-act="phrases" class="${active === 'phrases' ? 'on' : ''}">📚 Task 1 ifadeleri</button>
+  </div>`;
+}
+
 function showPhrases() {
   leaveStudy();
   state.view = 'phrases';
@@ -3513,11 +3520,12 @@ function showPhrases() {
       <header class="deck-head">
         <button class="icon-btn head-btn" data-act="home" title="Ana sayfaya dön (Esc)" aria-label="Ana sayfaya dön">${ICON.home}</button>
         <div class="deck-title">
-          <h1>Task 1 ifadeleri</h1>
+          <h1>Yazılarım</h1>
           <div class="sub">IELTS Academic Writing Task 1 · soru tiplerine göre kolokasyonlar · hedef Band 7–9</div>
         </div>
-        <button data-act="essays">✍️ Yazılarım</button>
+        <button class="primary" data-act="essay-new">+ Yeni yazı</button>
       </header>
+      ${essaysTabs('phrases')}
       <div id="phr-root"></div>
     </div>`;
   renderPhrases($('#phr-root'));
@@ -3798,7 +3806,7 @@ document.addEventListener('keydown', (e) => {
       else showEssays();
     }
   } else if (state.view === 'essays' || state.view === 'phrases') {
-    if (e.key === 'Escape' && !typing) showHome();
+    if (e.key === 'Escape' && !typing) { if (state.view === 'phrases') showEssays(); else showHome(); }
   } else if (state.view === 'chat') {
     if (e.key !== 'Escape') return;
     if (typing) document.activeElement.blur();
@@ -3896,8 +3904,8 @@ async function init() {
       else if (document.body.classList.contains('menu-open')) document.body.classList.remove('menu-open');
       else if (state.view === 'study') backToDeck();
       else if (state.view === 'chat' && chat.peer) closeThread();
-      else if (state.view === 'essay') showEssays();
-      else if (['deck', 'essays', 'chat', 'phrases'].includes(state.view)) showHome();
+      else if (state.view === 'essay' || state.view === 'phrases') showEssays();
+      else if (['deck', 'essays', 'chat'].includes(state.view)) showHome();
       else NativeApp.exitApp();
     });
     NativeApp.addListener('resume', () => { sync.schedule(0); checkForUpdate(); onTimerTick(); });
