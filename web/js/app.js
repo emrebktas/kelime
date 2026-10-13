@@ -1931,14 +1931,14 @@ function renderActivity() {
   const body = list.length
     ? `<div class="act-list">${list.map((g) => {
       const initial = esc((g.name || '?').charAt(0).toLocaleUpperCase('tr'));
+      const words = g.kind === 'card' ? g.words.join(', ') : '';
       const text = g.kind === 'card'
-        ? `${who(g)}, <button type="button" class="link-btn act-deck" data-deck="${g.deck_id}">${esc(g.deck)}</button> destesine
-           ${g.words.length > 1 ? `<b>${g.words.length}</b> kelime` : 'kelime'} ekledi
-           <span class="act-words">${g.words.slice(0, 6).map((w) => `<span class="act-word">${esc(w)}</span>`).join('')}${g.words.length > 6 ? `<span class="muted">+${g.words.length - 6}</span>` : ''}</span>`
-        : `${who(g)} <b>${fmtDur(g.seconds)}</b> çalıştı`;
-      return `<div class="act-row ${g.kind}">
-        <span class="avatar sm">${initial}</span>
+        ? `${who(g)} <button type="button" class="link-btn act-deck" data-deck="${g.deck_id}">${esc(g.deck)}</button>
+           <span class="muted">· ${g.words.length > 1 ? `${g.words.length} kelime` : 'kelime'} ekledi:</span> <span class="act-words">${esc(words)}</span>`
+        : `${who(g)} <span class="muted">·</span> <b>${fmtDur(g.seconds)}</b> <span class="muted">çalıştı</span>`;
+      return `<div class="act-row act-${g.kind}" title="${esc(g.kind === 'card' ? `${g.name}: ${words}` : `${g.name}: ${fmtDur(g.seconds)} çalıştı`)}">
         <span class="act-ic">${g.kind === 'card' ? '📝' : '⏱'}</span>
+        <span class="avatar sm">${initial}</span>
         <div class="act-text">${text}</div>
         <span class="act-time" title="${esc(new Date(g.at).toLocaleString('tr-TR'))}">${timeAgo(g.at)}</span>
       </div>`;
