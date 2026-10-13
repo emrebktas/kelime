@@ -1927,19 +1927,19 @@ function renderActivity() {
   const box = $('#activity');
   if (!box) return;
   const list = activity.groups.slice(0, activity.limit);
-  const who = (g) => `<b>${esc(g.name || 'Biri')}</b>`;
   const body = list.length
     ? `<div class="act-list">${list.map((g) => {
       const initial = esc((g.name || '?').charAt(0).toLocaleUpperCase('tr'));
       const words = g.kind === 'card' ? g.words.join(', ') : '';
-      const text = g.kind === 'card'
-        ? `${who(g)} <button type="button" class="link-btn act-deck" data-deck="${g.deck_id}">${esc(g.deck)}</button>
-           <span class="muted">· ${g.words.length > 1 ? `${g.words.length} kelime` : 'kelime'} ekledi:</span> <span class="act-words">${esc(words)}</span>`
-        : `${who(g)} <span class="muted">·</span> <b>${fmtDur(g.seconds)}</b> <span class="muted">çalıştı</span>`;
-      return `<div class="act-row act-${g.kind}" title="${esc(g.kind === 'card' ? `${g.name}: ${words}` : `${g.name}: ${fmtDur(g.seconds)} çalıştı`)}">
+      // Sütunlar bütün satırlarda hizalı: simge | baş harf | ad | deste | ne yaptı | zaman
+      return `<div class="act-row act-${g.kind}" title="${esc(g.kind === 'card' ? `${g.name} · ${g.deck}: ${words}` : `${g.name}: ${fmtDur(g.seconds)} çalıştı`)}">
         <span class="act-ic">${g.kind === 'card' ? '📝' : '⏱'}</span>
         <span class="avatar sm">${initial}</span>
-        <div class="act-text">${text}</div>
+        <b class="act-name">${esc(g.name || 'Biri')}</b>
+        <span class="act-deckcol">${g.kind === 'card' ? `<button type="button" class="link-btn act-deck" data-deck="${g.deck_id}">${esc(g.deck)}</button>` : ''}</span>
+        <span class="act-detail">${g.kind === 'card'
+          ? `<span class="muted">${g.words.length > 1 ? `${g.words.length} kelime` : 'kelime'} ekledi:</span> ${esc(words)}`
+          : `<b>${fmtDur(g.seconds)}</b> <span class="muted">çalıştı</span>`}</span>
         <span class="act-time" title="${esc(new Date(g.at).toLocaleString('tr-TR'))}">${timeAgo(g.at)}</span>
       </div>`;
     }).join('')}</div>

@@ -1066,21 +1066,26 @@ body.fig-side-on #app { padding-right: var(--fig-side-w, 400px); }
 .activity.panel { padding-top: 12px; padding-bottom: 10px; }
 .activity .act-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; }
 .activity .act-head span { font-size: 12px; }
-.act-list { display: flex; flex-direction: column; }
+.act-list {
+  display: grid; grid-template-columns: auto auto max-content minmax(0, max-content) minmax(0, 1fr) auto;
+  column-gap: 10px;
+}
 .act-row {
-  display: grid; grid-template-columns: auto auto 1fr auto; gap: 8px; align-items: center;
+  grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; align-items: center;
   padding: 4px 2px; border-top: 1px solid var(--border); min-height: 32px;
 }
 .act-row:first-child { border-top: none; }
 .act-row .avatar.sm { width: 22px; height: 22px; font-size: 11px; grid-row: auto; }
-.act-ic { font-size: 13px; }
-.act-text { font-size: 13px; line-height: 1.4; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.act-deck { font-size: inherit; font-weight: 600; color: var(--slate); padding: 0; }
-.act-words { color: var(--text); }
-.act-time { font-size: 11.5px; color: var(--muted); white-space: nowrap; }
+.act-ic { font-size: 13px; text-align: center; }
+.act-name { font-size: 13px; white-space: nowrap; }
+.act-deckcol { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.act-deck { font-size: 13px; font-weight: 600; color: var(--slate); padding: 0; }
+.act-detail { font-size: 13px; line-height: 1.4; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.act-time { font-size: 11.5px; color: var(--muted); white-space: nowrap; text-align: right; }
 .act-more { margin-top: 4px; font-size: 12.5px; }
 .act-empty { font-size: 13px; margin: 0; }
 @media (max-width: 760px) {
-  .act-row { grid-template-columns: auto 1fr auto; }
-  .act-ic { display: none; }
+  /* telefonda simge ve deste sütunu yok; deste adı satırın ipucunda */
+  .act-list { grid-template-columns: auto max-content minmax(0, 1fr) auto; column-gap: 8px; }
+  .act-ic, .act-deckcol { display: none; }
 }
