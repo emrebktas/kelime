@@ -123,14 +123,29 @@ webSpeech?.addEventListener?.('voiceschanged', loadVoices);
 loadVoices();
 const warnedLangs = new Set();
 
-// O dilin en kaliteli sesini seç (Edge'in "Natural", Apple'ın "Enhanced", Google sesleri...).
+// Mac'in eğlence amaçlı sesleri (Grandpa, Rocko, Bubbles…) her dilde listelenir ama kelime okumaya uygun değil
+const NOVELTY_VOICE = /\b(albert|bad news|bahh|bells|boing|bubbles|cellos|eddy|flo|fred|good news|grandma|grandpa|jester|junior|kathy|organ|ralph|reed|rocko|sandy|shelley|superstar|trinoids|whisper|wobble|zarvox)\b/i;
+const voiceLang = (v) => v.lang.toLowerCase().replace(/_/g, '-');
+
+/** Bu dildeki kullanılabilir sesler. */
+function langVoices(lang) {
+  const base = (langInfo(lang)[2] || lang).toLowerCase().split('-')[0];
+  return voices.filter((v) => voiceLang(v).split('-')[0] === base && !NOVELTY_VOICE.test(v.name));
+}
+
+// Kullanıcının seçtiği ses; yoksa o dilin en güvenilir sesi. Cihazın kendi (yerel) sesleri öne alınır:
+// Chrome'un internetten çalışan "Google" sesleri (özellikle Mac'te) cevap vermeyince sessizce sistemin
+// İngilizce sesine düşüp Almancayı İngilizce aksanla okuyabiliyor. Edge'in "Natural" sesleri güvenilir, onlar en önde.
 function pickVoice(lang) {
+  const chosen = prefs.voices?.[lang] && langVoices(lang).find((v) => v.voiceURI === prefs.voices[lang]);
+  return chosen || bestVoice(lang);
+}
+function bestVoice(lang) {
+  const list = langVoices(lang);
   const tag = (langInfo(lang)[2] || lang).toLowerCase();
-  const base = tag.split('-')[0];
-  const norm = (v) => v.lang.toLowerCase().replace('_', '-');
-  const score = (v) => (norm(v) === tag ? 4 : 0) + (/natural|neural|online|enhanced|premium|siri/i.test(v.name) ? 2 : 0)
-    + (/google/i.test(v.name) ? 1 : 0);
-  return voices.filter((v) => norm(v).split('-')[0] === base).sort((a, b) => score(b) - score(a))[0] || null;
+  const score = (v) => (voiceLang(v) === tag ? 4 : 0) + (/natural|neural/i.test(v.name) ? 3 : 0)
+    + (v.localService ? 2 : 0) + (/enhanced|premium|siri/i.test(v.name) ? 1 : 0);
+  return list.sort((a, b) => score(b) - score(a))[0] || null;
 }
 
 function stopSpeech() {
@@ -239,6 +254,8 @@ function speechSettingsModal() {
       <input type="range" name="volume" min="0" max="100" step="5" value="${Math.round(speechVolume() * 100)}"></label>
     <label>Konuşma hızı <small id="rate-val">${speechRate().toFixed(2)}×</small>
       <input type="range" name="rate" min="50" max="150" step="5" value="${Math.round(speechRate() * 100)}"></label>
+    ${NativeTTS ? '' : `<label>Ses <small>${esc(langName(lang))}</small>
+      <select name="voice"><option value="">Yükleniyor…</option></select></label>`}
     <p class="muted" style="font-size:12.5px">Bu ses seviyesi cihazın genel sesinden bağımsızdır. Bazı tarayıcılar (özellikle iPhone/iPad'de Safari) ses seviyesi ayarını desteklemez; orada cihazın kendi ses tuşlarını kullan.</p>
     <div class="modal-actions">
       <button type="button" data-try>▶ Dene</button>
@@ -255,6 +272,24 @@ function speechSettingsModal() {
     applyTheme();
   };
   form.addEventListener('input', save);
+  // Ses seçimi (tarayıcıda): kelime yanlış aksanla okunuyorsa listeden başka bir ses seçilebilir
+  const sel = $('[name=voice]', form);
+  if (sel) {
+    voicesReady().then(() => {
+      const list = langVoices(lang);
+      const auto = bestVoice(lang);
+      sel.innerHTML = list.length
+        ? `<option value="">Otomatik${auto ? ` (${esc(auto.name)})` : ''}</option>${list.map((v) => `<option value="${esc(v.voiceURI)}" ${prefs.voices?.[lang] === v.voiceURI ? 'selected' : ''}>${esc(v.name)}${v.localService ? '' : ' · internet'}</option>`).join('')}`
+        : `<option value="">Bu cihazda ${esc(langName(lang))} ses yok</option>`;
+      sel.disabled = !list.length;
+    });
+    sel.addEventListener('change', () => {
+      prefs.voices = { ...(prefs.voices || {}) };
+      if (sel.value) prefs.voices[lang] = sel.value; else delete prefs.voices[lang];
+      savePrefs();
+      speak(sample, lang);
+    });
+  }
   // Kaydırıcı bırakılınca örnek kelimeyi yeni ayarla oku
   $$('input[type=range]', form).forEach((r) => r.addEventListener('change', () => speak(sample, lang)));
   $('[data-try]', form).addEventListener('click', () => speak(sample, lang));
