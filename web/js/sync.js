@@ -340,18 +340,41 @@ export async function aiCards(words, language) {
 }
 
 /** Yazıyı IELTS ölçütlerine göre değerlendirir (sunucudaki kelime-ai fonksiyonu). */
-export async function aiEssayReport({ task, prompt, body, targetWords = [], image = '' }) {
-  if (!enabled || !session) throw new Error('Yapay zekâ analizi için giriş yapman gerekiyor.');
-  if (!navigator.onLine) throw new Error('Yapay zekâ analizi için internet bağlantısı gerekiyor.');
-  const timeout = new Promise((_, reject) => setTimeout(
-    () => reject(new Error('Analiz çok uzun sürdü. Biraz sonra tekrar dene.')), 170_000));
-  const { data, error } = await Promise.race([
-    client.functions.invoke('kelime-ai', { body: { action: 'essay', task, prompt, body, target_words: targetWords, ...(image ? { image } : {}) } }), timeout]);
-  if (error) {
-    let msg = error.message;
-    try { msg = (await error.context?.json?.())?.error || msg; } catch { /* gövde JSON değil */ }
-    throw new Error(message({ message: msg }));
+/** Fonksiyon hatasını okunur mesaja çevirir (gövdesi JSON değilse durum koduna göre). */
+async function fnError(error) {
+  let msg = '';
+  try { msg = (await error.context?.json?.())?.error || ''; } catch { /* gövde JSON değil */ }
+  if (msg) return new Error(message({ message: msg }));
+  const status = error.context?.status;
+  if (status === 546 || status === 504 || status === 502 || status === 503) {
+    return new Error(`Yapay zekâ sunucusu süre sınırına takıldı ya da yoğun (kod ${status}). Biraz sonra tekrar dene.`);
   }
+  return new Error(message(error) + (status ? ` (kod ${status})` : ''));
+}
+
+async function invokeAi(body, timeoutMs, timeoutMsg) {
+  if (!enabled || !session) throw new Error('Yapay zekâ için giriş yapman gerekiyor.');
+  if (!navigator.onLine) throw new Error('Yapay zekâ için internet bağlantısı gerekiyor.');
+  const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error(timeoutMsg)), timeoutMs));
+  const { data, error } = await Promise.race([client.functions.invoke('kelime-ai', { body }), timeout]);
+  if (error) throw await fnError(error);
+  return data;
+}
+
+/** Task 1 görselini okutur: { notes, model, error } (notes boşsa okunamadı). */
+export async function aiFigure(image) {
+  const data = await invokeAi({ action: 'figure', image }, 90_000, 'Görsel okuma çok uzun sürdü.');
+  if (!data || typeof data.notes !== 'string') throw new Error('Görsel okunamadı. Sunucu fonksiyonu güncel mi?');
+  return data;
+}
+
+export async function aiEssayReport({ task, prompt, body, targetWords = [], figure = null }) {
+  const data = await invokeAi({
+    action: 'essay', task, prompt, body, target_words: targetWords,
+    ...(figure ? (figure.notes
+      ? { figure_notes: figure.notes, figure_model: figure.model || '' }
+      : { figure_failed: true, figure_error: figure.error || '' }) : {}),
+  }, 170_000, 'Analiz çok uzun sürdü. Biraz sonra tekrar dene.');
   if (!data?.report) throw new Error('Yapay zekâ bir değerlendirme döndürmedi. Sunucu fonksiyonu güncel mi?');
   return data.report;
 }

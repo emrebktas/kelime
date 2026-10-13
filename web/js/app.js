@@ -2816,6 +2816,29 @@ const CRITERIA = (taskName) => [
 const ERR_TYPES = { grammar: 'Dilbilgisi', vocabulary: 'Kelime', spelling: 'Yazım', punctuation: 'Noktalama', style: 'Üslup' };
 
 let reportBusy = false;
+let reportPhase = '🎓 Analiz ediliyor…';
+
+/** Görseli okutur; aynı görsel daha önce okunduysa saklanan sonucu kullanır. Hata olursa analiz görselsiz sürer. */
+async function readEssayFigure(id, img) {
+  const sig = `${img.length}:${img.slice(-48)}`;
+  const cache = prefs.figNotes?.[id];
+  if (cache?.sig === sig && cache.notes) return cache;
+  reportPhase = '🖼 Görsel okunuyor…';
+  let res;
+  try {
+    const image = await imageForAi(img);
+    res = image ? await sync.aiFigure(image) : { notes: '', error: 'görsel hazırlanamadı' };
+  } catch (err) {
+    res = { notes: '', error: err.message };
+  }
+  reportPhase = '🎓 Analiz ediliyor…';
+  if (res.notes) {
+    prefs.figNotes = Object.fromEntries(Object.entries({ ...(prefs.figNotes || {}), [id]: { sig, notes: res.notes, model: res.model } }).slice(-20));
+    savePrefs();
+  }
+  return { sig, notes: res.notes || '', model: res.model || '', error: res.error || '' };
+}
+
 async function runEssayReport() {
   if (reportBusy) return;
   state.flushEssay?.();
@@ -2836,17 +2859,18 @@ async function runEssayReport() {
   const started = Date.now();
   const tick = setInterval(() => {
     const btn = $('#es-report-btn');
-    if (btn) btn.textContent = `🎓 Analiz ediliyor… ${Math.round((Date.now() - started) / 1000)} sn`;
+    if (btn) btn.textContent = `${reportPhase} ${Math.round((Date.now() - started) / 1000)} sn`;
   }, 1000);
+  reportPhase = '🎓 Analiz ediliyor…';
   const btn = $('#es-report-btn');
   if (btn) { btn.disabled = true; btn.textContent = '🎓 Analiz ediliyor…'; }
   const box = $('#es-report');
   if (box) box.innerHTML = '<div class="panel es-report-wait">🎓 Yazın IELTS ölçütlerine göre değerlendiriliyor. Bu genelde 20-60 saniye sürer; bu sırada yazmaya devam edebilirsin.</div>';
   try {
-    // Academic Task 1: görsel de gönderilir (yapay zekâ grafikteki verileri okuyup yazıyla karşılaştırır)
+    // Academic Task 1: önce görsel ayrı istekte okunur (aynı görsel için sonuç saklanır), sonra analiz
     const img = e.task === 'task1' ? store.getEssayImage(e.id) : '';
-    const image = img ? await imageForAi(img).catch(() => '') : '';
-    const report = await sync.aiEssayReport({ task: e.task, prompt: e.prompt, body: e.body, targetWords: essayTargetWords(), image });
+    const figure = img ? await readEssayFigure(e.id, img) : null;
+    const report = await sync.aiEssayReport({ task: e.task, prompt: e.prompt, body: e.body, targetWords: essayTargetWords(), figure });
     store.saveEssayReport(e.id, report);
     const here = state.view === 'essay' && state.essayId === e.id;
     if (here) {

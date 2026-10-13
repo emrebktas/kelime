@@ -170,6 +170,15 @@ Deno.serve(async (req) => {
   };
 
   if (body.action === 'essay') return evaluateEssay(body, admin, useQuota, callModel, reply, apiKey);
+  // Task 1 görselini ayrı istekte okur (analizle aynı istekte süre sınırı aşılmasın diye)
+  if (body.action === 'figure') {
+    const image = validImage(body.image);
+    if (!image) return reply({ error: 'Görsel geçersiz ya da çok büyük.' }, 400);
+    const quota = await useQuota(FIGURE_COST);
+    if (quota) return quota;
+    const seen = await readFigure(apiKey, image);
+    return reply({ notes: seen.text.slice(0, 4000), model: seen.model, error: seen.error.slice(0, 300) });
+  }
 
   const language = str(body.language, 12).toLowerCase() || 'en';
   const words = [...new Set((Array.isArray(body.words) ? body.words : [])
@@ -198,6 +207,9 @@ Deno.serve(async (req) => {
 /* ------------------------------------------------------------------ IELTS essay değerlendirmesi */
 
 const ESSAY_COST = 25; // günlük sınırdan düşülen birim
+const FIGURE_COST = 5;
+const validImage = (v: unknown) => typeof v === 'string' && v.length <= 400_000
+  && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(v) ? v : '';
 const ESSAY_TASKS: Record<string, { label: string; min: number; criterion: string }> = {
   task2: { label: 'IELTS Writing Task 2 (essay)', min: 250, criterion: 'Task Response' },
   task1: { label: 'IELTS Academic Writing Task 1 (rapor)', min: 150, criterion: 'Task Achievement' },
@@ -382,8 +394,10 @@ async function evaluateEssay(
   const started = Date.now();
   const task = ESSAY_TASKS[String(body.task)] ?? ESSAY_TASKS.task2;
   // Academic Task 1 görseli (uygulamada küçültülmüş JPEG/PNG/WebP)
-  const image = String(body.task) === 'task1' && typeof body.image === 'string' && body.image.length <= 400_000
-    && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(body.image) ? body.image : '';
+  // Uygulama görseli önce ayrı istekte okutup okunanları (figure_notes) gönderir; eski sürümler görseli doğrudan gönderir
+  const image = String(body.task) === 'task1' ? validImage(body.image) : '';
+  const givenNotes = String(body.task) === 'task1' && typeof body.figure_notes === 'string' ? body.figure_notes.trim().slice(0, 4000) : '';
+  const givenFailed = String(body.task) === 'task1' && body.figure_failed === true;
   const essay = typeof body.body === 'string' ? body.body.trim().slice(0, 15000) : '';
   const prompt = typeof body.prompt === 'string' ? body.prompt.trim().slice(0, 3000) : '';
   const count = essay.split(/\s+/).filter((t) => /[\p{L}\p{N}]/u.test(t)).length;
@@ -396,11 +410,11 @@ async function evaluateEssay(
   if (quota) return quota;
 
   // 1) Görsel varsa önce görüntü modeli verileri okur. Okuyamazsa analiz yine de sadece soru metniyle yapılır.
-  let figure = '';
-  let figureStatus: 'none' | 'used' | 'failed' = 'none';
-  let figureModel = '';
-  let figureError = '';
-  if (image) {
+  let figure = givenNotes;
+  let figureStatus: 'none' | 'used' | 'failed' = givenNotes ? 'used' : givenFailed ? 'failed' : 'none';
+  let figureModel = givenNotes ? str(body.figure_model, 120) : '';
+  let figureError = givenFailed ? str(body.figure_error, 300) : '';
+  if (image && !givenNotes && !givenFailed) {
     const seen = await readFigure(apiKey, image);
     figure = seen.text.slice(0, 4000);
     figureModel = seen.model;
