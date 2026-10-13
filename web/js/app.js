@@ -2858,9 +2858,9 @@ function renderEssayReport() {
         </div>` : '';
       }).join('')}</div>
       ${r.summary ? `<p class="rp-summary">${esc(r.summary)}</p>` : ''}
-      ${r.figure_status === 'used' && r.figure_notes ? `<details class="rp-block rp-figure"><summary>🖼 Yapay zekânın görselden okudukları <small class="muted">(rakamlar buna göre kontrol edildi)</small></summary>
+      ${r.figure_status === 'used' && r.figure_notes ? `<details class="rp-block rp-figure"><summary>🖼 Yapay zekânın görselden okudukları <small class="muted">(rakamlar buna göre kontrol edildi${r.figure_model ? ` · ${esc(r.figure_model.split('/').pop())}` : ''})</small></summary>
         <p>${esc(r.figure_notes)}</p></details>` : ''}
-      ${r.figure_status === 'failed' ? '<p class="rp-stale rp-fig-fail">🖼 Görsel bu analizde okunamadı; değerlendirme sadece soru metnine göre yapıldı. Tekrar analiz etmeyi deneyebilirsin.</p>' : ''}
+      ${r.figure_status === 'failed' ? `<p class="rp-stale rp-fig-fail">🖼 Görsel bu analizde okunamadı; değerlendirme sadece soru metnine göre yapıldı. Tekrar analiz etmeyi deneyebilirsin.${r.figure_error ? `<br><small>Neden: ${esc(r.figure_error)}</small>` : ''}</p>` : ''}
       <div class="rp-cols">${list('✅ Güçlü yanlar', r.strengths, 'good')}${list('🔧 Geliştirilecekler', r.improvements, 'warn')}</div>
       ${r.errors?.length ? `<div class="rp-block"><h4>✏️ Hatalar ve doğruları <small class="muted">(metinde göstermek için tıkla)</small></h4>
         <div class="rp-errors">${r.errors.map((x) => `

@@ -11,7 +11,13 @@ import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2';
 const NVIDIA_URL = 'https://integrate.api.nvidia.com/v1/chat/completions';
 const MODEL = Deno.env.get('NVIDIA_MODEL') ?? 'z-ai/glm-5.3-flash';
 // Task 1 görselini (grafik/tablo/diyagram) okuyan görüntü modeli; okuduklarını yukarıdaki modele metin olarak verir
-const VISION_MODEL = Deno.env.get('NVIDIA_VISION_MODEL') ?? 'meta/llama-4-maverick-17b-128e-instruct';
+// Sırayla denenir; ilk çalışan kullanılır (NVIDIA_VISION_MODEL gizli değişkeniyle başa başka model eklenebilir)
+const VISION_MODELS = [...new Set([
+  Deno.env.get('NVIDIA_VISION_MODEL') ?? '',
+  'google/gemma-4-31b-it',
+  'meta/llama-3.2-90b-vision-instruct',
+  'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning',
+].filter(Boolean))];
 const FIGURE_PROMPT = `This image is the visual from an IELTS Academic Writing Task 1 question.
 Transcribe it accurately for an examiner who cannot see it. Plain text, no tables, at most 350 words:
 1. Type of visual, its title/subject, units and time period(s).
@@ -163,7 +169,7 @@ Deno.serve(async (req) => {
     return data.choices?.[0]?.message?.content ?? '';
   };
 
-  if (body.action === 'essay') return evaluateEssay(body, admin, useQuota, callModel, reply);
+  if (body.action === 'essay') return evaluateEssay(body, admin, useQuota, callModel, reply, apiKey);
 
   const language = str(body.language, 12).toLowerCase() || 'en';
   const words = [...new Set((Array.isArray(body.words) ? body.words : [])
@@ -321,12 +327,57 @@ const band = (v: unknown) => {
 const strList = (v: unknown, max: number, len: number) =>
   (Array.isArray(v) ? v : []).map((s) => str(s, len)).filter(Boolean).slice(0, max);
 
+/** Görseli görüntü modelleriyle sırayla okumayı dener (en fazla ~60 sn). Hata nedenleri rapora yazılır. */
+async function readFigure(apiKey: string, image: string): Promise<{ text: string; model: string; error: string }> {
+  const deadline = Date.now() + 60_000;
+  const errors: string[] = [];
+  for (const model of VISION_MODELS) {
+    const left = deadline - Date.now();
+    if (left < 8_000) { errors.push('süre doldu'); break; }
+    try {
+      const res = await fetch(NVIDIA_URL, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model,
+          temperature: 0.1,
+          max_tokens: 1500,
+          messages: [{
+            role: 'user',
+            content: [
+              { type: 'image_url', image_url: { url: image } },
+              { type: 'text', text: FIGURE_PROMPT },
+            ],
+          }],
+        }),
+        signal: AbortSignal.timeout(Math.min(40_000, left)),
+      });
+      if (!res.ok) {
+        const detail = (await res.text()).slice(0, 300);
+        console.error('Görsel modeli hata', model, res.status, detail);
+        errors.push(`${model.split('/')[1]}: HTTP ${res.status}`);
+        continue;
+      }
+      const data = await res.json();
+      // "Düşünen" modellerin düşünme bölümü atılır
+      const text = String(data.choices?.[0]?.message?.content ?? '').replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+      if (text.length > 40) return { text, model, error: '' };
+      errors.push(`${model.split('/')[1]}: boş cevap`);
+    } catch (e) {
+      console.error('Görsel modeli ulaşılamadı', model, e);
+      errors.push(`${model.split('/')[1]}: zaman aşımı`);
+    }
+  }
+  return { text: '', model: '', error: errors.join(' · ') };
+}
+
 async function evaluateEssay(
   body: Record<string, unknown>,
   admin: SupabaseClient,
   useQuota: (units: number) => Promise<Response | null>,
   callModel: (messages: unknown[], maxTokens: number, timeoutMs: number, temperature?: number, model?: string) => Promise<string | Response>,
   reply: (b: unknown, status?: number) => Response,
+  apiKey: string,
 ): Promise<Response> {
   const started = Date.now();
   const task = ESSAY_TASKS[String(body.task)] ?? ESSAY_TASKS.task2;
@@ -347,20 +398,14 @@ async function evaluateEssay(
   // 1) Görsel varsa önce görüntü modeli verileri okur. Okuyamazsa analiz yine de sadece soru metniyle yapılır.
   let figure = '';
   let figureStatus: 'none' | 'used' | 'failed' = 'none';
+  let figureModel = '';
+  let figureError = '';
   if (image) {
-    const seen = await callModel([{
-      role: 'user',
-      content: [
-        { type: 'image_url', image_url: { url: image } },
-        { type: 'text', text: FIGURE_PROMPT },
-      ],
-    }], 1200, 45_000, 0.1, VISION_MODEL);
-    if (typeof seen === 'string' && seen.trim().length > 40) {
-      figure = seen.trim().slice(0, 4000);
-      figureStatus = 'used';
-    } else {
-      figureStatus = 'failed';
-    }
+    const seen = await readFigure(apiKey, image);
+    figure = seen.text.slice(0, 4000);
+    figureModel = seen.model;
+    figureError = seen.error;
+    figureStatus = figure ? 'used' : 'failed';
   }
   const figureText = figure
     ? '\n\nGÖREV GÖRSELİ — bir görüntü modelinin görselden okuduğu veriler. Yazıdaki rakamları, karşılaştırmaları ve '
@@ -430,6 +475,8 @@ async function evaluateEssay(
       model: MODEL,
       descriptor_source: descriptorCache ? 'official-2023' : 'summary',
       figure_status: figureStatus,
+      figure_model: figureModel,
+      figure_error: figureError.slice(0, 300),
       figure_notes: figure.slice(0, 2500),
       vocab_suggestions: (() => {
         const allowed = new Set(targets.map((t: { word: string }) => t.word.toLowerCase()));
