@@ -339,21 +339,27 @@ const band = (v: unknown) => {
 const strList = (v: unknown, max: number, len: number) =>
   (Array.isArray(v) ? v : []).map((s) => str(s, len)).filter(Boolean).slice(0, max);
 
-/** Görseli görüntü modelleriyle sırayla okumayı dener (en fazla ~60 sn). Hata nedenleri rapora yazılır. */
-async function readFigure(apiKey: string, image: string): Promise<{ text: string; model: string; error: string }> {
-  const deadline = Date.now() + 60_000;
+/**
+ * Görseli görüntü modellerine aynı anda gönderir (birkaç saniye arayla); ilk düzgün cevap kullanılır, diğerleri iptal edilir.
+ * NVIDIA'nın ücretsiz sunucuları yoğunken tek bir model uzun süre bekletebiliyor. Hata nedenleri rapora yazılır.
+ */
+async function readFigure(apiKey: string, image: string, budgetMs = 115_000): Promise<{ text: string; model: string; error: string }> {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), budgetMs);
   const errors: string[] = [];
-  for (const model of VISION_MODELS) {
-    const left = deadline - Date.now();
-    if (left < 8_000) { errors.push('süre doldu'); break; }
+  const attempt = async (model: string, delayMs: number): Promise<{ text: string; model: string }> => {
+    const name = model.split('/')[1];
+    if (delayMs) await new Promise((r) => setTimeout(r, delayMs));
+    if (ctrl.signal.aborted) throw new Error('iptal');
+    let res: Response;
     try {
-      const res = await fetch(NVIDIA_URL, {
+      res = await fetch(NVIDIA_URL, {
         method: 'POST',
         headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model,
           temperature: 0.1,
-          max_tokens: 1500,
+          max_tokens: 1200,
           messages: [{
             role: 'user',
             content: [
@@ -362,25 +368,36 @@ async function readFigure(apiKey: string, image: string): Promise<{ text: string
             ],
           }],
         }),
-        signal: AbortSignal.timeout(Math.min(40_000, left)),
+        signal: ctrl.signal,
       });
-      if (!res.ok) {
-        const detail = (await res.text()).slice(0, 300);
-        console.error('Görsel modeli hata', model, res.status, detail);
-        errors.push(`${model.split('/')[1]}: HTTP ${res.status}`);
-        continue;
-      }
+    } catch (e) {
+      if (!ctrl.signal.aborted) console.error('Görsel modeli ulaşılamadı', model, e);
+      errors.push(`${name}: ${ctrl.signal.aborted ? 'zaman aşımı' : 'bağlantı hatası'}`);
+      throw e;
+    }
+    if (!res.ok) {
+      console.error('Görsel modeli hata', model, res.status, (await res.text()).slice(0, 300));
+      errors.push(`${name}: HTTP ${res.status}`);
+      throw new Error('http');
+    }
+    try {
       const data = await res.json();
       // "Düşünen" modellerin düşünme bölümü atılır
       const text = String(data.choices?.[0]?.message?.content ?? '').replace(/<think>[\s\S]*?<\/think>/g, '').trim();
-      if (text.length > 40) return { text, model, error: '' };
-      errors.push(`${model.split('/')[1]}: boş cevap`);
-    } catch (e) {
-      console.error('Görsel modeli ulaşılamadı', model, e);
-      errors.push(`${model.split('/')[1]}: zaman aşımı`);
-    }
+      if (text.length > 40) return { text, model };
+    } catch { /* gövde okunamadı */ }
+    errors.push(`${name}: boş cevap`);
+    throw new Error('boş');
+  };
+  try {
+    const win = await Promise.any(VISION_MODELS.map((m, i) => attempt(m, i * 3_000)));
+    return { ...win, error: '' };
+  } catch {
+    return { text: '', model: '', error: errors.join(' · ') || 'süre doldu' };
+  } finally {
+    clearTimeout(timer);
+    ctrl.abort(); // kazanan belli: diğer istekleri kes
   }
-  return { text: '', model: '', error: errors.join(' · ') };
 }
 
 async function evaluateEssay(
@@ -415,7 +432,7 @@ async function evaluateEssay(
   let figureModel = givenNotes ? str(body.figure_model, 120) : '';
   let figureError = givenFailed ? str(body.figure_error, 300) : '';
   if (image && !givenNotes && !givenFailed) {
-    const seen = await readFigure(apiKey, image);
+    const seen = await readFigure(apiKey, image, 50_000);
     figure = seen.text.slice(0, 4000);
     figureModel = seen.model;
     figureError = seen.error;

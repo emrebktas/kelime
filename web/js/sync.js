@@ -363,7 +363,7 @@ async function invokeAi(body, timeoutMs, timeoutMsg) {
 
 /** Task 1 görselini okutur: { notes, model, error } (notes boşsa okunamadı). */
 export async function aiFigure(image) {
-  const data = await invokeAi({ action: 'figure', image }, 90_000, 'Görsel okuma çok uzun sürdü.');
+  const data = await invokeAi({ action: 'figure', image }, 150_000, 'Görsel okuma çok uzun sürdü.');
   if (!data || typeof data.notes !== 'string') throw new Error('Görsel okunamadı. Sunucu fonksiyonu güncel mi?');
   return data;
 }

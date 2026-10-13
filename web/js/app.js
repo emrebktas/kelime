@@ -2438,7 +2438,8 @@ async function imageForAi(data) {
     i.src = data;
   });
   let out = '';
-  for (const [side, q] of [[1280, 0.85], [1024, 0.8], [800, 0.72], [640, 0.65]]) {
+  // Grafik okumak için 1024 px yeter; küçük görsel modele daha hızlı işlenir
+  for (const [side, q] of [[1024, 0.85], [896, 0.8], [768, 0.72], [640, 0.65]]) {
     const scale = Math.min(1, side / Math.max(img.naturalWidth, img.naturalHeight));
     const c = document.createElement('canvas');
     c.width = Math.max(1, Math.round(img.naturalWidth * scale));
@@ -2448,7 +2449,7 @@ async function imageForAi(data) {
     ctx.fillRect(0, 0, c.width, c.height);
     ctx.drawImage(img, 0, 0, c.width, c.height);
     out = c.toDataURL('image/jpeg', q);
-    if (out.length <= 180_000) break;
+    if (out.length <= 150_000) break;
   }
   return out.length <= 400_000 ? out : '';
 }
