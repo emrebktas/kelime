@@ -1047,3 +1047,39 @@ mark.lt-style { text-decoration-color: var(--easy); background: color-mix(in srg
 .rp-figure summary { cursor: pointer; font-weight: 650; }
 .rp-figure p { white-space: pre-wrap; font-size: 13.5px; line-height: 1.5; margin: 8px 0 0; }
 .rp-fig-fail { display: block; margin: 0 0 12px; }
+
+/* ---------- görev görseli: yan panel / yüzen pencere ---------- */
+button.primary-soft { background: var(--slate-soft); color: var(--slate); border-color: transparent; font-weight: 600; }
+button.primary-soft:hover { background: var(--slate); color: var(--on-primary); }
+.es-fig-away { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+.es-fig-away button { padding: 3px 10px; font-size: 12.5px; }
+body.fig-side-on #app { padding-right: var(--fig-side-w, 400px); }
+.fig-dock {
+  position: fixed; z-index: 30; display: flex; flex-direction: column;
+  background: var(--panel); border: 1px solid var(--border); box-shadow: 0 8px 30px rgba(0, 0, 0, .18);
+}
+.fig-dock.side { top: 0; right: 0; bottom: 0; width: var(--fig-side-w, 400px); border-width: 0 0 0 1px; box-shadow: none; }
+.fig-dock.float { border-radius: 12px; overflow: hidden; max-height: calc(100dvh - 16px); }
+.fd-bar {
+  display: flex; align-items: center; gap: 4px; padding: 6px 8px 6px 12px; border-bottom: 1px solid var(--border);
+  background: var(--side); user-select: none; -webkit-user-select: none; touch-action: none; flex: none;
+}
+.fig-dock.float .fd-bar { cursor: move; }
+.fd-title { flex: 1; font-size: 12.5px; font-weight: 700; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fd-bar button { padding: 2px 8px; font-size: 13px; line-height: 1.3; background: transparent; border-color: transparent; }
+.fd-bar button:hover { background: var(--hover); }
+.fd-body { overflow: auto; flex: 1; min-height: 0; }
+.fig-dock.side .fd-body { padding: 12px; }
+.fd-prompt { font-weight: 600; font-size: 14px; line-height: 1.5; margin-bottom: 12px; }
+.fd-body img { display: block; width: 100%; height: auto; background: #fff; border-radius: 6px; -webkit-user-drag: none; }
+.fig-dock.float .fd-body img { border-radius: 0; }
+.fig-dock.min .fd-body, .fig-dock.min .fd-rs { display: none; }
+.fig-dock.min .fd-bar { border-bottom: none; }
+.fd-rs {
+  position: absolute; right: 0; bottom: 0; width: 22px; height: 22px; cursor: nwse-resize; touch-action: none;
+  background: linear-gradient(135deg, transparent 50%, var(--slate) 50%, var(--slate) 58%, transparent 58%, transparent 70%, var(--slate) 70%, var(--slate) 78%, transparent 78%);
+}
+.fd-rx { position: absolute; left: -4px; top: 0; bottom: 0; width: 8px; cursor: ew-resize; touch-action: none; }
+.fd-rx:hover, .fig-dock.moving .fd-rx { background: var(--slate-soft); }
+.fig-dock.moving { user-select: none; }
+@media (max-width: 760px) { body.fig-side-on #app { padding-right: 0; } }

@@ -303,6 +303,7 @@ function renderSidebar() {
   $('#btn-join').classList.toggle('hidden', !sync.enabled);
   $('#nav-essays')?.classList.toggle('active', state.view === 'essays' || state.view === 'essay');
   renderChatBadges();
+  checkFigDock();
   renderAccount();
 }
 
@@ -2133,6 +2134,7 @@ function openEssay(id) {
       if (focus) prompt.focus();
     } else {
       renderPromptView();
+      renderFigDock();
     }
   };
   renderPromptView();
@@ -2160,6 +2162,7 @@ function openEssay(id) {
       });
     } else if (act === 'image-view') essayImageViewer(store.getEssayImage(id));
     else if (act === 'image-reset') { saveFigureLayout(id, null); renderEssayImage(id, true); }
+    else if (act === 'fig-side' || act === 'fig-float' || act === 'fig-inline') setFigMode(act.slice(4));
     else if (act === 'done') { setPromptEditing(false); body.focus(); }
     else if (act === 'collapse' && !promptBox.classList.contains('editing')) {
       promptBox.classList.toggle('collapsed');
@@ -2226,8 +2229,15 @@ function renderEssayImage(id, force = false) {
   const task = $('#es-task')?.value;
   for (const b of $$('.es-prompt-head [data-pa=image], .es-prompt-head [data-pa=image-paste]')) b.classList.toggle('hidden', !!data || (task !== 'task1' && task !== 'free'));
   const sig = String(data.length) + data.slice(-32);
-  if (!force && box.dataset.src === sig) return; // aynı görsel
-  box.dataset.src = sig;
+  const mode = data ? figMode() : 'inline';
+  if (!force && box.dataset.src === sig + mode) return; // aynı görsel
+  box.dataset.src = sig + mode;
+  renderFigDock();
+  if (data && mode !== 'inline') {
+    box.innerHTML = `<div class="es-fig-away">🖼 Görsel ${mode === 'side' ? 'sağdaki panelde' : 'yüzen pencerede'} açık; yazarken hep görünür.
+      <button type="button" class="ghost" data-pa="fig-inline">Buraya geri koy</button></div>`;
+    return;
+  }
   box.innerHTML = data
     ? `<div class="es-stage" id="es-stage">
          <div class="es-fig" id="es-fig" title="Taşımak için sürükle · boyutlandırmak için köşelerden çek · büyütmek için çift tıkla">
@@ -2236,6 +2246,8 @@ function renderEssayImage(id, force = false) {
          </div>
        </div>
        <div class="es-figure-actions">
+         ${isMobile() ? '' : '<button type="button" class="primary-soft" data-pa="fig-side" title="Görseli sağda sabit panelde aç; yazı solda kalır">◨ Yanda göster</button>'}
+         <button type="button" class="primary-soft" data-pa="fig-float" title="Sayfa kaysa da hep görünen, taşınabilir pencere">🪟 Yüzen pencere</button>
          <button type="button" class="ghost" data-pa="image-view">🔍 Büyüt</button>
          <button type="button" class="ghost" data-pa="image-reset" title="Konumu ve boyutu sıfırla">↺ Sıfırla</button>
          <button type="button" class="ghost" data-pa="image">Değiştir</button>
@@ -2336,6 +2348,126 @@ function setupFigure(id) {
     fig.addEventListener('pointercancel', up);
   });
 }
+
+/* ---- görsel yazarken hep görünsün: sağda sabit panel ya da yüzen pencere */
+
+const FD_SIDE = { min: 240, def: 400 };
+const FD_FLOAT_MIN = 140;
+function figMode() {
+  const m = prefs.figMode || 'inline';
+  return m === 'side' && isMobile() ? 'float' : m; // telefonda yan panel yerine yüzen pencere
+}
+function setFigMode(m) {
+  prefs.figMode = m;
+  savePrefs();
+  if (state.view === 'essay') renderEssayImage(state.essayId, true);
+}
+
+/** Yazı sayfası dışında paneli kaldırır (görünüm her değiştiğinde çağrılır). */
+function checkFigDock() {
+  if (state.view !== 'essay' && $('#fig-dock')) renderFigDock();
+}
+
+function renderFigDock() {
+  const id = state.essayId;
+  const data = state.view === 'essay' && id ? store.getEssayImage(id) : '';
+  const mode = data ? figMode() : 'inline';
+  let dock = $('#fig-dock');
+  document.body.classList.toggle('fig-side-on', mode === 'side');
+  if (mode === 'inline') { dock?.remove(); return; }
+  if (!dock) {
+    dock = document.createElement('div');
+    dock.id = 'fig-dock';
+    document.body.append(dock);
+    setupFigDock(dock);
+  }
+  const prompt = store.getEssay(id)?.prompt?.trim() || '';
+  const min = mode === 'float' && prefs.figMin;
+  dock.className = `fig-dock ${mode}${min ? ' min' : ''}`;
+  dock.innerHTML = `
+    <div class="fd-bar" data-fd="drag">
+      <span class="fd-title">🖼 Görev görseli</span>
+      ${mode === 'float' ? `<button type="button" data-fd="min" title="${min ? 'Aç' : 'Küçült'}">${min ? '▢' : '–'}</button>` : ''}
+      ${isMobile() ? '' : `<button type="button" data-fd="${mode === 'side' ? 'float' : 'side'}" title="${mode === 'side' ? 'Yüzen pencere yap' : 'Sağa sabitle'}">${mode === 'side' ? '🪟' : '◨'}</button>`}
+      <button type="button" data-fd="inline" title="Soru kutusuna geri koy">✕</button>
+    </div>
+    <div class="fd-body">
+      ${mode === 'side' && prompt ? `<div class="fd-prompt">${esc(prompt).replace(/\n/g, '<br>')}</div>` : ''}
+      <img src="${data}" alt="Görev görseli" draggable="false" title="Büyütmek için çift tıkla">
+    </div>
+    <span class="${mode === 'side' ? 'fd-rx' : 'fd-rs'}" data-fd="resize" title="Boyutlandır"></span>`;
+  $('img', dock).addEventListener('load', () => applyFigDock(dock));
+  applyFigDock(dock);
+}
+
+/** Paneli/pencereyi kayıtlı boyutuna yerleştirir; ekranın dışına taşmasını önler. */
+function applyFigDock(dock = $('#fig-dock')) {
+  if (!dock) return;
+  const vw = innerWidth;
+  const vh = innerHeight;
+  if (dock.classList.contains('side') && isMobile()) { renderEssayImage(state.essayId, true); return; } // ekran daraldı
+  if (dock.classList.contains('side')) {
+    const w = Math.min(Math.round(vw * 0.6), Math.max(FD_SIDE.min, prefs.figSideW || FD_SIDE.def));
+    document.documentElement.style.setProperty('--fig-side-w', `${w}px`);
+    return;
+  }
+  const f = prefs.figFloat || {};
+  const w = Math.min(vw - 16, Math.max(FD_FLOAT_MIN, f.w || Math.min(360, vw * 0.55)));
+  dock.style.width = `${w}px`;
+  const h = dock.offsetHeight;
+  const x = Math.min(vw - w - 8, Math.max(8, f.x ?? vw - w - 16));
+  const y = Math.min(vh - Math.min(h, 60) - 8, Math.max(8, f.y ?? (isMobile() ? 64 : vh - h - 16)));
+  Object.assign(dock.style, { left: `${x}px`, top: `${y}px` });
+}
+
+function setupFigDock(dock) {
+  dock.addEventListener('click', (e) => {
+    const act = e.target.closest('button[data-fd]')?.dataset.fd;
+    if (!act) return;
+    if (act === 'min') { prefs.figMin = !prefs.figMin; savePrefs(); renderFigDock(); }
+    else setFigMode(act);
+  });
+  dock.addEventListener('dblclick', (e) => { if (e.target.tagName === 'IMG') essayImageViewer(e.target.src); });
+  dock.addEventListener('dragstart', (e) => e.preventDefault());
+  dock.addEventListener('pointerdown', (e) => {
+    const act = e.target.closest('[data-fd]')?.dataset.fd;
+    if (e.button !== 0 || !act || e.target.closest('button')) return;
+    if (act !== 'drag' && act !== 'resize') return;
+    e.preventDefault();
+    const side = dock.classList.contains('side');
+    if (side && act === 'drag') return; // yan panel yerinde durur, sadece genişliği değişir
+    const sx = e.clientX;
+    const sy = e.clientY;
+    const r = dock.getBoundingClientRect();
+    dock.setPointerCapture(e.pointerId);
+    dock.classList.add('moving');
+    const move = (ev) => {
+      if (side) {
+        prefs.figSideW = Math.round(innerWidth - ev.clientX);
+      } else if (act === 'drag') {
+        prefs.figFloat = { ...prefs.figFloat, x: r.left + ev.clientX - sx, y: r.top + ev.clientY - sy, w: r.width };
+      } else {
+        prefs.figFloat = { ...prefs.figFloat, x: r.left, y: r.top, w: r.width + ev.clientX - sx };
+      }
+      applyFigDock(dock);
+    };
+    const up = () => {
+      dock.removeEventListener('pointermove', move);
+      dock.removeEventListener('pointerup', up);
+      dock.removeEventListener('pointercancel', up);
+      dock.classList.remove('moving');
+      savePrefs();
+    };
+    dock.addEventListener('pointermove', move);
+    dock.addEventListener('pointerup', up);
+    dock.addEventListener('pointercancel', up);
+  });
+}
+addEventListener('resize', () => applyFigDock());
+// telefon/bilgisayar genişliği arasında geçince yan panel ↔ yüzen pencere
+matchMedia('(max-width: 760px)').addEventListener('change', () => {
+  if (state.view === 'essay') renderEssayImage(state.essayId, true);
+});
 
 /** Yapay zekâya gidecek kopya: JPEG, küçük boyut (görüntü servisleri büyük gömülü görselleri reddedebilir). */
 async function imageForAi(data) {
