@@ -2160,9 +2160,7 @@ function openEssay(id) {
       confirmBox('Görsel bu yazıdan kaldırılacak.', { ok: 'Kaldır', danger: true }).then((yes) => {
         if (yes) { store.setEssayImage(id, ''); renderEssayImage(id); }
       });
-    } else if (act === 'image-view') essayImageViewer(store.getEssayImage(id));
-    else if (act === 'image-reset') { saveFigureLayout(id, null); renderEssayImage(id, true); }
-    else if (act === 'fig-side' || act === 'fig-float' || act === 'fig-inline') setFigMode(act.slice(4));
+    } else if (act === 'fig-show') { prefs.figHidden = false; savePrefs(); renderFigDock(); }
     else if (act === 'done') { setPromptEditing(false); body.focus(); }
     else if (act === 'collapse' && !promptBox.classList.contains('editing')) {
       promptBox.classList.toggle('collapsed');
@@ -2220,161 +2218,48 @@ function openEssay(id) {
   if (!isMobile()) body.focus();
 }
 
-/** Soru kutusundaki görsel ve "Görsel ekle" düğmesi (Academic Task 1'de ya da görsel varken görünür). */
-/** Soru kutusundaki görsel ve "Görsel ekle" düğmesi (Academic Task 1'de ya da görsel varken görünür). */
+/** Soru kutusundaki görsel satırı ve "Görsel ekle" düğmesi (Academic Task 1'de ya da görsel varken görünür).
+ *  Görselin kendisi yazarken hep görünsün diye bilgisayarda sağdaki panelde, telefonda yüzen pencerede durur. */
 function renderEssayImage(id, force = false) {
   const box = $('#es-figure');
   if (!box) return;
   const data = store.getEssayImage(id);
   const task = $('#es-task')?.value;
   for (const b of $$('.es-prompt-head [data-pa=image], .es-prompt-head [data-pa=image-paste]')) b.classList.toggle('hidden', !!data || (task !== 'task1' && task !== 'free'));
-  const sig = String(data.length) + data.slice(-32);
-  const mode = data ? figMode() : 'inline';
-  if (!force && box.dataset.src === sig + mode) return; // aynı görsel
-  box.dataset.src = sig + mode;
-  renderFigDock();
-  if (data && mode !== 'inline') {
-    box.innerHTML = `<div class="es-fig-away">🖼 Görsel ${mode === 'side' ? 'sağdaki panelde' : 'yüzen pencerede'} açık; yazarken hep görünür.
-      <button type="button" class="ghost" data-pa="fig-inline">Buraya geri koy</button></div>`;
-    return;
-  }
+  const sig = String(data.length) + data.slice(-32) + figMode();
+  if (!force && box.dataset.src === sig) return; // aynı görsel
+  box.dataset.src = sig;
   box.innerHTML = data
-    ? `<div class="es-stage" id="es-stage">
-         <div class="es-fig" id="es-fig" title="Taşımak için sürükle · boyutlandırmak için köşelerden çek · büyütmek için çift tıkla">
-           <img src="${data}" alt="Görev görseli" draggable="false">
-           ${['nw', 'ne', 'sw', 'se', 'e', 'w'].map((h) => `<span class="fig-h fig-${h}" data-h="${h}"></span>`).join('')}
-         </div>
-       </div>
-       <div class="es-figure-actions">
-         ${isMobile() ? '' : '<button type="button" class="primary-soft" data-pa="fig-side" title="Görseli sağda sabit panelde aç; yazı solda kalır">◨ Yanda göster</button>'}
-         <button type="button" class="primary-soft" data-pa="fig-float" title="Sayfa kaysa da hep görünen, taşınabilir pencere">🪟 Yüzen pencere</button>
-         <button type="button" class="ghost" data-pa="image-view">🔍 Büyüt</button>
-         <button type="button" class="ghost" data-pa="image-reset" title="Konumu ve boyutu sıfırla">↺ Sıfırla</button>
+    ? `<div class="es-fig-away">
+         <span>🖼 Görsel ${figMode() === 'side' ? 'sağdaki panelde' : 'yüzen pencerede'}</span>
+         <button type="button" class="ghost" data-pa="fig-show">Göster</button>
          <button type="button" class="ghost" data-pa="image">Değiştir</button>
          <button type="button" class="ghost" data-pa="image-paste" title="Kopyaladığın görselle değiştir (Ctrl+V)">📋 Yapıştır</button>
          <button type="button" class="ghost danger-ghost" data-pa="image-remove">Kaldır</button>
        </div>`
     : '';
-  if (data) setupFigure(id);
+  renderFigDock();
 }
 
-// Görselin konumu ve boyutu, alan genişliğine oranla (ekran boyu değişse de yerinde kalır); cihazda yazı başına hatırlanır
-const FIG_DEFAULT = { x: 0, y: 0, w: 0.7 };
-const FIG_MIN_PX = 80;
-const FIG_MAX_Y = 1.2; // alan genişliğinin en fazla bu katı kadar aşağı taşınabilir
-function figureLayout(id) {
-  const l = prefs.figLayouts?.[id];
-  return l && [l.x, l.y, l.w].every(Number.isFinite) ? l : { ...FIG_DEFAULT };
-}
-function saveFigureLayout(id, l) {
-  const all = { ...(prefs.figLayouts || {}) };
-  if (l) all[id] = l; else delete all[id];
-  // en son kullanılan 50 yazının düzeni yeter
-  prefs.figLayouts = Object.fromEntries(Object.entries(all).slice(-50));
-  savePrefs();
-}
+/* ---- görsel yazarken hep görünsün: bilgisayarda sağda sabit panel, telefonda yüzen pencere */
 
-function setupFigure(id) {
-  const stage = $('#es-stage');
-  const fig = $('#es-fig');
-  const img = $('img', fig);
-  let l = figureLayout(id);
-  const ratio = () => (img.naturalWidth ? img.naturalHeight / img.naturalWidth : 0.6);
-  // Düzeni piksele çevirip uygular; taşma olmasın diye sınırlar
-  const apply = () => {
-    const W = stage.clientWidth;
-    if (!W) return;
-    const w = Math.min(W, Math.max(FIG_MIN_PX, l.w * W));
-    const x = Math.min(Math.max(0, l.x * W), W - w);
-    const y = Math.min(Math.max(0, l.y * W), FIG_MAX_Y * W);
-    const h = w * ratio();
-    Object.assign(fig.style, { left: `${x}px`, top: `${y}px`, width: `${w}px`, height: `${h}px` });
-    stage.style.height = `${y + h}px`;
-  };
-  img.addEventListener('load', apply);
-  apply();
-  new ResizeObserver(apply).observe(stage);
-
-  fig.addEventListener('dblclick', () => essayImageViewer(store.getEssayImage(id)));
-  fig.addEventListener('dragstart', (e) => e.preventDefault()); // tarayıcının kendi sürüklemesi (görseli yeniden ekliyordu)
-  fig.addEventListener('pointerdown', (e) => {
-    if (e.button !== 0) return;
-    e.preventDefault();
-    const handle = e.target.closest('[data-h]')?.dataset.h || '';
-    const W = stage.clientWidth;
-    const r = ratio();
-    const sx = e.clientX;
-    const sy = e.clientY;
-    const x0 = fig.offsetLeft;
-    const y0 = fig.offsetTop;
-    const w0 = fig.offsetWidth;
-    const h0 = fig.offsetHeight;
-    fig.setPointerCapture(e.pointerId);
-    stage.classList.add('active');
-    const move = (ev) => {
-      const dx = ev.clientX - sx;
-      const dy = ev.clientY - sy;
-      let x = x0;
-      let y = y0;
-      let w = w0;
-      if (!handle) {
-        x = Math.min(Math.max(0, x0 + dx), W - w0);
-        y = Math.min(Math.max(0, y0 + dy), FIG_MAX_Y * W);
-      } else {
-        // Oran korunur (grafik bozulmasın); batı tarafı tutulduysa sağ kenar sabit kalır
-        const west = handle.includes('w');
-        const north = handle.includes('n');
-        const fromX = west ? -dx : dx;
-        // Köşede: farenin daha çok hareket ettiği yön belirler (büyütme de küçültme de)
-        const fromY = handle.length === 2 ? (north ? -dy : dy) / r : 0;
-        w = w0 + (Math.abs(fromX) >= Math.abs(fromY) ? fromX : fromY);
-        const maxW = west ? x0 + w0 : W - x0;
-        w = Math.min(maxW, Math.max(FIG_MIN_PX, w));
-        if (west) x = x0 + w0 - w;
-        if (north) y = Math.max(0, y0 + h0 - w * r);
-      }
-      l = { x: x / W, y: y / W, w: w / W };
-      apply();
-    };
-    const up = () => {
-      fig.removeEventListener('pointermove', move);
-      fig.removeEventListener('pointerup', up);
-      fig.removeEventListener('pointercancel', up);
-      stage.classList.remove('active');
-      saveFigureLayout(id, l);
-    };
-    fig.addEventListener('pointermove', move);
-    fig.addEventListener('pointerup', up);
-    fig.addEventListener('pointercancel', up);
-  });
-}
-
-/* ---- görsel yazarken hep görünsün: sağda sabit panel ya da yüzen pencere */
-
-const FD_SIDE = { min: 240, def: 400 };
-const FD_FLOAT_MIN = 140;
-function figMode() {
-  const m = prefs.figMode || 'inline';
-  return m === 'side' && isMobile() ? 'float' : m; // telefonda yan panel yerine yüzen pencere
-}
-function setFigMode(m) {
-  prefs.figMode = m;
-  savePrefs();
-  if (state.view === 'essay') renderEssayImage(state.essayId, true);
-}
+const figMode = () => (isMobile() ? 'float' : 'side');
+const figPanelWidth = () => Math.round(Math.min(innerWidth * 0.62, Math.max(420, prefs.figPanelW || innerWidth * 0.46)));
 
 /** Yazı sayfası dışında paneli kaldırır (görünüm her değiştiğinde çağrılır). */
 function checkFigDock() {
-  if (state.view !== 'essay' && $('#fig-dock')) renderFigDock();
+  if (state.view !== 'essay' && ($('#fig-dock') || document.body.classList.contains('fig-side-on'))) renderFigDock();
 }
 
 function renderFigDock() {
   const id = state.essayId;
   const data = state.view === 'essay' && id ? store.getEssayImage(id) : '';
-  const mode = data ? figMode() : 'inline';
+  const mode = figMode();
+  const hidden = !!data && !!prefs.figHidden;
+  document.body.classList.toggle('fig-side-on', !!data && mode === 'side' && !hidden);
+  $('.es-fig-away [data-pa=fig-show]')?.classList.toggle('hidden', !hidden);
   let dock = $('#fig-dock');
-  document.body.classList.toggle('fig-side-on', mode === 'side');
-  if (mode === 'inline') { dock?.remove(); return; }
+  if (!data) { dock?.remove(); return; }
   if (!dock) {
     dock = document.createElement('div');
     dock.id = 'fig-dock';
@@ -2382,73 +2267,66 @@ function renderFigDock() {
     setupFigDock(dock);
   }
   const prompt = store.getEssay(id)?.prompt?.trim() || '';
-  const min = mode === 'float' && prefs.figMin;
-  dock.className = `fig-dock ${mode}${min ? ' min' : ''}`;
-  dock.innerHTML = `
-    <div class="fd-bar" data-fd="drag">
-      <span class="fd-title">🖼 Görev görseli</span>
-      ${mode === 'float' ? `<button type="button" data-fd="min" title="${min ? 'Aç' : 'Küçült'}">${min ? '▢' : '–'}</button>` : ''}
-      ${isMobile() ? '' : `<button type="button" data-fd="${mode === 'side' ? 'float' : 'side'}" title="${mode === 'side' ? 'Yüzen pencere yap' : 'Sağa sabitle'}">${mode === 'side' ? '🪟' : '◨'}</button>`}
-      <button type="button" data-fd="inline" title="Soru kutusuna geri koy">✕</button>
-    </div>
-    <div class="fd-body">
-      ${mode === 'side' && prompt ? `<div class="fd-prompt">${esc(prompt).replace(/\n/g, '<br>')}</div>` : ''}
-      <img src="${data}" alt="Görev görseli" draggable="false" title="Büyütmek için çift tıkla">
-    </div>
-    <span class="${mode === 'side' ? 'fd-rx' : 'fd-rs'}" data-fd="resize" title="Boyutlandır"></span>`;
-  $('img', dock).addEventListener('load', () => applyFigDock(dock));
+  dock.className = `fig-dock ${mode}${hidden ? ' closed' : ''}`;
+  dock.innerHTML = hidden
+    ? '<button type="button" class="fd-tab" data-fd="show" title="Görseli göster">🖼 Görsel</button>'
+    : `<div class="fd-bar" data-fd="drag">
+        <span class="fd-title">🖼 Görev görseli</span>
+        <button type="button" data-fd="hide" title="Gizle">${mode === 'side' ? '⇥' : '–'}</button>
+      </div>
+      <div class="fd-body">
+        <img src="${data}" alt="Görev görseli" draggable="false">
+        ${mode === 'side' && prompt ? `<div class="fd-prompt">${esc(prompt).replace(/\n/g, '<br>')}</div>` : ''}
+      </div>
+      ${mode === 'side' ? '<span class="fd-rx" data-fd="resize" title="Paneli genişlet / daralt"></span>' : ''}`;
+  $('img', dock)?.addEventListener('load', () => applyFigDock(dock));
   applyFigDock(dock);
 }
 
-/** Paneli/pencereyi kayıtlı boyutuna yerleştirir; ekranın dışına taşmasını önler. */
+/** Paneli/pencereyi yerleştirir; ekranın dışına taşmasını önler. */
 function applyFigDock(dock = $('#fig-dock')) {
   if (!dock) return;
-  const vw = innerWidth;
-  const vh = innerHeight;
-  if (dock.classList.contains('side') && isMobile()) { renderEssayImage(state.essayId, true); return; } // ekran daraldı
+  if (dock.classList.contains('side') !== (figMode() === 'side')) { renderEssayImage(state.essayId, true); return; } // ekran genişliği değişti
   if (dock.classList.contains('side')) {
-    const w = Math.min(Math.round(vw * 0.6), Math.max(FD_SIDE.min, prefs.figSideW || FD_SIDE.def));
-    document.documentElement.style.setProperty('--fig-side-w', `${w}px`);
+    document.documentElement.style.setProperty('--fig-side-w', `${figPanelWidth()}px`);
     return;
   }
-  const f = prefs.figFloat || {};
-  const w = Math.min(vw - 16, Math.max(FD_FLOAT_MIN, f.w || Math.min(360, vw * 0.55)));
+  if (dock.classList.contains('closed')) { Object.assign(dock.style, { left: '', top: '', width: '' }); return; }
+  const vw = innerWidth;
+  const vh = innerHeight;
+  const w = Math.round(Math.min(vw - 16, Math.max(200, vw * 0.62)));
   dock.style.width = `${w}px`;
+  const f = prefs.figFloat || {};
   const h = dock.offsetHeight;
-  const x = Math.min(vw - w - 8, Math.max(8, f.x ?? vw - w - 16));
-  const y = Math.min(vh - Math.min(h, 60) - 8, Math.max(8, f.y ?? (isMobile() ? 64 : vh - h - 16)));
+  const x = Math.min(vw - w - 8, Math.max(8, f.x ?? vw - w - 8));
+  const y = Math.min(vh - Math.min(h, 60) - 8, Math.max(8, f.y ?? 64));
   Object.assign(dock.style, { left: `${x}px`, top: `${y}px` });
 }
 
 function setupFigDock(dock) {
   dock.addEventListener('click', (e) => {
     const act = e.target.closest('button[data-fd]')?.dataset.fd;
-    if (!act) return;
-    if (act === 'min') { prefs.figMin = !prefs.figMin; savePrefs(); renderFigDock(); }
-    else setFigMode(act);
+    if (act !== 'hide' && act !== 'show') return;
+    prefs.figHidden = act === 'hide';
+    savePrefs();
+    renderFigDock();
   });
-  dock.addEventListener('dblclick', (e) => { if (e.target.tagName === 'IMG') essayImageViewer(e.target.src); });
   dock.addEventListener('dragstart', (e) => e.preventDefault());
+  // Yan panel: sol kenarından genişlik; yüzen pencere (telefon): üst çubuğundan taşıma
   dock.addEventListener('pointerdown', (e) => {
     const act = e.target.closest('[data-fd]')?.dataset.fd;
-    if (e.button !== 0 || !act || e.target.closest('button')) return;
-    if (act !== 'drag' && act !== 'resize') return;
-    e.preventDefault();
+    if (e.button !== 0 || e.target.closest('button')) return;
     const side = dock.classList.contains('side');
-    if (side && act === 'drag') return; // yan panel yerinde durur, sadece genişliği değişir
+    if (!(side ? act === 'resize' : act === 'drag')) return;
+    e.preventDefault();
     const sx = e.clientX;
     const sy = e.clientY;
     const r = dock.getBoundingClientRect();
     dock.setPointerCapture(e.pointerId);
     dock.classList.add('moving');
     const move = (ev) => {
-      if (side) {
-        prefs.figSideW = Math.round(innerWidth - ev.clientX);
-      } else if (act === 'drag') {
-        prefs.figFloat = { ...prefs.figFloat, x: r.left + ev.clientX - sx, y: r.top + ev.clientY - sy, w: r.width };
-      } else {
-        prefs.figFloat = { ...prefs.figFloat, x: r.left, y: r.top, w: r.width + ev.clientX - sx };
-      }
+      if (side) prefs.figPanelW = Math.round(innerWidth - ev.clientX);
+      else prefs.figFloat = { x: r.left + ev.clientX - sx, y: r.top + ev.clientY - sy };
       applyFigDock(dock);
     };
     const up = () => {
@@ -2464,10 +2342,7 @@ function setupFigDock(dock) {
   });
 }
 addEventListener('resize', () => applyFigDock());
-// telefon/bilgisayar genişliği arasında geçince yan panel ↔ yüzen pencere
-matchMedia('(max-width: 760px)').addEventListener('change', () => {
-  if (state.view === 'essay') renderEssayImage(state.essayId, true);
-});
+matchMedia('(max-width: 760px)').addEventListener('change', () => applyFigDock());
 
 /** Yapay zekâya gidecek kopya: JPEG, küçük boyut (görüntü servisleri büyük gömülü görselleri reddedebilir). */
 async function imageForAi(data) {
@@ -2522,7 +2397,9 @@ async function attachEssayImage(id, file) {
   if (data.length > 1_500_000) data = encode(1200, 0.75);
   if (data.length > 2_700_000) throw new Error('Görsel çok büyük. Daha küçük bir görsel dene.');
   store.setEssayImage(id, data);
-  if (state.view === 'essay' && state.essayId === id) renderEssayImage(id);
+  prefs.figHidden = false;
+  savePrefs();
+  if (state.view === 'essay' && state.essayId === id) renderEssayImage(id, true);
   toast('Görsel eklendi.', 'success', 1500);
 }
 
@@ -2565,12 +2442,6 @@ document.addEventListener('paste', (ev) => {
     await attachEssayImage(id, file);
   });
 });
-
-function essayImageViewer(data) {
-  if (!data) return;
-  openModal(`<div class="img-viewer"><img src="${data}" alt="Görev görseli"></div>
-    <div class="modal-actions"><button type="button" data-close>Kapat</button></div>`, { wide: true });
-}
 
 function renderEssayTimerBtn() {
   const btn = $('#es-timer-btn');
