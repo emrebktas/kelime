@@ -14,6 +14,7 @@ const MODEL = Deno.env.get('NVIDIA_MODEL') ?? 'z-ai/glm-5.3-flash';
 // Sırayla denenir; ilk çalışan kullanılır (NVIDIA_VISION_MODEL gizli değişkeniyle başa başka model eklenebilir)
 const VISION_MODELS = [...new Set([
   Deno.env.get('NVIDIA_VISION_MODEL') ?? '',
+  'z-ai/glm-5.3-flash',
   'google/gemma-4-31b-it',
   'meta/llama-3.2-90b-vision-instruct',
   'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning',
