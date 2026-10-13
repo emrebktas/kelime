@@ -681,7 +681,7 @@ function loadCards() {
             <tr data-card="${c.id}" class="${state.selected.has(c.id) ? 'sel' : ''}">
               <td class="chk"><input type="checkbox" data-chk="${c.id}" ${state.selected.has(c.id) ? 'checked' : ''}></td>
               <td class="w" title="${esc(c.word)}">${esc(c.word)}</td>
-              <td title="${esc(c.translation)}">${esc(c.translation)}</td>
+              <td title="${esc(c.translation)}">${!c.translation && aiPending.has(c.id) ? '<span class="ai-pending">✨ hazırlanıyor…</span>' : esc(c.translation)}</td>
               <td class="muted c-syn">${esc(c.synonyms.join(', '))}</td>
               <td class="c-state">${stateBadge(c)}</td>
             </tr>`).join('')}
@@ -912,70 +912,48 @@ const AI_EXAMPLES = {
   tr: ['ev', 'ancak', 'başvurmak'],
 };
 
-/** Kelime listesinden toplu kart oluşturma: önce önizleme, sonra seçilenleri ekleme. */
+/* Kelime listesinden kart oluşturma: kelimeler hemen eklenir, anlamlar arkada hazırlanıp kartlara yazılır. */
+
+const aiPending = new Set(); // anlamı yapay zekâdan beklenen kart id'leri
+const aiQueue = [];          // { deckId, language, items: [{ id, word }] }
+let aiRunning = false;
+
 function aiBulkModal(deck) {
   if (!sync.user()) {
     toast('Yapay zekâ için önce giriş yapmalısın.', 'info');
     return authModal();
   }
-  const BATCH = 10;
   const MAX = 100;
-  let results = null; // önizlemedeki kartlar
-  const existing = new Set(store.listCards(deck.id, '', Infinity).cards.map((c) => store.wordKey(c.word)));
   const form = openModal(`
     <h2>✨ Kelime listesinden kart oluştur</h2>
-    <p class="muted" style="font-size:13px">Kelimeleri alt alta ya da virgülle ayırarak yaz. Yapay zekâ her biri için Türkçe anlam,
-      ${esc(langName(deck.language))} örnek cümle ve eş anlamlıları hazırlar; eklemeden önce kontrol edebilirsin.</p>
+    <p class="muted" style="font-size:13px">Kelimeleri alt alta ya da virgülle ayırarak yaz. Kelimeler hemen desteye eklenir;
+      yapay zekâ Türkçe anlam, ${esc(langName(deck.language))} örnek cümle ve eş anlamlıları arkada hazırlayıp kartlara yazar.
+      Beklemene gerek yok.</p>
     <label>Kelimeler <small>en fazla ${MAX}</small><textarea name="words" rows="3" class="autogrow"
       placeholder="${esc((AI_EXAMPLES[deck.language] || AI_EXAMPLES.en).join('\n'))}" autofocus></textarea></label>
-    <div id="ai-progress" class="muted" style="font-size:13px"></div>
-    <div id="ai-preview"></div>
     <div class="modal-actions">
       <button type="button" data-close>Vazgeç</button>
-      <button type="submit" class="primary" id="ai-submit">Oluştur</button>
+      <button type="submit" class="primary">Ekle</button>
     </div>`, {
-    wide: true,
-    onSubmit: async (f) => {
-      if (results) {
-        const picked = results.filter((_, i) => $(`[data-pick="${i}"]`, f)?.checked);
-        if (!picked.length) { toast('Eklenecek kart seçilmedi.', 'info'); return false; }
-        const r = store.importCards({ deck_id: deck.id }, picked.map((c) => ({
-          word: c.word, translation: c.translation, sentence: c.sentence, synonyms: c.synonyms, ...c.extra,
-        })));
-        toast(`${r.added} kart eklendi.`, 'success');
-        refreshDecks();
-        renderDeck();
-        return;
-      }
+    onSubmit: (f) => {
       const words = [...new Map(f.words.value.split(/[\n,;]+/).map((w) => w.trim()).filter(Boolean)
         .map((w) => [store.wordKey(w), w])).values()];
       if (!words.length) { toast('En az bir kelime yaz.', 'info'); return false; }
       if (words.length > MAX) { toast(`Bir seferde en fazla ${MAX} kelime.`, 'error'); return false; }
-      const progress = $('#ai-progress', f);
-      const cards = [];
-      for (let i = 0; i < words.length; i += BATCH) {
-        progress.textContent = `Hazırlanıyor… ${Math.min(i + BATCH, words.length)}/${words.length} kelime`;
-        try {
-          cards.push(...await sync.aiCards(words.slice(i, i + BATCH), deck.language));
-        } catch (e) {
-          toast(e.message, 'error', 6000);
-          if (!cards.length) { progress.textContent = ''; return false; }
-          break;
-        }
-      }
-      results = cards;
-      const dup = (c) => existing.has(store.wordKey(c.word));
-      progress.textContent = `${cards.length} kart hazır. Eklemek istemediklerinin işaretini kaldır.`;
-      $('#ai-preview', f).innerHTML = `
-        <div class="table-wrap ai-preview"><table class="cards"><tbody>${cards.map((c, i) => `
-          <tr><td class="chk"><input type="checkbox" data-pick="${i}" ${dup(c) ? '' : 'checked'}></td>
-            <td><b>${esc(c.word)}</b>${dup(c) ? ' <span class="muted">(destede var)</span>' : ''}
-              <div class="muted">${esc(c.translation)}</div>
-              <div class="ai-sentence">${esc(c.sentence)}</div></td></tr>`).join('')}
-        </tbody></table></div>`;
-      f.words.closest('label').classList.add('hidden');
-      $('#ai-submit', f).textContent = 'Seçilenleri ekle';
-      return false;
+      // Destede zaten olan kelimeler atlanır; yeniler anlamsız olarak hemen eklenir
+      const existing = new Set(store.listCards(deck.id, '', Infinity).cards.map((c) => store.wordKey(c.word)));
+      const fresh = words.filter((w) => !existing.has(store.wordKey(w)));
+      const skipped = words.length - fresh.length;
+      if (!fresh.length) { toast('Bu kelimelerin hepsi destede zaten var.', 'info'); return false; }
+      store.importCards({ deck_id: deck.id }, fresh.map((word) => ({ word })));
+      const byKey = new Map(store.listCards(deck.id, '', Infinity).cards.map((c) => [store.wordKey(c.word), c.id]));
+      const items = fresh.map((word) => ({ id: byKey.get(store.wordKey(word)), word })).filter((x) => x.id);
+      items.forEach((x) => aiPending.add(x.id));
+      for (let i = 0; i < items.length; i += 10) aiQueue.push({ deckId: deck.id, language: deck.language, items: items.slice(i, i + 10) });
+      toast(`${items.length} kelime eklendi${skipped ? ` (${skipped} tanesi destede zaten vardı)` : ''}. Anlamlar arkada hazırlanıyor…`, 'success', 4000);
+      refreshDecks();
+      if (state.view === 'deck' && state.deckId === deck.id) loadCards();
+      runAiQueue();
     },
   });
   // Kutu küçük başlar, yazdıkça büyür (en fazla ~10 satır)
@@ -985,6 +963,40 @@ function aiBulkModal(deck) {
     box.style.height = `${Math.min(box.scrollHeight + 2, 240)}px`;
   });
   return form;
+}
+
+/** Kuyruktaki kelime gruplarını sırayla yapay zekâya gönderir; gelen içerik kartlara yazılır. */
+async function runAiQueue() {
+  if (aiRunning) return;
+  aiRunning = true;
+  let filled = 0;
+  let failed = 0;
+  let lastError = '';
+  try {
+    while (aiQueue.length) {
+      const job = aiQueue.shift();
+      let cards = [];
+      try {
+        cards = await sync.aiCards(job.items.map((x) => x.word), job.language);
+      } catch (e) {
+        lastError = e.message.replace(/[.\s]+$/, '');
+      }
+      // Model kelimeyi biraz farklı yazabilir (ör. Almancada artikel ekler): önce kelimeyle, olmazsa sırayla eşleştir
+      const byKey = new Map(cards.map((c) => [store.wordKey(c.word || ''), c]));
+      job.items.forEach((x, i) => {
+        const c = byKey.get(store.wordKey(x.word)) || cards[i];
+        aiPending.delete(x.id);
+        if (!c) { failed++; return; }
+        try { store.fillCard(x.id, c); filled++; } catch { failed++; }
+      });
+      refreshDecks();
+      if (state.view === 'deck' && state.deckId === job.deckId && !modalOpen()) loadCards();
+    }
+  } finally {
+    aiRunning = false;
+  }
+  if (failed) toast(`${failed} kelimenin anlamı hazırlanamadı${lastError ? `: ${lastError}` : ''}. Karta tıklayıp ✨ ile tekrar deneyebilirsin.`, 'error', 7000);
+  else if (filled) toast(`${filled} kelimenin anlamı hazır.`, 'success', 2500);
 }
 
 /* =========================================================== paylaşım ve geçmiş */

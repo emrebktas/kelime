@@ -555,6 +555,24 @@ export function saveCard(data) {
   return cardView(rec);
 }
 
+/** Yapay zekâdan gelen içeriği karta yazar; sadece boş alanları doldurur (bu arada elle yazılanlar korunur). */
+export function fillCard(id, data) {
+  const c = mem.cards.get(id);
+  if (!c || c.deleted) return null;
+  requireEdit(c.deck_id);
+  const rec = { ...c };
+  if (!rec.translation && data.translation) rec.translation = toText(data.translation);
+  if (!rec.sentence && data.sentence) rec.sentence = toText(data.sentence, '\n');
+  if (!rec.synonyms?.length && data.synonyms?.length) rec.synonyms = toList(data.synonyms);
+  const extra = Object.fromEntries(Object.entries(data.extra || {})
+    .map(([k, v]) => [String(k).trim(), toText(v)]).filter(([k, v]) => k && v));
+  if (!Object.keys(rec.extra || {}).length && Object.keys(extra).length) rec.extra = extra;
+  const next = limitCard(rec);
+  if (['translation', 'sentence', 'synonyms', 'extra'].every((k) => JSON.stringify(next[k]) === JSON.stringify(c[k]))) return cardView(c);
+  setRec('cards', id, next);
+  return cardView(next);
+}
+
 export function deleteCards(ids) {
   for (const id of ids) {
     const c = mem.cards.get(id);
