@@ -2140,7 +2140,6 @@ function openEssay(id) {
         <button type="button" data-act="essay-timer" id="es-timer-btn"></button>
         <select id="es-deck" title="Önerilerde kullanılacak kelime destesi">${essayDeckOptions()}</select>
         <span class="spacer"></span>
-        <button type="button" data-act="phrases-modal" id="es-phrases-btn" class="${e.task === 'task1' ? '' : 'hidden'}" title="Task 1 ifadeleri: tıkla, yazına eklensin">📚 İfadeler</button>
         <button type="button" class="ai-btn" data-act="essay-report" id="es-report-btn">🎓 IELTS analizi</button>
       </div>
       <div class="es-toggles" role="group" aria-label="Yazarken gösterilecekler">
@@ -2270,7 +2269,7 @@ function openEssay(id) {
     renderGrammar();
     if (ev.target.checked) scheduleGrammar(true);
   });
-  task.addEventListener('change', () => { save(); renderEssayTimerBtn(); renderEssayImage(id); $('#es-phrases-btn').classList.toggle('hidden', task.value !== 'task1'); });
+  task.addEventListener('change', () => { save(); renderEssayTimerBtn(); renderEssayImage(id); });
   // Görsel: dosyadan seç ya da ekran görüntüsünü yapıştır (Ctrl+V)
   $('#es-image-input').addEventListener('change', (ev) => {
     const file = ev.target.files?.[0];
@@ -3365,8 +3364,8 @@ function loadPhrases() {
 
 const phrTabTitle = (c) => c.title.split(' – ')[0].replace('Bütün soru tiplerinde kullanılabilecek ifadeler', 'Genel');
 
-/** Sayfa ya da (yazı yazarken) pencere içinde ifade rehberi. insert: tıklanan ifade yazıya eklenir. */
-async function renderPhrases(box, { insert = null } = {}) {
+/** İfade rehberi (Yazılarım › Task 1 ifadeleri). Tıklanan ifade kopyalanır. */
+async function renderPhrases(box) {
   box.innerHTML = '<div class="muted">Yükleniyor…</div>';
   let d;
   try { d = await loadPhrases(); } catch (e) { box.innerHTML = `<div class="muted">${esc(e.message)}</div>`; return; }
@@ -3375,7 +3374,7 @@ async function renderPhrases(box, { insert = null } = {}) {
   box.innerHTML = `
     <div class="phr-top">
       <input type="search" class="phr-search" placeholder="İfade ara (İngilizce ya da Türkçe)…" value="${esc(phrases.query)}" aria-label="İfade ara">
-      <span class="muted phr-hint">${insert ? 'İfadeye tıkla: yazına eklenir' : 'İfadeye tıkla: kopyalanır'}</span>
+      <span class="muted phr-hint">İfadeye ya da örnek cümleye tıkla: kopyalanır</span>
     </div>
     <div class="phr-tabs" role="tablist">
       ${cats.map(([k, c]) => `<button type="button" role="tab" data-phr-tab="${k}">${esc(phrTabTitle(c))}</button>`).join('')}
@@ -3403,7 +3402,6 @@ async function renderPhrases(box, { insert = null } = {}) {
     }
     const text = e.target.closest('[data-phr]')?.dataset.phr;
     if (text) {
-      if (insert) { insert(text); return; }
       navigator.clipboard?.writeText(text).then(() => toast(`Kopyalandı: ${text}`, 'success', 1400), () => toast('Kopyalanamadı.', 'error'));
     }
   });
@@ -3531,25 +3529,6 @@ function showPhrases() {
   renderPhrases($('#phr-root'));
 }
 
-/** Yazı yazarken: ifadeler penceresi; tıklanan ifade imlecin olduğu yere eklenir. */
-function phrasesModal() {
-  const ta = $('#es-body');
-  const pos = ta ? [ta.selectionStart, ta.selectionEnd] : null;
-  const form = openModal('<h2>📚 Task 1 ifadeleri</h2><div id="phr-modal"></div><div class="modal-actions"><button type="button" data-close>Kapat</button></div>', { wide: true });
-  renderPhrases($('#phr-modal', form), {
-    insert: (text) => {
-      const body = $('#es-body');
-      if (!body || !pos) return;
-      const before = body.value.slice(0, pos[0]);
-      const pad = before && !/\s$/.test(before) ? ' ' : '';
-      body.setRangeText(`${pad}${text} `, pos[0], pos[1], 'end');
-      pos[0] = pos[1] = body.selectionEnd;
-      body.dispatchEvent(new Event('input', { bubbles: true }));
-      toast(`Eklendi: ${text}`, 'success', 1200);
-    },
-  });
-}
-
 /* =========================================================== uzaktan gelen değişiklikler */
 
 let remoteTimer = null;
@@ -3646,7 +3625,6 @@ document.addEventListener('click', (e) => {
       case 'timer': timerModal(); break;
       case 'essays': showEssays(); break;
       case 'phrases': showPhrases(); break;
-      case 'phrases-modal': phrasesModal(); break;
       case 'chat': showChat(); break;
       case 'json-help': jsonHelpModal(); break;
       case 'activity-more': activity.limit += 20; renderActivity(); break;

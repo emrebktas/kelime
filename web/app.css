@@ -1101,8 +1101,8 @@ body.fig-side-on #app { padding-right: var(--fig-side-w, 400px); }
 }
 
 /* ---------- Task 1 ifadeleri ---------- */
-.phr-top { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
-.phr-search { flex: 1; min-width: 200px; max-width: 420px; }
+.phr-top { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+.phr-search { width: 100%; min-width: 0; box-sizing: border-box; }
 .phr-hint { font-size: 12px; }
 .phr-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
 .phr-tabs button { padding: 5px 12px; font-size: 13px; border-radius: 999px; background: var(--panel); }
@@ -1139,8 +1139,6 @@ body.fig-side-on #app { padding-right: var(--fig-side-w, 400px); }
 .phr-check { display: flex; gap: 8px; align-items: center; padding: 4px 0; font-size: 13.5px; cursor: pointer; }
 .phr-check input { width: auto; }
 .phr-check input:checked + span { color: var(--muted); text-decoration: line-through; }
-#phr-modal .phr-groups { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
-#phr-modal { max-height: 65vh; overflow: auto; }
 @media (max-width: 760px) {
   .phr-groups { grid-template-columns: 1fr; }
   .phr-entry { grid-template-columns: 1fr; }
