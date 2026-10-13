@@ -138,31 +138,74 @@ function stopSpeech() {
   else webSpeech?.cancel();
 }
 
-// Android: telefonun kendi metin okuma motoru (Google TTS vb.)
+// Android: telefonun kendi metin okuma motoru (Google TTS, Samsung TTS…).
+// Sadece dil vermek yetmiyor: bazı motorlar o dili yükleyemeyince sessizce önceki sesle (çoğu zaman İngilizce)
+// okumaya devam ediyor. Bu yüzden o dilin sesi listeden açıkça seçilir; hiç yoksa yanlış aksanla okumak yerine uyarılır.
 const nativeLangChecked = new Map();
+let nativeVoices = null;
+function nativeVoiceIndex(tag) {
+  const want = tag.toLowerCase();
+  const base = want.split('-')[0];
+  const norm = (v) => String(v.lang || '').toLowerCase().replace(/_/g, '-');
+  let best = -1;
+  let bestScore = -1;
+  nativeVoices.forEach((v, i) => {
+    if (norm(v).split('-')[0] !== base) return;
+    // tam bölge eşleşmesi + internetsiz çalışan ses öncelikli
+    const score = (norm(v) === want ? 4 : 0) + (v.localService ? 2 : 0) + (/local/i.test(v.voiceURI || '') ? 1 : 0);
+    if (score > bestScore) { best = i; bestScore = score; }
+  });
+  return best;
+}
+function warnNoVoice(lang) {
+  toast(`Telefonda ${langName(lang)} ses verisi yok, bu yüzden doğru aksanla okunamıyor. Ayarlar › Genel yönetim (ya da Sistem) › Dil › Metin okuma çıkışı bölümünden ${langName(lang)} sesini indir, sonra uygulamayı yeniden aç.`, 'info', 9000);
+}
 async function nativeSpeak(text, lang) {
   const tag = langInfo(lang)[2] || lang;
+  if (!nativeVoices) {
+    nativeVoices = await NativeTTS.getSupportedVoices().then((r) => r.voices || []).catch(() => []);
+  }
+  const voice = nativeVoices.length ? nativeVoiceIndex(tag) : -1;
   if (!nativeLangChecked.has(tag)) {
-    const ok = await NativeTTS.isLanguageSupported({ lang: tag }).then((r) => r.supported).catch(() => true);
+    const supported = await NativeTTS.isLanguageSupported({ lang: tag }).then((r) => r.supported).catch(() => true);
+    // Ses listesi alınabildiyse o dilde ses olmalı; alınamadıysa motorun cevabına güvenilir
+    const ok = supported && (!nativeVoices.length || voice >= 0);
     nativeLangChecked.set(tag, ok);
-    if (!ok) {
-      toast(`Telefonda ${langName(lang)} ses verisi yok. Ayarlar › Sistem › Dil › Metin okuma çıkışı bölümünden ${langName(lang)} sesini indirebilirsin.`, 'info', 7000);
-    }
+    if (!ok) warnNoVoice(lang);
   }
   if (!nativeLangChecked.get(tag)) return;
   try {
     await NativeTTS.stop().catch(() => {});
-    await NativeTTS.speak({ text, lang: tag, rate: speechRate(), volume: speechVolume(), pitch: 1.0, category: 'playback' });
+    await NativeTTS.speak({
+      text, lang: tag, rate: speechRate(), volume: speechVolume(), pitch: 1.0, category: 'playback',
+      ...(voice >= 0 ? { voice } : {}),
+    });
   } catch (e) {
     console.warn('Seslendirme hatası', e);
   }
 }
+/** Uygulamaya geri dönünce ses listesi yeniden okunur (bu arada ses paketi indirilmiş olabilir). */
+function resetNativeVoices() {
+  nativeVoices = null;
+  nativeLangChecked.clear();
+}
 
-function speak(text, lang) {
+/** Tarayıcının ses listesi ilk açılışta boş gelebilir; en fazla 1,5 sn yüklenmesi beklenir. */
+function voicesReady() {
+  loadVoices();
+  if (voices.length || !webSpeech) return Promise.resolve();
+  return new Promise((res) => {
+    const done = () => { loadVoices(); res(); };
+    webSpeech.addEventListener?.('voiceschanged', done, { once: true });
+    setTimeout(done, 1500);
+  });
+}
+
+async function speak(text, lang) {
   if (!text) return;
   if (NativeTTS) { nativeSpeak(text, lang); return; }
   if (!webSpeech) { toast('Bu cihazda seslendirme desteklenmiyor.', 'info'); return; }
-  if (!voices.length) loadVoices();
+  if (!voices.length) await voicesReady();
   const voice = pickVoice(lang);
   if (!voice) {
     const base = (langInfo(lang)[2] || lang).split('-')[0];
@@ -3898,7 +3941,7 @@ async function init() {
       else if (['deck', 'essays', 'chat'].includes(state.view)) showHome();
       else NativeApp.exitApp();
     });
-    NativeApp.addListener('resume', () => { sync.schedule(0); checkForUpdate(); onTimerTick(); });
+    NativeApp.addListener('resume', () => { sync.schedule(0); checkForUpdate(); onTimerTick(); resetNativeVoices(); });
     setTimeout(checkForUpdate, 3000);
   }
   // Android uygulamasında dosyalar zaten pakette; önbellek işçisine gerek yok
