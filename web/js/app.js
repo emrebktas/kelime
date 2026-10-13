@@ -107,7 +107,7 @@ function applyTheme() {
   const mode = prefs.theme || 'system';
   const dark = mode === 'dark' || (mode === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
   document.documentElement.dataset.theme = dark ? 'dark' : 'light';
-  $('meta[name=theme-color]').content = dark ? '#221f1b' : '#d5ccbb';
+  $('meta[name=theme-color]').content = dark ? '#1f1e1d' : '#d5ccbb';
   $('#btn-theme').textContent = { system: '◐ Sistem', light: '☀ Açık', dark: '☾ Koyu' }[mode];
   const vol = Math.round((prefs.volume ?? 1) * 100);
   $('#btn-autospeak').textContent = `${vol === 0 ? '🔇' : prefs.autoSpeak ? '🔊' : '🔈'} Ses %${vol}`;
@@ -2244,7 +2244,7 @@ function renderEssayImage(id, force = false) {
 /* ---- görsel yazarken hep görünsün: bilgisayarda sağda sabit panel, telefonda yüzen pencere */
 
 const figMode = () => (isMobile() ? 'float' : 'side');
-const figPanelWidth = () => Math.round(Math.min(innerWidth * 0.62, Math.max(420, prefs.figPanelW || innerWidth * 0.46)));
+const figPanelWidth = () => Math.round(Math.max(Math.min(420, innerWidth * 0.5), innerWidth * 0.46)); // ekranın yaklaşık yarısı
 
 /** Yazı sayfası dışında paneli kaldırır (görünüm her değiştiğinde çağrılır). */
 function checkFigDock() {
@@ -2278,7 +2278,7 @@ function renderFigDock() {
         <img src="${data}" alt="Görev görseli" draggable="false">
         ${mode === 'side' && prompt ? `<div class="fd-prompt">${esc(prompt).replace(/\n/g, '<br>')}</div>` : ''}
       </div>
-      ${mode === 'side' ? '<span class="fd-rx" data-fd="resize" title="Paneli genişlet / daralt"></span>' : ''}`;
+`;
   $('img', dock)?.addEventListener('load', () => applyFigDock(dock));
   applyFigDock(dock);
 }
@@ -2312,12 +2312,11 @@ function setupFigDock(dock) {
     renderFigDock();
   });
   dock.addEventListener('dragstart', (e) => e.preventDefault());
-  // Yan panel: sol kenarından genişlik; yüzen pencere (telefon): üst çubuğundan taşıma
+  // Yüzen pencere (telefon): üst çubuğundan taşınır
   dock.addEventListener('pointerdown', (e) => {
     const act = e.target.closest('[data-fd]')?.dataset.fd;
     if (e.button !== 0 || e.target.closest('button')) return;
-    const side = dock.classList.contains('side');
-    if (!(side ? act === 'resize' : act === 'drag')) return;
+    if (dock.classList.contains('side') || act !== 'drag') return;
     e.preventDefault();
     const sx = e.clientX;
     const sy = e.clientY;
@@ -2325,8 +2324,7 @@ function setupFigDock(dock) {
     dock.setPointerCapture(e.pointerId);
     dock.classList.add('moving');
     const move = (ev) => {
-      if (side) prefs.figPanelW = Math.round(innerWidth - ev.clientX);
-      else prefs.figFloat = { x: r.left + ev.clientX - sx, y: r.top + ev.clientY - sy };
+      prefs.figFloat = { x: r.left + ev.clientX - sx, y: r.top + ev.clientY - sy };
       applyFigDock(dock);
     };
     const up = () => {

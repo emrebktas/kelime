@@ -32,34 +32,35 @@
 }
 
 :root[data-theme="dark"] {
-  --bg: #1e1b18;
-  --panel: #27231f;
-  --side: #221f1b;
-  --text: #eee6d8;
-  --muted: #a3978a;
-  --border: #3a342e;
-  --hover: #322c27;
-  --accent: #d9825c;
-  --accent-hover: #e6946f;
-  --accent-soft: #3d2b22;
-  --on-accent: #1e1b18;
-  --primary: #e6dccb;
-  --primary-hover: #f2eadc;
-  --on-primary: #1e1b18;
-  --sage: #93b896;
-  --sage-soft: #2b3329;
-  --slate: #8db0c8;
-  --slate-soft: #26303a;
-  --new: #7fa7c4;
+  /* Claude masaüstü uygulamasının koyu teması: sıcak kömür griler, krem metin, kil turuncusu vurgu */
+  --bg: #262624;
+  --panel: #30302e;
+  --side: #1f1e1d;
+  --text: #faf9f5;
+  --muted: #9c9a92;
+  --border: #3e3e3a;
+  --hover: #3a3a37;
+  --accent: #d97757;
+  --accent-hover: #e08a6d;
+  --accent-soft: #3d2c25;
+  --on-accent: #ffffff;
+  --primary: #faf9f5;
+  --primary-hover: #ffffff;
+  --on-primary: #1f1e1d;
+  --sage: #8fb894;
+  --sage-soft: #2c332b;
+  --slate: #8eb0cc;
+  --slate-soft: #2b3239;
+  --new: #80a8c8;
   --learn: #d9a04a;
   --review: #8cb98e;
-  --again: #e07a64;
+  --again: #e5735c;
   --hard: #d9a04a;
   --good: #8cb98e;
-  --easy: #7fa7c4;
-  --danger: #e07a64;
-  --mark: #5a4626;
-  --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 20px rgba(0, 0, 0, .3);
+  --easy: #80a8c8;
+  --danger: #e5735c;
+  --mark: #57452a;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .25), 0 6px 20px rgba(0, 0, 0, .25);
   color-scheme: dark;
 }
 
@@ -1043,8 +1044,6 @@ body.fig-side-on #app { padding-right: var(--fig-side-w, 400px); }
 .fd-prompt { font-weight: 600; font-size: 14px; line-height: 1.5; margin-bottom: 12px; }
 .fd-body img { display: block; width: 100%; height: auto; background: #fff; border-radius: 6px; -webkit-user-drag: none; }
 .fig-dock.float .fd-body img { border-radius: 0; }
-.fd-rx { position: absolute; left: -4px; top: 0; bottom: 0; width: 8px; cursor: ew-resize; touch-action: none; }
-.fd-rx:hover, .fig-dock.moving .fd-rx { background: var(--slate-soft); }
 .fig-dock.moving { user-select: none; }
 @media (max-width: 760px) { body.fig-side-on #app { padding-right: 0; } }
 
