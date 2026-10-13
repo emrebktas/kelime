@@ -660,7 +660,7 @@ function stateBadge(c) {
 
 function loadCards() {
   const deckId = state.deckId;
-  const res = store.listCards(deckId, state.search, 1000);
+  const res = store.listCards(deckId, state.search, 1000, { newestFirst: true });
   state.cards = new Map(res.cards.map((c) => [c.id, c]));
   for (const id of [...state.selected]) if (!state.cards.has(id)) state.selected.delete(id);
   const box = $('#card-table');

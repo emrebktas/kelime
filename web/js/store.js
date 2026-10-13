@@ -516,7 +516,8 @@ export function getDeckStats(deckId) {
 
 /* ------------------------------------------------------------------ kartlar */
 
-export function listCards(deckId, query = '', limit = 1000) {
+/** newestFirst: en son eklenen kart en üstte (deste listesi); çalışma sırası etkilenmez. */
+export function listCards(deckId, query = '', limit = 1000, { newestFirst = false } = {}) {
   deckOrThrow(deckId);
   const q = query.trim().toLocaleLowerCase();
   let cards = deckCards(deckId);
@@ -524,7 +525,7 @@ export function listCards(deckId, query = '', limit = 1000) {
     cards = cards.filter((c) => [c.word, c.translation, c.sentence, (c.synonyms || []).join(' ')]
       .some((s) => (s || '').toLocaleLowerCase().includes(q)));
   }
-  cards.sort((a, b) => a.position - b.position);
+  cards.sort((a, b) => (newestFirst ? b.position - a.position : a.position - b.position));
   return { total: cards.length, cards: cards.slice(0, limit).map(cardView) };
 }
 
