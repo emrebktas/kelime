@@ -126,7 +126,13 @@ button.big { padding: 11px 22px; font-size: 15px; font-weight: 600; border-radiu
   display: flex; flex-direction: column;
   min-height: 0;
 }
-.side-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 16px 14px 10px; }
+.brand {
+  display: flex; align-items: center; gap: 10px;
+  padding: 18px 18px 12px; font-weight: 700; font-size: 17px; cursor: pointer;
+  user-select: none;
+}
+.logo { width: 34px; height: 34px; }
+.side-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 4px 14px 10px; }
 .side-actions .wide { grid-column: 1 / -1; }
 .side-label {
   padding: 10px 18px 6px; font-size: 11px; font-weight: 600;
@@ -774,6 +780,7 @@ mark.lt-style { text-decoration-color: var(--easy); background: color-mix(in srg
 .es-status.es-status-min { padding: 6px 2px; }
 
 /* ---------- krem/toprak paleti: serif dokunuşlar ---------- */
+.brand span { font-family: Georgia, "Times New Roman", serif; font-size: 19px; letter-spacing: -.01em; }
 .face .word, .face .translation-big {
   font-family: Georgia, "Times New Roman", serif;
 }
