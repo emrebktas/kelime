@@ -427,6 +427,19 @@ export async function fetchActivity(days = 7) {
   return data || [];
 }
 
+/** Bir kişinin gün gün çalışma süresi ve eklediği kelime sayısı; göremiyorsan boş, sunucuda yoksa null. */
+let statsMissing = false;
+export async function userStats(userId, days = 28) {
+  if (!session || statsMissing) return null;
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  const { data, error } = await client.rpc('user_stats', { p_user: userId, p_days: days, p_tz: tz });
+  if (error) {
+    if (isMissingFn(error)) { statsMissing = true; return null; }
+    throw new Error(message(error));
+  }
+  return data || [];
+}
+
 export async function setBoardVisibility(visibility) {
   await rpc('set_board_visibility', { p_visibility: visibility });
 }

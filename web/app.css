@@ -1146,3 +1146,29 @@ body.fig-side-on #app { padding-right: var(--fig-side-w, 400px); }
 
 .ai-pending { font-size: 12.5px; color: var(--muted); animation: ai-pulse 1.4s ease-in-out infinite; }
 @keyframes ai-pulse { 50% { opacity: .45; } }
+
+/* ---------- kişinin istatistikleri ---------- */
+.act-name { font-size: 13px; font-weight: 700; color: var(--text); padding: 0; white-space: nowrap; }
+.act-name:hover { color: var(--accent); }
+.us-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.us-head .avatar { width: 44px; height: 44px; font-size: 19px; grid-row: auto; }
+.us-head h2 { margin: 0; }
+.us-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+.us-tile { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); }
+.us-tile > span { font-size: 11.5px; }
+.us-tile b { font-size: 18px; font-variant-numeric: tabular-nums; }
+.us-tile small { font-size: 11.5px; color: var(--muted); }
+.us-h { margin: 6px 0 8px; font-size: 13.5px; }
+.us-week { margin-bottom: 14px; }
+.us-week .st-day { height: 150px; }
+.us-words { font-size: 10.5px; color: var(--muted); height: 14px; white-space: nowrap; }
+.us-heat { display: grid; grid-template-columns: repeat(14, 1fr); gap: 4px; max-width: 460px; }
+.us-heat span { aspect-ratio: 1; border-radius: 4px; background: var(--hover); }
+.us-heat .lv1 { background: color-mix(in srgb, var(--sage) 35%, var(--hover)); }
+.us-heat .lv2 { background: color-mix(in srgb, var(--sage) 60%, var(--hover)); }
+.us-heat .lv3 { background: color-mix(in srgb, var(--sage) 82%, var(--hover)); }
+.us-heat .lv4 { background: var(--sage); }
+@media (max-width: 760px) {
+  .us-tiles { grid-template-columns: repeat(2, 1fr); }
+  .us-heat { grid-template-columns: repeat(7, 1fr); }
+}

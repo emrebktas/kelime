@@ -2014,7 +2014,7 @@ async function loadBoard() {
       ${onlineOthers ? `<span class="board-online" title="Çevrimiçi">${onlineOthers}<i class="presence on"></i></span>` : ''}
     </div>
     <div class="board-list">${list.slice(0, 4).map((r) => `
-      <div class="board-row ${r.is_me ? 'me' : 'tappable'}" ${r.is_me ? '' : `data-act="chat-open" data-peer="${r.user_id}" data-name="${esc(r.display_name || '')}"`} title="${esc(r.display_name || '')}: bugün ${r.words_today} kelime, ${fmtDur(r.seconds)}${r.studying ? ' · şu an çalışıyor' : ''}">
+      <div class="board-row tappable ${r.is_me ? 'me' : ''}" data-act="user-stats" data-peer="${r.user_id}" data-name="${esc(r.is_me ? 'Sen' : r.display_name || '')}" data-me="${r.is_me ? 1 : ''}" title="İstatistikleri gör · "${esc(r.display_name || '')}: bugün ${r.words_today} kelime, ${fmtDur(r.seconds)}${r.studying ? ' · şu an çalışıyor' : ''}">
         <span class="avatar sm">${esc((r.display_name || '?').charAt(0).toLocaleUpperCase('tr'))}<i class="presence ${r.online ? 'on' : ''}"></i></span>
         <span class="board-info">
           <span class="board-name">${esc(r.is_me ? 'Sen' : r.display_name || 'Kullanıcı')}</span>
@@ -2076,7 +2076,7 @@ function renderActivity() {
       return `<div class="act-row act-${g.kind}" title="${esc(g.kind === 'card' ? `${g.name} · ${g.deck}: ${words}` : `${g.name}: ${fmtDur(g.seconds)} çalıştı`)}">
         <span class="act-ic">${g.kind === 'card' ? '📝' : '⏱'}</span>
         <span class="avatar sm">${initial}</span>
-        <b class="act-name">${esc(g.name || 'Biri')}</b>
+        <button type="button" class="link-btn act-name" data-act="user-stats" data-peer="${g.user_id}" data-name="${esc(g.name || '')}" title="İstatistikleri gör">${esc(g.name || 'Biri')}</button>
         <span class="act-deckcol">${g.kind === 'card' ? `<button type="button" class="link-btn act-deck" data-deck="${g.deck_id}">${esc(g.deck)}</button>` : ''}</span>
         <span class="act-detail">${g.kind === 'card'
           ? `<span class="muted">${g.words.length > 1 ? `${g.words.length} kelime` : 'kelime'} ekledi:</span> ${esc(words)}`
@@ -2087,6 +2087,58 @@ function renderActivity() {
     ${activity.groups.length > list.length ? '<button type="button" class="link-btn act-more" data-act="activity-more">Daha fazla göster</button>' : ''}`
     : '<p class="muted act-empty">Son 7 günde ortak destelerinde etkinlik yok. Bir desteni paylaş (deste › ⚙ › Paylaş); katılanların eklediği kelimeler ve çalışmaları burada görünür.</p>';
   box.innerHTML = `<div class="act-head"><h3>📰 Destedekilerin son etkinlikleri</h3><span class="muted">son 7 gün</span></div>${body}`;
+}
+
+/* ---- kişinin geçmiş performansı (panoda / akışta kişiye tıklayınca) */
+
+async function userStatsModal(userId, name, isMe = false) {
+  const form = openModal(`<div class="us-box"><div class="muted">Yükleniyor…</div></div>
+    <div class="modal-actions">
+      ${!isMe && !chat.missing ? `<button type="button" data-act="chat-open" data-peer="${esc(userId)}" data-name="${esc(name)}" data-close>💬 Mesaj gönder</button>` : ''}
+      <span class="spacer"></span><button type="button" class="primary" data-close>Kapat</button>
+    </div>`, { wide: true });
+  const box = $('.us-box', form);
+  let days;
+  try { days = await sync.userStats(userId, 28); } catch (e) { box.innerHTML = `<p class="muted">İstatistikler yüklenemedi: ${esc(e.message)}</p>`; return; }
+  if (!$('.us-box')) return; // pencere kapatıldı
+  if (days === null) { box.innerHTML = '<p class="muted">İstatistikler sunucuda henüz kurulmadı. Uygulama yöneticisinin istatistik SQL dosyasını çalıştırması gerekiyor.</p>'; return; }
+  if (!days.length) { box.innerHTML = `<h2>${esc(name)}</h2><p class="muted">Bu kişi istatistiklerini paylaşmıyor.</p>`; return; }
+  // Sunucudaki tarihler "YYYY-AA-GG"; yerel tarih olarak okunur
+  const list = days.map((d) => ({ date: new Date(`${d.day}T00:00:00`), sec: d.seconds, words: d.words }));
+  // kendi satırın: bugünkü canlı sayaç da eklenir
+  if (isMe) list[list.length - 1].sec = store.studyStats(liveSec()).today;
+  const week = list.slice(-7);
+  const sum = (xs, k) => xs.reduce((a, x) => a + x[k], 0);
+  let streak = 0;
+  for (let i = list.length - 1 - (list[list.length - 1].sec < 60 ? 1 : 0); i >= 0 && list[i].sec >= 60; i--) streak++;
+  const best = list.reduce((a, x) => (x.sec > a.sec ? x : a), list[0]);
+  const activeDays = list.filter((x) => x.sec >= 60).length;
+  const dayName = (d, opts) => d.toLocaleDateString('tr-TR', opts);
+  const maxWeek = Math.max(...week.map((d) => d.sec), 1);
+  const maxAll = Math.max(...list.map((d) => d.sec), 1);
+  const level = (sec) => (sec < 60 ? 0 : Math.min(4, 1 + Math.floor((sec / maxAll) * 3.999)));
+  box.innerHTML = `
+    <div class="us-head">
+      <span class="avatar">${esc((name || '?').charAt(0).toLocaleUpperCase('tr'))}</span>
+      <div><h2>${esc(name)}</h2><div class="muted">Son 4 haftanın çalışma geçmişi</div></div>
+    </div>
+    <div class="us-tiles">
+      <div class="us-tile"><span class="muted">Son 7 gün</span><b>${fmtDur(sum(week, 'sec'))}</b><small>${sum(week, 'words')} kelime eklendi</small></div>
+      <div class="us-tile"><span class="muted">Son 4 hafta</span><b>${fmtDur(sum(list, 'sec'))}</b><small>${sum(list, 'words')} kelime · ${activeDays} gün çalıştı</small></div>
+      <div class="us-tile"><span class="muted">Seri</span><b>${streak ? `🔥 ${streak} gün` : '—'}</b><small>arka arkaya çalışılan gün</small></div>
+      <div class="us-tile"><span class="muted">En iyi gün</span><b>${best.sec >= 60 ? fmtDur(best.sec) : '—'}</b><small>${best.sec >= 60 ? esc(dayName(best.date, { weekday: 'long', day: 'numeric', month: 'short' })) : 'henüz yok'}</small></div>
+    </div>
+    <h4 class="us-h">Son 7 gün</h4>
+    <div class="st-week us-week">${week.map((d, i) => `
+      <div class="st-day ${i === 6 ? 'today' : ''}" title="${esc(dayName(d.date, { day: 'numeric', month: 'long' }))}: ${fmtDur(d.sec)} · ${d.words} kelime">
+        <span class="st-val">${d.sec >= 60 ? Math.round(d.sec / 60) : ''}</span>
+        <span class="st-bar"><span style="height:${Math.max(d.sec ? 6 : 0, (d.sec / maxWeek) * 100)}%"></span></span>
+        <span class="st-lbl">${esc(dayName(d.date, { weekday: 'short' }))}</span>
+        <span class="us-words">${d.words ? `📝 ${d.words}` : ''}</span>
+      </div>`).join('')}
+    </div>
+    <h4 class="us-h">Son 4 hafta <small class="muted">her kare bir gün · koyu = daha çok çalışma</small></h4>
+    <div class="us-heat">${list.map((d) => `<span class="lv${level(d.sec)}" title="${esc(dayName(d.date, { weekday: 'short', day: 'numeric', month: 'short' }))}: ${fmtDur(d.sec)} · ${d.words} kelime"></span>`).join('')}</div>`;
 }
 
 /** Ana sayfadaki "Bugün çalıştın" kutusu. */
@@ -3769,6 +3821,7 @@ document.addEventListener('click', (e) => {
       case 'chat': showChat(); break;
       case 'json-help': jsonHelpModal(); break;
       case 'activity-more': activity.limit += 20; renderActivity(); break;
+      case 'user-stats': await userStatsModal(el.dataset.peer, el.dataset.name, !!el.dataset.me); break;
       case 'chat-open':
         if (state.view === 'chat') openThread(el.dataset.peer);
         else showChat(el.dataset.peer, el.dataset.name);
