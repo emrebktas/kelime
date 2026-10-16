@@ -1623,13 +1623,14 @@ const TIMER_NOTIF_ID = 4242;
 const TIMER_PRESETS = [15, 25, 45, 60, 90];
 const timer = (() => {
   // mode: 'countdown' (geri sayım) ya da 'stopwatch' (kronometre, 0'dan yukarı sayar)
-  const base = { status: 'idle', mode: 'countdown', planned: 25, startedAt: 0, runStart: 0, elapsed: 0 };
+  // carried: gece yarısını geçen oturumda önceki güne kaydedilmiş kısım (ms); "Bugün" bundan sonrasını sayar
+  const base = { status: 'idle', mode: 'countdown', planned: 25, startedAt: 0, runStart: 0, elapsed: 0, carried: 0 };
   try { return { ...base, ...JSON.parse(localStorage.getItem(TIMER_KEY)) }; } catch { return base; }
 })();
 const saveTimer = () => { try { localStorage.setItem(TIMER_KEY, JSON.stringify(timer)); } catch { /* yok say */ } };
 const timerElapsed = () => timer.elapsed + (timer.status === 'running' ? Date.now() - timer.runStart : 0);
 const timerRemaining = () => Math.max(0, timer.planned * 60_000 - timerElapsed());
-const liveSec = () => (timer.status === 'idle' ? 0 : Math.floor(timerElapsed() / 1000));
+const liveSec = () => (timer.status === 'idle' ? 0 : Math.floor(Math.max(0, timerElapsed() - (timer.carried || 0)) / 1000));
 const isStopwatch = () => timer.mode === 'stopwatch';
 const STOPWATCH_MAX_MS = 12 * 3600_000; // unutulan kronometre en fazla 12 saatte kendiliğinden biter
 /** Ekranda gösterilecek süre: geri sayımda kalan, kronometrede geçen. */
@@ -1655,14 +1656,61 @@ function syncTimerTick() {
   clearInterval(timerTick);
   timerTick = timer.status === 'running' ? setInterval(onTimerTick, 1000) : null;
 }
+/**
+ * Çalışma sayacı her gün 00:00'da sıfırlanır: süren oturumun gece yarısına kadarki kısmı önceki güne kaydedilir,
+ * sayaç kesilmeden devam eder ama "Bugün" sıfırdan sayar. Uygulama kapalıyken geçen geceler için de açılışta yapılır.
+ */
+function splitTimerAtMidnight() {
+  if (timer.status === 'idle' || !timer.startedAt) return false;
+  let split = false;
+  for (;;) {
+    const midnight = new Date(timer.startedAt);
+    midnight.setHours(24, 0, 0, 0);
+    const mid = midnight.getTime();
+    if (Date.now() < mid) break;
+    let atMid = timer.elapsed + (timer.status === 'running' ? Math.max(0, mid - timer.runStart) : 0);
+    atMid = Math.min(atMid, isStopwatch() ? STOPWATCH_MAX_MS : timer.planned * 60_000);
+    const segMs = Math.max(0, atMid - (timer.carried || 0));
+    if (segMs >= 60_000) {
+      store.addSession({
+        startedAt: timer.startedAt, endedAt: mid - 1000, actualSec: Math.round(segMs / 1000),
+        plannedMin: isStopwatch() ? Math.min(180, Math.max(1, Math.round(segMs / 60_000))) : timer.planned,
+      });
+    }
+    timer.carried = Math.max(timer.carried || 0, atMid);
+    timer.startedAt = mid;
+    split = true;
+  }
+  if (split) saveTimer();
+  return split;
+}
+
+// Gün değişince (uygulama açık kalsa da) sayaç ve "Bugün" bilgileri yenilenir
+let shownDay = store.dayKey(Date.now());
+function onDayChange() {
+  splitTimerAtMidnight();
+  if (store.dayKey(Date.now()) === shownDay) return;
+  shownDay = store.dayKey(Date.now());
+  renderTimer();
+  refreshStudyTime();
+  if (state.view === 'home') { loadBoard(); loadActivity(); }
+}
+(function scheduleMidnight() {
+  const next = new Date();
+  next.setHours(24, 0, 1, 0);
+  setTimeout(() => { onDayChange(); scheduleMidnight(); }, next - Date.now());
+})();
+
 function onTimerTick() {
+  if (splitTimerAtMidnight() || store.dayKey(Date.now()) !== shownDay) onDayChange();
   if (timer.status === 'running' && isStopwatch() && timerElapsed() >= STOPWATCH_MAX_MS) { timerFinish(false); return; }
   if (timer.status === 'running' && !isStopwatch() && timerRemaining() <= 0) { timerFinish(true); return; }
   renderTimer();
 }
 
 function timerStart() {
-  if (timer.status === 'idle') { timer.startedAt = Date.now(); timer.elapsed = 0; }
+  splitTimerAtMidnight();
+  if (timer.status === 'idle') { timer.startedAt = Date.now(); timer.elapsed = 0; timer.carried = 0; }
   timer.status = 'running';
   timer.runStart = Date.now();
   saveTimer();
@@ -1674,6 +1722,7 @@ function timerStart() {
 
 function timerPause() {
   if (timer.status !== 'running') return;
+  splitTimerAtMidnight();
   timer.elapsed = timerElapsed();
   timer.status = 'paused';
   saveTimer();
@@ -1684,7 +1733,7 @@ function timerPause() {
 }
 
 function timerReset() {
-  Object.assign(timer, { status: 'idle', startedAt: 0, runStart: 0, elapsed: 0 });
+  Object.assign(timer, { status: 'idle', startedAt: 0, runStart: 0, elapsed: 0, carried: 0 });
   saveTimer();
   syncTimerTick();
   cancelTimerAlert();
@@ -1694,8 +1743,10 @@ function timerReset() {
 /** Oturumu bitirir ve kaydeder. completed: süre doldu (erken bitirme değil). */
 function timerFinish(completed) {
   if (timer.status === 'idle') return;
+  splitTimerAtMidnight();
   const plannedMs = timer.planned * 60_000;
-  const actualMs = completed ? plannedMs : Math.min(timerElapsed(), isStopwatch() ? STOPWATCH_MAX_MS : Infinity);
+  const carried = timer.carried || 0; // gece yarısından önceki kısım zaten önceki güne kaydedildi
+  const actualMs = Math.max(0, (completed ? plannedMs : Math.min(timerElapsed(), isStopwatch() ? STOPWATCH_MAX_MS : Infinity)) - carried);
   // Uygulama kapalıyken dolduysa bitiş anı, gerçek dolma anıdır
   const endedAt = completed && timer.status === 'running' ? timer.runStart + (plannedMs - timer.elapsed) : Date.now();
   // Kronometrede hedef yok; kayıtta hedef, çalışılan süre kadar sayılır
@@ -1704,7 +1755,7 @@ function timerFinish(completed) {
   timerReset();
   if (actualMs >= 60_000) {
     store.addSession({ startedAt, endedAt, plannedMin: planned, actualSec: Math.round(actualMs / 1000) });
-  } else if (!completed) {
+  } else if (!completed && !carried) {
     toast('1 dakikadan kısa oturumlar kaydedilmez.', 'info');
   }
   renderTimer();
@@ -3936,7 +3987,7 @@ async function init() {
   applyTheme();
   await store.open();
   store.onRemoteChange(onRemoteChange);
-  sync.setPresenceProvider(() => (timer.status === 'running' ? Math.floor((Date.now() - timerElapsed()) / 1000) : null));
+  sync.setPresenceProvider(() => (timer.status === 'running' ? Math.floor((Date.now() - liveSec() * 1000) / 1000) : null));
   sync.onStatus(() => renderAccount());
   sync.onAuth((session, event) => {
     if (event === 'PASSWORD_RECOVERY') recoveryModal();
