@@ -1245,3 +1245,21 @@ body.reading-on #main { overflow: hidden; }
   .rd-wordbox { grid-template-columns: auto 1fr; }
 }
 .rd-q > div > .rd-correct, .rd-q > p > .rd-correct { display: inline-block; margin: 4px 0 0; }
+
+/* PDF'den test oluşturma */
+.pi-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pi-thumbs { display: flex; flex-wrap: wrap; gap: 8px; max-height: 300px; overflow: auto; margin-top: 8px; }
+.pi-thumbs figure { margin: 0; text-align: center; font-size: 11px; color: var(--muted); }
+.pi-thumbs canvas { display: block; width: 90px; height: auto; border: 1px solid var(--border); border-radius: 4px; background: #fff; }
+.pi-thumbs figure.key canvas { border-color: var(--accent); }
+.rd-job { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.rd-job.error { border-color: color-mix(in srgb, var(--danger) 50%, var(--border)); }
+.rd-job-err { color: var(--danger); font-size: 13px; }
+.rd-job-bar { height: 6px; border-radius: 6px; background: var(--hover); overflow: hidden; }
+.rd-job-bar span { display: block; height: 100%; background: var(--slate); transition: width .4s; }
+.rd-job button { align-self: flex-start; padding: 3px 10px; font-size: 12.5px; }
+@media (max-width: 760px) { .pi-row { grid-template-columns: 1fr; } }
+.rd-split.no-passage { grid-template-columns: minmax(0, 1fr); }
+.rd-split.no-passage .rd-passage { display: none; }
+.rd-split.no-passage .rd-questions { max-width: 900px; width: 100%; margin: 0 auto; display: block !important; }
+.rd-n.nokey { background: var(--hover); color: var(--muted); }

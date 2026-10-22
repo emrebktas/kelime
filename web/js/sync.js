@@ -381,6 +381,20 @@ export async function aiFigure(image) {
   return data;
 }
 
+/** Okuma testi: taranmış bir kitap sayfasının metni. */
+export async function aiOcrPage(image) {
+  const data = await invokeAi({ action: 'ocr', image }, 150_000, 'Sayfa okuma çok uzun sürdü.');
+  if (!data?.text) throw new Error('Sayfa okunamadı. Sunucu fonksiyonu güncel mi?');
+  return data;
+}
+
+/** Okuma testi: bir pasajın metni + cevap anahtarı → uygulamanın test biçiminde tek part. */
+export async function aiReadingPart(text, key, title) {
+  const data = await invokeAi({ action: 'reading-part', text, key, title }, 170_000, 'Pasajı çevirmek çok uzun sürdü.');
+  if (!data?.part) throw new Error('Pasaj çevrilemedi. Sunucu fonksiyonu güncel mi?');
+  return data.part;
+}
+
 export async function aiEssayReport({ task, prompt, body, targetWords = [], figure = null }) {
   const data = await invokeAi({
     action: 'essay', task, prompt, body, target_words: targetWords,

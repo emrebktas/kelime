@@ -3756,7 +3756,7 @@ const qLabel = (q) => (Array.isArray(q.n) ? `${q.n[0]}–${q.n[q.n.length - 1]}`
 const qCount = (q) => (Array.isArray(q.n) ? q.n.length : 1);
 
 /** İçe aktarılan testi doğrular ve düzenler. Hata varsa anlaşılır mesajla durur. */
-function normalizeReading(raw) {
+function normalizeReading(raw, { lenient = false } = {}) {
   const d = typeof raw === 'string' ? JSON.parse(raw) : raw;
   if (!d || !Array.isArray(d.parts) || !d.parts.length) throw new Error('Bu bir okuma testi dosyası değil (“parts” listesi yok).');
   const seen = new Set();
@@ -3764,21 +3764,26 @@ function normalizeReading(raw) {
     const passage = Array.isArray(p.passage)
       ? p.passage.map((x) => (typeof x === 'string' ? { text: x } : { label: x.label ? String(x.label) : '', text: String(x.text || '') }))
       : String(p.passage || '').split(/\n\s*\n/).filter((t) => t.trim()).map((t) => ({ text: t.trim() }));
-    if (!passage.length) throw new Error(`${pi + 1}. partın metni boş.`);
+    if (!passage.length && d.kind !== 'listening') throw new Error(`${pi + 1}. partın metni boş.`);
     const groups = (p.groups || []).map((g, gi) => {
       if (!READING_TYPES.includes(g.type)) throw new Error(`${pi + 1}. partta bilinmeyen soru tipi: ${g.type}`);
       const questions = (g.questions || []).map((q) => {
         const nums = Array.isArray(q.n) ? q.n.map(Number) : [Number(q.n)];
-        if (nums.some((n) => !Number.isFinite(n))) throw new Error(`${pi + 1}. part, ${gi + 1}. grupta numarasız soru var.`);
-        nums.forEach((n) => { if (seen.has(n)) throw new Error(`${n}. soru iki kez geçiyor.`); seen.add(n); });
-        if (q.answer === undefined || q.answer === null || q.answer === '') throw new Error(`${nums[0]}. sorunun cevabı yok.`);
+        if (nums.some((n) => !Number.isFinite(n))) { if (lenient) return null; throw new Error(`${pi + 1}. part, ${gi + 1}. grupta numarasız soru var.`); }
+        if (nums.some((n) => seen.has(n))) { if (lenient) return null; throw new Error(`${nums.find((n) => seen.has(n))}. soru iki kez geçiyor.`); }
+        nums.forEach((n) => seen.add(n));
+        if (q.answer === undefined || q.answer === null || q.answer === '') {
+          if (!lenient) throw new Error(`${nums[0]}. sorunun cevabı yok.`);
+          q = { ...q, answer: Array.isArray(q.n) ? [] : '?' };
+        }
         return { ...q, n: Array.isArray(q.n) ? nums : nums[0] };
-      });
+      }).filter(Boolean);
       return { ...g, questions };
     });
     return { title: p.title || `Part ${pi + 1}`, passage_title: p.passage_title || '', passage_subtitle: p.passage_subtitle || '', passage, groups };
   });
-  return { format: 'kelime-reading', version: 1, title: String(d.title || 'Reading testi').slice(0, 200), source: d.source || '', minutes: Number(d.minutes) || 60, parts };
+  return { format: 'kelime-reading', version: 1, kind: d.kind === 'listening' ? 'listening' : 'reading',
+    title: String(d.title || 'Reading testi').slice(0, 200), source: d.source || '', minutes: Number(d.minutes) || 60, parts };
 }
 
 const allQuestions = (content) => content.parts.flatMap((p, pi) => p.groups.flatMap((g) => g.questions.map((q) => ({ ...q, group: g, part: pi }))));
@@ -3805,8 +3810,10 @@ function isCorrect(q, given) {
   }
   return answerVariants(q.answer).includes(normText(given)) ? 1 : 0;
 }
+const hasKey = (q) => (Array.isArray(q.answer) ? q.answer.length > 0 : q.answer !== '?' && q.answer !== '' && q.answer != null);
+
 function readingResult(content, answers) {
-  const qs = allQuestions(content);
+  const qs = allQuestions(content).filter(hasKey);
   let score = 0;
   const marks = {};
   for (const q of qs) {
@@ -3814,7 +3821,7 @@ function readingResult(content, answers) {
     score += got;
     marks[qKey(q)] = got;
   }
-  const total = totalQuestions(content);
+  const total = qs.reduce((a, q) => a + qCount(q), 0);
   const scaled = Math.round((score / Math.max(total, 1)) * 40); // 40 soruluk teste göre
   const band = total >= 30 ? (READING_BANDS.find(([min]) => scaled >= min)?.[1] ?? 2) : null;
   return { score, total, band, marks, at: Math.floor(Date.now() / 1000) };
@@ -3840,19 +3847,223 @@ function showReadings() {
         </div>
         <button class="primary" data-act="reading-import">+ Test ekle</button>
       </header>
+      <div id="rd-jobs"></div>
       ${tests.length ? `<div class="essay-list">${tests.map((t) => {
         let total = 0;
         try { total = totalQuestions(t.content); } catch { /* bozuk içerik */ }
         const done = Object.values(t.answers || {}).filter((v) => (Array.isArray(v) ? v.length : String(v).trim())).length;
         return `<button class="essay-item" data-reading="${t.id}">
           <span class="ei-title">${esc(t.title)}</span>
-          <span class="ei-meta"><span class="badge">${(t.content.parts || []).length} part · ${total} soru</span>
+          <span class="ei-meta"><span class="badge">${t.content.kind === 'listening' ? '🎧 Listening · ' : ''}${(t.content.parts || []).length} part · ${total} soru</span>
             ${t.result ? `<span class="ei-ok">${t.result.score}/${t.result.total} doğru${t.result.band ? ` · Band ${t.result.band.toFixed(1)}` : ''}</span>`
               : done ? `<span class="muted">${done} soru cevaplandı</span>` : '<span class="muted">başlanmadı</span>'}
             <span class="muted">${new Date(t.edited_at * 1000).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}</span></span>
         </button>`;
       }).join('')}</div>` : `<div class="panel empty">Henüz okuma testi yok. “+ Test ekle” ile bir test ekleyebilir ya da örnek testle deneyebilirsin.</div>`}
     </div>`;
+  renderReadingJobs();
+}
+
+/* ---- PDF'den test oluşturma: sayfalar kullanıcının hesabındaki yapay zekâyla okunur, test arkada oluşur */
+
+let pdfjs = null;
+async function loadPdfJs() {
+  if (!pdfjs) {
+    pdfjs = await import('../vendor/pdf.min.mjs');
+    pdfjs.GlobalWorkerOptions.workerSrc = new URL('../vendor/pdf.worker.min.mjs', import.meta.url).href;
+  }
+  return pdfjs;
+}
+
+/** "15-27, 30" → [15, 16, …, 27, 30] */
+function parsePages(text, max) {
+  const out = [];
+  for (const part of String(text || '').split(/[,;\s]+/).filter(Boolean)) {
+    const m = part.match(/^(\d+)(?:-(\d+))?$/);
+    if (!m) throw new Error(`Sayfa aralığı anlaşılamadı: “${part}”. Örnek: 15-27`);
+    const a = Number(m[1]);
+    const b = Number(m[2] || m[1]);
+    if (a < 1 || b > max || a > b) throw new Error(`Sayfalar 1–${max} arasında olmalı.`);
+    for (let i = a; i <= b; i++) out.push(i);
+  }
+  return [...new Set(out)];
+}
+
+async function pdfPageCanvas(pdf, n, width) {
+  const page = await pdf.getPage(n);
+  const vp1 = page.getViewport({ scale: 1 });
+  const vp = page.getViewport({ scale: width / vp1.width });
+  const c = document.createElement('canvas');
+  c.width = Math.round(vp.width);
+  c.height = Math.round(vp.height);
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, c.width, c.height);
+  await page.render({ canvasContext: ctx, viewport: vp }).promise;
+  page.cleanup();
+  return c;
+}
+
+/** Yapay zekâya gidecek sayfa görüntüsü (sunucu sınırı ~400 bin karakter). */
+async function pdfPageImage(pdf, n) {
+  for (const [w, q] of [[1400, 0.72], [1200, 0.65], [1000, 0.6]]) {
+    const data = (await pdfPageCanvas(pdf, n, w)).toDataURL('image/jpeg', q);
+    if (data.length < 380_000) return data;
+  }
+  throw new Error(`${n}. sayfa çok büyük.`);
+}
+
+function pdfImportModal() {
+  if (!sync.user()) { toast('PDF\'den test oluşturmak için giriş yapmalısın (sayfalar hesabındaki yapay zekâyla okunur).', 'info'); return authModal(); }
+  let pdf = null;
+  let fileName = '';
+  const form = openModal(`
+    <h2>📄 PDF'den test oluştur</h2>
+    <p class="muted" style="font-size:13px">Kendi PDF'indeki bir okuma testini seç. Seçtiğin sayfalar hesabındaki yapay zekâyla okunur ve test
+      sadece senin hesabına eklenir. Birkaç dakika sürer; işlem arkada çalışır, uygulamayı kullanmaya devam edebilirsin (uygulama açık kalmalı).</p>
+    <label>PDF dosyası<input type="file" name="pdf" accept="application/pdf,.pdf"></label>
+    <div id="pi-info" class="muted" style="font-size:13px"></div>
+    <div id="pi-fields" class="hidden">
+      <label>Test adı<input name="title" maxlength="200" placeholder="ör. Cambridge 13 · Test 1"></label>
+      <div class="pi-row">
+        <label>Okuma sayfaları <small>3 pasaj ve soruları</small><input name="pages" placeholder="ör. 15-27"></label>
+        <label>Cevap anahtarı sayfası <small>isteğe bağlı</small><input name="key" placeholder="ör. 117"></label>
+      </div>
+      <div class="pi-thumbs" id="pi-thumbs"></div>
+    </div>
+    <div class="modal-actions">
+      <button type="button" data-close>Vazgeç</button>
+      <button type="submit" class="primary" id="pi-go" disabled>Oluştur</button>
+    </div>`, {
+    wide: true,
+    onSubmit: (f) => {
+      if (!pdf) return false;
+      let pages;
+      let keyPages;
+      try {
+        pages = parsePages(f.pages.value, pdf.numPages);
+        keyPages = parsePages(f.key.value, pdf.numPages);
+      } catch (e) { toast(e.message, 'error'); return false; }
+      if (!pages.length) { toast('Okuma sayfalarını yaz (ör. 15-27).', 'info'); return false; }
+      if (pages.length > 20) { toast('Bir testte en fazla 20 sayfa seçilebilir.', 'error'); return false; }
+      runReadingJob({ pdf, title: f.title.value.trim() || fileName, pages, keyPages });
+      if (state.view !== 'readings') showReadings();
+    },
+  });
+  let thumbTimer = null;
+  const drawThumbs = () => {
+    clearTimeout(thumbTimer);
+    thumbTimer = setTimeout(async () => {
+      const box = $('#pi-thumbs', form);
+      if (!box || !pdf) return;
+      let list = [];
+      try { list = [...parsePages(form.pages.value, pdf.numPages).map((n) => [n, '']), ...parsePages(form.key.value, pdf.numPages).map((n) => [n, 'key'])]; } catch { box.innerHTML = ''; return; }
+      box.innerHTML = list.slice(0, 24).map(([n, k]) => `<figure class="${k}"><canvas data-pn="${n}"></canvas><figcaption>${k ? '🔑 ' : ''}s. ${n}</figcaption></figure>`).join('');
+      for (const cv of $$('canvas[data-pn]', box)) {
+        const src = await pdfPageCanvas(pdf, Number(cv.dataset.pn), 110).catch(() => null);
+        if (!src || !cv.isConnected) continue;
+        cv.width = src.width; cv.height = src.height;
+        cv.getContext('2d').drawImage(src, 0, 0);
+      }
+    }, 400);
+  };
+  form.pages.addEventListener('input', drawThumbs);
+  form.key.addEventListener('input', drawThumbs);
+  form.pdf.addEventListener('change', async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const info = $('#pi-info', form);
+    info.textContent = 'PDF açılıyor…';
+    try {
+      const lib = await loadPdfJs();
+      pdf = await lib.getDocument({ data: await file.arrayBuffer(), isEvalSupported: false }).promise;
+    } catch (err) {
+      console.warn(err);
+      info.textContent = 'PDF açılamadı. Dosya bozuk ya da şifreli olabilir.';
+      return;
+    }
+    fileName = file.name.replace(/\.pdf$/i, '');
+    info.textContent = `${file.name} · ${pdf.numPages} sayfa. Okuma testinin sayfalarını yaz; aşağıda önizlemeleri görünür.`;
+    $('#pi-fields', form).classList.remove('hidden');
+    form.title.value ||= fileName;
+    $('#pi-go', form).disabled = false;
+    form.pages.focus();
+  });
+}
+
+const readingJobs = [];
+
+function renderReadingJobs() {
+  const box = $('#rd-jobs');
+  if (!box) return;
+  box.innerHTML = readingJobs.map((j, i) => `<div class="panel rd-job ${j.error ? 'error' : ''}">
+    <div><b>📄 ${esc(j.title)}</b> <span class="muted">${esc(j.status)}</span></div>
+    ${j.error ? `<div class="rd-job-err">${esc(j.error)}</div>` : `<div class="rd-job-bar"><span style="width:${Math.round((j.done / Math.max(1, j.total)) * 100)}%"></span></div>`}
+    ${j.error || j.finished ? `<button type="button" class="ghost" data-job-close="${i}">Kapat</button>` : ''}
+  </div>`).join('');
+  $$('[data-job-close]', box).forEach((b) => b.addEventListener('click', () => { readingJobs.splice(Number(b.dataset.jobClose), 1); renderReadingJobs(); }));
+}
+
+/** Pasajları ayırır ("READING PASSAGE 1/2/3" başlıklarından); bulamazsa tek pasaj sayar. */
+function splitPassages(text) {
+  const idx = [...text.matchAll(/READING\s+PASSAGE\s*\d/gi)].map((m) => m.index);
+  if (idx.length < 2) return [text];
+  return idx.map((start, i) => text.slice(i === 0 ? 0 : start, idx[i + 1] ?? text.length));
+}
+
+async function runReadingJob({ pdf, title, pages, keyPages }) {
+  const job = { title, status: 'başlıyor…', done: 0, total: pages.length + keyPages.length + 3, error: '', finished: false };
+  readingJobs.push(job);
+  const update = (status) => { job.status = status; renderReadingJobs(); };
+  try {
+    // 1) Sayfaları oku (aynı anda 2 sayfa; hata olursa bir kez daha dene)
+    const all = [...pages, ...keyPages];
+    const texts = new Map();
+    let next = 0;
+    const worker = async () => {
+      while (next < all.length) {
+        const n = all[next++];
+        let text = '';
+        for (let attempt = 0; attempt < 2 && !text; attempt++) {
+          try { text = (await sync.aiOcrPage(await pdfPageImage(pdf, n))).text; } catch (e) { if (attempt) throw new Error(`${n}. sayfa okunamadı: ${e.message}`); }
+        }
+        texts.set(n, text);
+        job.done++;
+        update(`sayfalar okunuyor ${texts.size}/${all.length}…`);
+      }
+    };
+    update(`sayfalar okunuyor 0/${all.length}…`);
+    await Promise.all([worker(), worker()]);
+    // 2) Pasajlara böl ve her birini test biçimine çevir
+    const body = pages.map((n) => texts.get(n)).join('\n\n');
+    let key = keyPages.map((n) => texts.get(n)).join('\n\n');
+    const readingAt = key.search(/READING/i);
+    if (readingAt > 0) key = key.slice(readingAt); // anahtar sayfasında dinleme cevapları da olabilir
+    const chunks = splitPassages(body);
+    job.total = job.done + chunks.length;
+    const parts = [];
+    for (const [i, chunk] of chunks.entries()) {
+      update(`Part ${i + 1}/${chunks.length} hazırlanıyor…`);
+      let part = null;
+      for (let attempt = 0; attempt < 2 && !part; attempt++) {
+        try { part = await sync.aiReadingPart(chunk, key, `Part ${i + 1}`); } catch (e) { if (attempt) throw new Error(`Part ${i + 1} oluşturulamadı: ${e.message}`); }
+      }
+      parts.push({ ...part, title: `Part ${i + 1}` });
+      job.done++;
+      renderReadingJobs();
+    }
+    const content = normalizeReading({ format: 'kelime-reading', title, minutes: 60, parts }, { lenient: true });
+    const rec = store.createReading(content);
+    const missing = allQuestions(content).filter((q) => q.answer === '?' || (Array.isArray(q.answer) && !q.answer.length)).length;
+    job.finished = true;
+    update(`hazır: ${content.parts.length} part, ${totalQuestions(content)} soru${missing ? ` · ${missing} sorunun cevabı bulunamadı` : ''}`);
+    toast(`“${rec.title}” hazır.`, 'success');
+    if (state.view === 'readings') showReadings();
+  } catch (e) {
+    console.warn('PDF testi oluşturulamadı', e);
+    job.error = e.message;
+    update('oluşturulamadı');
+  }
 }
 
 function readingImportModal() {
@@ -3861,7 +4072,8 @@ function readingImportModal() {
     <p class="muted" style="font-size:13px">Testler sadece senin hesabında saklanır ve cihazların arasında eşitlenir.
       PDF'teki bir testi uygulamanın okuma biçimine (JSON) çevirip buradan ekleyebilirsin.</p>
     <div class="rd-import">
-      <button type="button" data-ri="file">📄 JSON dosyası seç</button>
+      <button type="button" class="primary" data-ri="pdf">📄 PDF'den oluştur</button>
+      <button type="button" data-ri="file">JSON dosyası seç</button>
       <button type="button" data-ri="sample">🧪 Örnek testi ekle</button>
       <button type="button" data-ri="prompt" title="PDF'i JSON'a çevirmesi için bir yapay zekâya verilecek komut">📋 PDF → JSON komutunu kopyala</button>
     </div>
@@ -3880,6 +4092,7 @@ function readingImportModal() {
   const add = (txt) => { closeModal(); addReading(txt); };
   form.addEventListener('click', async (e) => {
     const act = e.target.closest('[data-ri]')?.dataset.ri;
+    if (act === 'pdf') { closeModal(); pdfImportModal(); return; }
     if (act === 'file') $('#ri-file', form).click();
     else if (act === 'sample') {
       const r = await fetch('content/reading-sample.json').catch(() => null);
@@ -3897,12 +4110,13 @@ function readingImportModal() {
 
 function addReading(text) {
   let content;
-  try { content = normalizeReading(text); } catch (e) {
+  try { content = normalizeReading(text, { lenient: true }); } catch (e) {
     toast(e instanceof SyntaxError ? 'JSON okunamadı; biçim hatalı.' : e.message, 'error', 6000);
     return;
   }
   const r = store.createReading(content);
-  toast(`“${r.title}” eklendi: ${content.parts.length} part, ${totalQuestions(content)} soru.`, 'success');
+  const noKey = allQuestions(content).filter((q) => !hasKey(q)).reduce((a, q) => a + qCount(q), 0);
+  toast(`“${r.title}” eklendi: ${content.parts.length} part, ${totalQuestions(content)} soru${noKey ? ` (${noKey} sorunun cevap anahtarı yok)` : ''}.`, 'success', 5000);
   openReading(r.id);
 }
 
@@ -3938,7 +4152,7 @@ function openReading(id) {
   leaveStudy();
   state.view = 'reading';
   state.readingId = id;
-  if (reading.id !== id) Object.assign(reading, { id, part: 0, checked: !!t.result, pane: 'text' });
+  if (reading.id !== id) Object.assign(reading, { id, part: 0, checked: !!t.result, pane: t.content.kind === 'listening' ? 'questions' : 'text' });
   reading.answers = { ...(t.answers || {}) }; // ekrandaki cevapların tek kaynağı; kaydetme bundan yapılır
   document.body.classList.remove('menu-open');
   renderSidebar();
@@ -3964,11 +4178,11 @@ function openReading(id) {
           </div>
         </div>
       </header>
-      <div class="seg rd-panes" role="tablist">
+      <div class="seg rd-panes ${c.kind === 'listening' ? 'hidden' : ''}" role="tablist">
         <button type="button" data-rd-pane="text">📄 Metin</button>
         <button type="button" data-rd-pane="questions">❓ Sorular</button>
       </div>
-      <div class="rd-split" id="rd-split">
+      <div class="rd-split ${c.kind === 'listening' ? 'no-passage' : ''}" id="rd-split">
         <section class="rd-passage" id="rd-passage" lang="en">${c.parts.map((p, i) => `
           <article class="rd-part" data-part="${i}">
             ${p.passage_title ? `<h2>${esc(p.passage_title)}</h2>` : ''}
@@ -4122,9 +4336,10 @@ function renderReadingMarks() {
   $$('.rd-correct', box).forEach((el) => el.remove());
   const qs = new Map(allQuestions(t.content).map((q) => [qKey(q), q]));
   $$('[data-mark]', box).forEach((el) => {
-    el.classList.remove('ok', 'bad', 'half');
+    el.classList.remove('ok', 'bad', 'half', 'nokey');
     if (!reading.checked || !t.result) return;
     const q = qs.get(el.dataset.mark);
+    if (!hasKey(q)) { el.classList.add('nokey'); el.title = 'Cevap anahtarı yok'; return; }
     const got = t.result.marks?.[el.dataset.mark] ?? 0;
     el.classList.add(got >= qCount(q) ? 'ok' : got > 0 ? 'half' : 'bad');
     if (got < qCount(q)) {
@@ -4149,6 +4364,7 @@ function checkReading() {
   const answers = { ...reading.answers };
   store.saveReadingAnswers(t.id, answers);
   const result = readingResult(t.content, answers);
+  if (!result.total) { toast('Bu testin cevap anahtarı yok; kontrol edilecek soru bulunamadı.', 'info', 5000); return; }
   store.saveReadingResult(t.id, result);
   reading.checked = true;
   renderReadingMarks();

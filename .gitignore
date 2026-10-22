@@ -28,3 +28,6 @@ android/
 
 # IELTS band tanımlayıcılarının tam metni (telif hakkı IELTS) — depoya girmez
 ielts-descriptors/
+
+# IELTS kitaplarından çevrilen okuma testleri (telifli) — depoya girmez
+reading-tests/

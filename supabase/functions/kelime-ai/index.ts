@@ -181,6 +181,40 @@ Deno.serve(async (req) => {
     return reply({ notes: seen.text.slice(0, 4000), model: seen.model, error: seen.error.slice(0, 300) });
   }
 
+  // Okuma testi: taranmış kitap sayfasının metnini çıkarır (kullanıcının kendi PDF'i, sayfa sayfa)
+  if (body.action === 'ocr') {
+    const image = validImage(body.image);
+    if (!image) return reply({ error: 'Sayfa görüntüsü geçersiz ya da çok büyük.' }, 400);
+    const quota = await useQuota(OCR_COST);
+    if (quota) return quota;
+    const seen = await readImage(apiKey, image, OCR_PROMPT, 4000, 120_000);
+    if (!seen.text) return reply({ error: `Sayfa okunamadı (${seen.error || 'boş cevap'}).` }, 502);
+    return reply({ text: seen.text.slice(0, 20000), model: seen.model });
+  }
+  // Okuma testi: bir pasajın metni + soruları + cevap anahtarı → uygulamanın test biçimi (tek part)
+  if (body.action === 'reading-part') {
+    const text = typeof body.text === 'string' ? body.text.slice(0, 40000) : '';
+    const key = typeof body.key === 'string' ? body.key.slice(0, 8000) : '';
+    if (text.length < 200) return reply({ error: 'Pasaj metni çok kısa.' }, 400);
+    const quota = await useQuota(PART_COST);
+    if (quota) return quota;
+    const out = await callModel([
+      { role: 'system', content: PART_PROMPT },
+      { role: 'user', content: `PART BAŞLIĞI: ${str(body.title, 40) || 'Part'}\n\nCEVAP ANAHTARI (sadece bu partın soru numaralarını kullan):\n${key || '(yok)'}\n\nOCR METNİ:\n${text}` },
+    ], 12000, 140_000, 0.1);
+    if (out instanceof Response) return out;
+    try {
+      const m = out.match(/\{[\s\S]*\}/);
+      if (!m) throw new Error('JSON yok');
+      const part = JSON.parse(m[0]);
+      if (!Array.isArray(part.passage) || !Array.isArray(part.groups)) throw new Error('eksik alan');
+      return reply({ part });
+    } catch (e) {
+      console.error('Okuma partı çözülemedi', e, out.slice(0, 300));
+      return reply({ error: 'Yapay zekâ bu partı düzgün biçime çeviremedi. Tekrar dene.' }, 502);
+    }
+  }
+
   const language = str(body.language, 12).toLowerCase() || 'en';
   const words = [...new Set((Array.isArray(body.words) ? body.words : [])
     .map((w) => str(w, 80)).filter(Boolean))].slice(0, MAX_WORDS);
@@ -209,6 +243,33 @@ Deno.serve(async (req) => {
 
 const ESSAY_COST = 25; // günlük sınırdan düşülen birim
 const FIGURE_COST = 5;
+const OCR_COST = 2;   // sayfa başına
+const PART_COST = 5;  // pasaj başına
+const OCR_PROMPT = `This image is a scanned page from an IELTS Academic Reading practice book that the user owns.
+Transcribe the page text exactly, for the user's private study app. Output plain text only, no commentary:
+- Keep headings, paragraph breaks and paragraph letters (A, B, C…) at the start of paragraphs.
+- Keep question numbers, instructions, option letters/roman numerals and their text.
+- Write tables row by row with " | " between cells.
+- Write answer gaps as "______" and keep the question number before the gap.
+- Join words hyphenated across line breaks. Skip running headers, page numbers and "Test 1"/"Reading" labels.`;
+const PART_PROMPT = `You convert OCR text of ONE IELTS Academic Reading passage (with its questions) into JSON for a study app.
+Return ONLY a JSON object, no code fences:
+{ "title": "Part 1", "passage_title": "", "passage_subtitle": "",
+  "passage": [{ "label": "A", "text": "paragraph text" }],
+  "groups": [ ...question groups... ] }
+Question group types (copy instructions text into "instructions"):
+- { "type": "tfng" | "ynng", "instructions": "...", "questions": [{ "n": 1, "text": "...", "answer": "TRUE" | "FALSE" | "NOT GIVEN" | "YES" | "NO" }] }
+- { "type": "mcq", "questions": [{ "n": 1, "text": "...", "options": [{ "key": "A", "text": "..." }], "answer": "B" }] }
+- { "type": "mcq_multi", "questions": [{ "n": [20, 21], "text": "...", "options": [...], "answer": ["B", "D"] }] }   (Choose TWO/THREE letters)
+- { "type": "matching", "options": [{ "key": "i", "text": "heading" }], "questions": [{ "n": 14, "text": "Paragraph B", "answer": "iv" }] }   (headings, information→paragraph letter, features, sentence endings)
+- { "type": "gap", "title": "", "template": "text with {{7}} and {{8}} where gaps are", "questions": [{ "n": 7, "answer": "word" }] }   (summary/notes/flow-chart)
+- { "type": "gap", "table": { "headers": ["..."], "rows": [["...", "{{1}}"]] }, "questions": [...] }   (table completion)
+- { "type": "gap", "questions": [{ "n": 9, "text": "Sentence with ___ gap.", "answer": "word" }] }   (sentence completion)
+- gap with a word box: add "options": [{ "key": "A", "text": "word" }] and the answer is the letter.
+- { "type": "short", "questions": [{ "n": 12, "text": "Question?", "answer": "answer" }] }
+Rules: keep the passage and question wording exactly as in the OCR text, only fixing obvious OCR errors (broken words, stray characters).
+Use the answer key for the answers of this passage's question numbers. In text answers keep alternatives with "/" and optional words in parentheses, e.g. "(the) ocean".
+If a paragraph has no letter, use an empty label.`;
 const validImage = (v: unknown) => typeof v === 'string' && v.length <= 400_000
   && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(v) ? v : '';
 const ESSAY_TASKS: Record<string, { label: string; min: number; criterion: string }> = {
@@ -344,7 +405,11 @@ const strList = (v: unknown, max: number, len: number) =>
  * Görseli görüntü modellerine aynı anda gönderir (birkaç saniye arayla); ilk düzgün cevap kullanılır, diğerleri iptal edilir.
  * NVIDIA'nın ücretsiz sunucuları yoğunken tek bir model uzun süre bekletebiliyor. Hata nedenleri rapora yazılır.
  */
-async function readFigure(apiKey: string, image: string, budgetMs = 115_000): Promise<{ text: string; model: string; error: string }> {
+function readFigure(apiKey: string, image: string, budgetMs = 115_000) {
+  return readImage(apiKey, image, FIGURE_PROMPT, 1200, budgetMs);
+}
+
+async function readImage(apiKey: string, image: string, prompt: string, maxTokens: number, budgetMs = 115_000): Promise<{ text: string; model: string; error: string }> {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), budgetMs);
   const errors: string[] = [];
@@ -360,14 +425,14 @@ async function readFigure(apiKey: string, image: string, budgetMs = 115_000): Pr
         body: JSON.stringify({
           model,
           temperature: 0.1,
-          max_tokens: 1200,
+          max_tokens: maxTokens,
           // GLM'de uzun "düşünme" aşaması kapatılır (cevap birkaç kat hızlı); diğer modeller bu ayarı tanımayabilir
           ...(model.startsWith('z-ai/') ? { reasoning_effort: 'low' } : {}),
           messages: [{
             role: 'user',
             content: [
               { type: 'image_url', image_url: { url: image } },
-              { type: 'text', text: FIGURE_PROMPT },
+              { type: 'text', text: prompt },
             ],
           }],
         }),
