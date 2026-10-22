@@ -249,6 +249,19 @@ async function push() {
     part.map(({ rec }) => ({ essay_id: rec.essay_id, user_id: uid, data: rec.data || '', deleted: !!rec.deleted })),
   ), 1), 'essay_images');
 
+  // Okuma testleri: ilk gönderimde içerikle birlikte, sonra sadece cevaplar/sonuç (içerik büyük olabilir)
+  await optionalTable(async () => {
+    for (const row of store.dirtyRows('readings')) {
+      const { rec } = row;
+      const fields = { title: rec.title, answers: rec.answers || {}, result: rec.result ?? null, edited_at: rec.edited_at, deleted: !!rec.deleted };
+      const res = rec._server
+        ? await client.from('reading_tests').update(fields).eq('id', rec.id)
+        : await client.from('reading_tests').upsert({ id: rec.id, user_id: uid, content: rec.content, created_at: rec.created_at, ...fields });
+      if (res.error && !isRejected(res.error)) throw res.error;
+      store.markClean('readings', [row]);
+    }
+  }, 'reading_tests');
+
   await pushTable('revlog', store.dirtyRows('revlog'), (part) => client.from('revlog').upsert(
     part.map(({ rec }) => ({
       id: rec.id, user_id: uid, card_id: rec.card_id, deck_id: rec.deck_id, time: rec.time, rating: rec.rating,
@@ -257,9 +270,9 @@ async function push() {
   ), 500);
 }
 
-const PULL_TABLES = ['deck_members', 'decks', 'cards', 'card_states', 'revlog', 'study_sessions', 'essays', 'essay_images'];
-const OWN_TABLES = ['card_states', 'revlog', 'study_sessions', 'essays', 'essay_images'];
-const OPTIONAL_TABLES = ['study_sessions', 'essays', 'essay_images'];
+const PULL_TABLES = ['deck_members', 'decks', 'cards', 'card_states', 'revlog', 'study_sessions', 'essays', 'essay_images', 'reading_tests'];
+const OWN_TABLES = ['card_states', 'revlog', 'study_sessions', 'essays', 'essay_images', 'reading_tests'];
+const OPTIONAL_TABLES = ['study_sessions', 'essays', 'essay_images', 'reading_tests'];
 
 // Sonradan eklenen tablolar (ör. study_sessions) sunucuda henüz oluşturulmadıysa
 // senkronun geri kalanı bozulmasın: o tablo bu oturumda atlanır, veriler cihazda bekler.

@@ -380,6 +380,8 @@ function renderSidebar() {
     : '<div class="empty-side">Henüz deste yok. “+ Yeni deste” ile oluştur ya da bir JSON dosyası içe aktar.</div>';
   $('#btn-join').classList.toggle('hidden', !sync.enabled);
   $('#nav-essays')?.classList.toggle('active', ['essays', 'essay', 'phrases'].includes(state.view));
+  $('#nav-reading')?.classList.toggle('active', ['readings', 'reading'].includes(state.view));
+  document.body.classList.toggle('reading-on', state.view === 'reading');
   renderChatBadges();
   checkFigDock();
   renderAccount();
@@ -1018,20 +1020,7 @@ function aiBulkModal(deck) {
         .map((w) => [store.wordKey(w), w])).values()];
       if (!words.length) { toast('En az bir kelime yaz.', 'info'); return false; }
       if (words.length > MAX) { toast(`Bir seferde en fazla ${MAX} kelime.`, 'error'); return false; }
-      // Destede zaten olan kelimeler atlanır; yeniler anlamsız olarak hemen eklenir
-      const existing = new Set(store.listCards(deck.id, '', Infinity).cards.map((c) => store.wordKey(c.word)));
-      const fresh = words.filter((w) => !existing.has(store.wordKey(w)));
-      const skipped = words.length - fresh.length;
-      if (!fresh.length) { toast('Bu kelimelerin hepsi destede zaten var.', 'info'); return false; }
-      store.importCards({ deck_id: deck.id }, fresh.map((word) => ({ word })));
-      const byKey = new Map(store.listCards(deck.id, '', Infinity).cards.map((c) => [store.wordKey(c.word), c.id]));
-      const items = fresh.map((word) => ({ id: byKey.get(store.wordKey(word)), word })).filter((x) => x.id);
-      items.forEach((x) => aiPending.add(x.id));
-      for (let i = 0; i < items.length; i += 10) aiQueue.push({ deckId: deck.id, language: deck.language, items: items.slice(i, i + 10) });
-      toast(`${items.length} kelime eklendi${skipped ? ` (${skipped} tanesi destede zaten vardı)` : ''}. Anlamlar arkada hazırlanıyor…`, 'success', 4000);
-      refreshDecks();
-      if (state.view === 'deck' && state.deckId === deck.id) loadCards();
-      runAiQueue();
+      if (!addWordsToDeck(deck, words)) return false;
     },
   });
   // Kutu küçük başlar, yazdıkça büyür (en fazla ~10 satır)
@@ -1041,6 +1030,30 @@ function aiBulkModal(deck) {
     box.style.height = `${Math.min(box.scrollHeight + 2, 240)}px`;
   });
   return form;
+}
+
+/**
+ * Kelimeleri desteye hemen ekler; anlam, örnek cümle ve eş anlamlılar arkada yapay zekâyla doldurulur.
+ * Destede zaten olanlar atlanır. Eklenen kelime sayısını döndürür.
+ */
+function addWordsToDeck(deck, words) {
+  const existing = new Set(store.listCards(deck.id, '', Infinity).cards.map((c) => store.wordKey(c.word)));
+  const fresh = words.filter((w) => !existing.has(store.wordKey(w)));
+  const skipped = words.length - fresh.length;
+  if (!fresh.length) { toast(words.length > 1 ? 'Bu kelimelerin hepsi destede zaten var.' : `“${words[0]}” bu destede zaten var.`, 'info'); return 0; }
+  store.importCards({ deck_id: deck.id }, fresh.map((word) => ({ word })));
+  const byKey = new Map(store.listCards(deck.id, '', Infinity).cards.map((c) => [store.wordKey(c.word), c.id]));
+  const items = fresh.map((word) => ({ id: byKey.get(store.wordKey(word)), word })).filter((x) => x.id);
+  const ai = !!sync.user();
+  if (ai) {
+    items.forEach((x) => aiPending.add(x.id));
+    for (let i = 0; i < items.length; i += 10) aiQueue.push({ deckId: deck.id, language: deck.language, items: items.slice(i, i + 10) });
+  }
+  toast(`${items.length === 1 ? `“${items[0].word}”` : `${items.length} kelime`} “${deck.name}” destesine eklendi${skipped ? ` (${skipped} tanesi zaten vardı)` : ''}.${ai ? ' Anlamı arkada hazırlanıyor…' : ''}`, 'success', 4000);
+  refreshDecks();
+  if (state.view === 'deck' && state.deckId === deck.id) loadCards();
+  if (ai) runAiQueue();
+  return items.length;
 }
 
 /** Kuyruktaki kelime gruplarını sırayla yapay zekâya gönderir; gelen içerik kartlara yazılır. */
@@ -1488,6 +1501,7 @@ function renderFaces(card, reverse, flipped) {
 
 function leaveStudy() {
   leaveEssay();
+  flushReading();
   if (state.study?.timer) clearTimeout(state.study.timer);
   state.study = null;
   stopSpeech();
@@ -1852,6 +1866,7 @@ function renderTimer() {
   if (home) home.textContent = fmtDur(stats.today);
   if ($('#tm-display')) renderTimerModal(false);
   renderEssayTimerBtn();
+  renderReadingTimerBtn();
 }
 
 function timerModal() {
@@ -3722,6 +3737,518 @@ function showPhrases() {
   renderPhrases($('#phr-root'));
 }
 
+/* =========================================================== okuma (IELTS Reading) */
+
+// Test biçimi (JSON): { format: 'kelime-reading', title, minutes?, parts: [{ title, passage_title, passage_subtitle?,
+//   passage: [{ label?, text }] | "paragraflar\n\nile", groups: [{ type, instructions, title?, options?, template?, table?,
+//   questions: [{ n, text?, options?, answer }] }] }] }
+// Soru tipleri: tfng, ynng, mcq, mcq_multi (n: [13, 14], answer: ['B', 'C']), matching (grubun options listesinden harf/numara),
+// gap (template içinde {{n}} ya da soru metninde ___; options varsa kelime kutusundan seçilir), short.
+// Metin cevaplarında "/" ile alternatif ("colour/color"), parantez isteğe bağlı kısım ("(the) ocean").
+const READING_TYPES = ['tfng', 'ynng', 'mcq', 'mcq_multi', 'matching', 'gap', 'short'];
+const TFNG = { tfng: ['TRUE', 'FALSE', 'NOT GIVEN'], ynng: ['YES', 'NO', 'NOT GIVEN'] };
+// Academic Reading: doğru sayısı → band (yaklaşık, resmi dönüşüm tablolarına göre)
+const READING_BANDS = [[39, 9], [37, 8.5], [35, 8], [33, 7.5], [30, 7], [27, 6.5], [23, 6], [19, 5.5], [15, 5], [13, 4.5], [10, 4], [8, 3.5], [6, 3], [4, 2.5]];
+const reading = { id: null, part: 0, saveTimer: null, checked: false, pane: 'text', answers: {} };
+
+const qKey = (q) => (Array.isArray(q.n) ? q.n.join('-') : String(q.n));
+const qLabel = (q) => (Array.isArray(q.n) ? `${q.n[0]}–${q.n[q.n.length - 1]}` : String(q.n));
+const qCount = (q) => (Array.isArray(q.n) ? q.n.length : 1);
+
+/** İçe aktarılan testi doğrular ve düzenler. Hata varsa anlaşılır mesajla durur. */
+function normalizeReading(raw) {
+  const d = typeof raw === 'string' ? JSON.parse(raw) : raw;
+  if (!d || !Array.isArray(d.parts) || !d.parts.length) throw new Error('Bu bir okuma testi dosyası değil (“parts” listesi yok).');
+  const seen = new Set();
+  const parts = d.parts.map((p, pi) => {
+    const passage = Array.isArray(p.passage)
+      ? p.passage.map((x) => (typeof x === 'string' ? { text: x } : { label: x.label ? String(x.label) : '', text: String(x.text || '') }))
+      : String(p.passage || '').split(/\n\s*\n/).filter((t) => t.trim()).map((t) => ({ text: t.trim() }));
+    if (!passage.length) throw new Error(`${pi + 1}. partın metni boş.`);
+    const groups = (p.groups || []).map((g, gi) => {
+      if (!READING_TYPES.includes(g.type)) throw new Error(`${pi + 1}. partta bilinmeyen soru tipi: ${g.type}`);
+      const questions = (g.questions || []).map((q) => {
+        const nums = Array.isArray(q.n) ? q.n.map(Number) : [Number(q.n)];
+        if (nums.some((n) => !Number.isFinite(n))) throw new Error(`${pi + 1}. part, ${gi + 1}. grupta numarasız soru var.`);
+        nums.forEach((n) => { if (seen.has(n)) throw new Error(`${n}. soru iki kez geçiyor.`); seen.add(n); });
+        if (q.answer === undefined || q.answer === null || q.answer === '') throw new Error(`${nums[0]}. sorunun cevabı yok.`);
+        return { ...q, n: Array.isArray(q.n) ? nums : nums[0] };
+      });
+      return { ...g, questions };
+    });
+    return { title: p.title || `Part ${pi + 1}`, passage_title: p.passage_title || '', passage_subtitle: p.passage_subtitle || '', passage, groups };
+  });
+  return { format: 'kelime-reading', version: 1, title: String(d.title || 'Reading testi').slice(0, 200), source: d.source || '', minutes: Number(d.minutes) || 60, parts };
+}
+
+const allQuestions = (content) => content.parts.flatMap((p, pi) => p.groups.flatMap((g) => g.questions.map((q) => ({ ...q, group: g, part: pi }))));
+const totalQuestions = (content) => allQuestions(content).reduce((a, q) => a + qCount(q), 0);
+
+// Metin cevabı karşılaştırma: büyük/küçük harf, fazla boşluk ve noktalama önemsiz; "/" alternatif, "(...)" isteğe bağlı
+const normText = (s) => String(s || '').toLocaleLowerCase('en').replace(/[‘’]/g, "'").replace(/[^\p{L}\p{N}'%\- ]+/gu, ' ').replace(/\s+/g, ' ').trim();
+function answerVariants(ans) {
+  return String(ans).split('/').flatMap((alt) => {
+    const withOpt = alt.replace(/[()]/g, '');
+    const without = alt.replace(/\([^)]*\)/g, '');
+    return [withOpt, without];
+  }).map(normText).filter(Boolean);
+}
+function isCorrect(q, given) {
+  if (Array.isArray(q.n)) {
+    const want = new Set(q.answer.map((x) => String(x).toUpperCase()));
+    return (given || []).filter((x) => want.has(String(x).toUpperCase())).length; // doğru seçilen harf sayısı
+  }
+  if (given === undefined || given === null || given === '') return 0;
+  const type = q.group.type;
+  if (type === 'tfng' || type === 'ynng' || type === 'mcq' || type === 'matching' || (type === 'gap' && q.group.options)) {
+    return String(given).trim().toUpperCase() === String(q.answer).trim().toUpperCase() ? 1 : 0;
+  }
+  return answerVariants(q.answer).includes(normText(given)) ? 1 : 0;
+}
+function readingResult(content, answers) {
+  const qs = allQuestions(content);
+  let score = 0;
+  const marks = {};
+  for (const q of qs) {
+    const got = isCorrect(q, answers[qKey(q)]);
+    score += got;
+    marks[qKey(q)] = got;
+  }
+  const total = totalQuestions(content);
+  const scaled = Math.round((score / Math.max(total, 1)) * 40); // 40 soruluk teste göre
+  const band = total >= 30 ? (READING_BANDS.find(([min]) => scaled >= min)?.[1] ?? 2) : null;
+  return { score, total, band, marks, at: Math.floor(Date.now() / 1000) };
+}
+const correctText = (q) => (Array.isArray(q.answer) ? q.answer.join(', ') : String(q.answer).split('/')[0]);
+
+/* ---- liste sayfası */
+
+function showReadings() {
+  leaveStudy();
+  state.view = 'readings';
+  document.body.classList.remove('menu-open');
+  renderSidebar();
+  setTitle('Okuma');
+  const tests = store.listReadings();
+  main.innerHTML = `
+    <div class="page">
+      <header class="deck-head">
+        <button class="icon-btn head-btn" data-act="home" title="Ana sayfaya dön (Esc)" aria-label="Ana sayfaya dön">${ICON.home}</button>
+        <div class="deck-title">
+          <h1>Okuma</h1>
+          <div class="sub">IELTS Reading · ${tests.length} test</div>
+        </div>
+        <button class="primary" data-act="reading-import">+ Test ekle</button>
+      </header>
+      ${tests.length ? `<div class="essay-list">${tests.map((t) => {
+        let total = 0;
+        try { total = totalQuestions(t.content); } catch { /* bozuk içerik */ }
+        const done = Object.values(t.answers || {}).filter((v) => (Array.isArray(v) ? v.length : String(v).trim())).length;
+        return `<button class="essay-item" data-reading="${t.id}">
+          <span class="ei-title">${esc(t.title)}</span>
+          <span class="ei-meta"><span class="badge">${(t.content.parts || []).length} part · ${total} soru</span>
+            ${t.result ? `<span class="ei-ok">${t.result.score}/${t.result.total} doğru${t.result.band ? ` · Band ${t.result.band.toFixed(1)}` : ''}</span>`
+              : done ? `<span class="muted">${done} soru cevaplandı</span>` : '<span class="muted">başlanmadı</span>'}
+            <span class="muted">${new Date(t.edited_at * 1000).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}</span></span>
+        </button>`;
+      }).join('')}</div>` : `<div class="panel empty">Henüz okuma testi yok. “+ Test ekle” ile bir test ekleyebilir ya da örnek testle deneyebilirsin.</div>`}
+    </div>`;
+}
+
+function readingImportModal() {
+  const form = openModal(`
+    <h2>Okuma testi ekle</h2>
+    <p class="muted" style="font-size:13px">Testler sadece senin hesabında saklanır ve cihazların arasında eşitlenir.
+      PDF'teki bir testi uygulamanın okuma biçimine (JSON) çevirip buradan ekleyebilirsin.</p>
+    <div class="rd-import">
+      <button type="button" data-ri="file">📄 JSON dosyası seç</button>
+      <button type="button" data-ri="sample">🧪 Örnek testi ekle</button>
+      <button type="button" data-ri="prompt" title="PDF'i JSON'a çevirmesi için bir yapay zekâya verilecek komut">📋 PDF → JSON komutunu kopyala</button>
+    </div>
+    <label>ya da JSON'u buraya yapıştır<textarea name="json" rows="5" placeholder='{"format": "kelime-reading", "title": "...", "parts": [ ... ]}'></textarea></label>
+    <input type="file" accept=".json,application/json" hidden id="ri-file">
+    <div class="modal-actions">
+      <button type="button" data-close>Vazgeç</button>
+      <button type="submit" class="primary">Ekle</button>
+    </div>`, {
+    onSubmit: (f) => {
+      const text = f.json.value.trim();
+      if (!text) { toast('JSON yapıştır ya da bir dosya seç.', 'info'); return false; }
+      addReading(text);
+    },
+  });
+  const add = (txt) => { closeModal(); addReading(txt); };
+  form.addEventListener('click', async (e) => {
+    const act = e.target.closest('[data-ri]')?.dataset.ri;
+    if (act === 'file') $('#ri-file', form).click();
+    else if (act === 'sample') {
+      const r = await fetch('content/reading-sample.json').catch(() => null);
+      if (!r?.ok) { toast('Örnek test yüklenemedi.', 'error'); return; }
+      add(await r.text());
+    } else if (act === 'prompt') {
+      navigator.clipboard?.writeText(READING_PROMPT).then(() => toast('Komut kopyalandı. PDF ile birlikte bir yapay zekâya ver; çıkan JSON\'u buraya yapıştır.', 'success', 5000));
+    }
+  });
+  $('#ri-file', form).addEventListener('change', async (e) => {
+    const file = e.target.files?.[0];
+    if (file) add(await file.text());
+  });
+}
+
+function addReading(text) {
+  let content;
+  try { content = normalizeReading(text); } catch (e) {
+    toast(e instanceof SyntaxError ? 'JSON okunamadı; biçim hatalı.' : e.message, 'error', 6000);
+    return;
+  }
+  const r = store.createReading(content);
+  toast(`“${r.title}” eklendi: ${content.parts.length} part, ${totalQuestions(content)} soru.`, 'success');
+  openReading(r.id);
+}
+
+const READING_PROMPT = `Ekteki IELTS Academic Reading testini aşağıdaki JSON biçimine çevir. Sadece JSON döndür.
+Metinleri ve soruları AYNEN aktar; paragraf harflerini (A, B, C…) "label" alanına yaz. Cevap anahtarı varsa "answer" alanlarını ondan doldur.
+{
+  "format": "kelime-reading", "title": "Kitap adı · Test no", "minutes": 60,
+  "parts": [{
+    "title": "Part 1", "passage_title": "Metin başlığı", "passage_subtitle": "",
+    "passage": [{ "label": "A", "text": "Paragraf metni" }],
+    "groups": [
+      { "type": "tfng", "instructions": "Soru grubunun yönergesi (aynen)", "questions": [{ "n": 1, "text": "İfade", "answer": "TRUE" }] },
+      { "type": "ynng", "instructions": "…", "questions": [{ "n": 2, "text": "…", "answer": "NOT GIVEN" }] },
+      { "type": "mcq", "instructions": "…", "questions": [{ "n": 3, "text": "Soru", "options": [{ "key": "A", "text": "…" }], "answer": "B" }] },
+      { "type": "mcq_multi", "instructions": "Choose TWO letters, A–E.", "questions": [{ "n": [4, 5], "text": "Soru", "options": [{ "key": "A", "text": "…" }], "answer": ["B", "D"] }] },
+      { "type": "matching", "instructions": "…", "options": [{ "key": "i", "text": "Başlık" }], "questions": [{ "n": 6, "text": "Paragraph B", "answer": "iv" }] },
+      { "type": "gap", "instructions": "Complete the summary… NO MORE THAN TWO WORDS…", "title": "Özet başlığı",
+        "template": "Metin {{7}} devam {{8}} …", "questions": [{ "n": 7, "answer": "kelime" }, { "n": 8, "answer": "colour/color" }] },
+      { "type": "gap", "instructions": "Complete the sentences…", "questions": [{ "n": 9, "text": "Cümle ___ devamı.", "answer": "kelime" }] },
+      { "type": "gap", "instructions": "Complete the table…", "table": { "headers": ["…", "…"], "rows": [["…", "{{10}}"]] }, "questions": [{ "n": 10, "answer": "…" }] },
+      { "type": "gap", "instructions": "Complete the summary using the list of words, A–H…", "options": [{ "key": "A", "text": "kelime" }], "template": "… {{11}} …", "questions": [{ "n": 11, "answer": "C" }] },
+      { "type": "short", "instructions": "Answer the questions… NO MORE THAN THREE WORDS…", "questions": [{ "n": 12, "text": "Soru?", "answer": "cevap" }] }
+    ]
+  }]
+}
+Kurallar: soru numaraları testteki gibi 1–40; "matching" için seçenek listesi grubun "options" alanında; metin cevaplarında alternatifleri "/" ile ayır, isteğe bağlı kelimeyi parantez içine al ("(the) river").`;
+
+/* ---- test sayfası */
+
+function openReading(id) {
+  const t = store.getReading(id);
+  if (!t) return showReadings();
+  leaveStudy();
+  state.view = 'reading';
+  state.readingId = id;
+  if (reading.id !== id) Object.assign(reading, { id, part: 0, checked: !!t.result, pane: 'text' });
+  reading.answers = { ...(t.answers || {}) }; // ekrandaki cevapların tek kaynağı; kaydetme bundan yapılır
+  document.body.classList.remove('menu-open');
+  renderSidebar();
+  setTitle(t.title);
+  const c = t.content;
+  main.innerHTML = `
+    <div class="rd-page">
+      <header class="rd-bar">
+        <button class="icon-btn head-btn" data-act="readings" title="Testlere dön (Esc)" aria-label="Testlere dön">${ICON.back.replace(/width="16" height="16"[^>]*/, '')}</button>
+        <b class="rd-title" title="${esc(t.title)}">${esc(t.title)}</b>
+        <div class="seg rd-parts" role="tablist">${c.parts.map((p, i) => `<button type="button" role="tab" data-rd-part="${i}">${esc(p.title)}</button>`).join('')}</div>
+        <span class="spacer"></span>
+        <span class="rd-progress muted" id="rd-progress"></span>
+        <button type="button" data-act="reading-timer" id="rd-timer-btn"></button>
+        <button type="button" class="primary" data-act="reading-check" id="rd-check"></button>
+        <div class="menu-wrap">
+          <button class="icon-btn head-btn" data-act="deck-menu" title="Test işlemleri" aria-label="Test işlemleri" aria-haspopup="menu">${ICON.gear}</button>
+          <div class="menu-pop hidden" id="deck-menu" role="menu">
+            <button role="menuitem" data-act="reading-reset">${ICON.undo}<span>Cevapları sıfırla</span></button>
+            <button role="menuitem" data-act="reading-rename">${ICON.edit}<span>Adını değiştir</span></button>
+            <hr>
+            <button role="menuitem" class="danger" data-act="reading-delete">${ICON.trash}<span>Testi sil</span></button>
+          </div>
+        </div>
+      </header>
+      <div class="seg rd-panes" role="tablist">
+        <button type="button" data-rd-pane="text">📄 Metin</button>
+        <button type="button" data-rd-pane="questions">❓ Sorular</button>
+      </div>
+      <div class="rd-split" id="rd-split">
+        <section class="rd-passage" id="rd-passage" lang="en">${c.parts.map((p, i) => `
+          <article class="rd-part" data-part="${i}">
+            ${p.passage_title ? `<h2>${esc(p.passage_title)}</h2>` : ''}
+            ${p.passage_subtitle ? `<p class="rd-sub">${esc(p.passage_subtitle)}</p>` : ''}
+            ${p.passage.map((x) => `<p class="rd-para">${x.label ? `<b class="rd-label">${esc(x.label)}</b>` : ''}<span>${esc(x.text)}</span></p>`).join('')}
+          </article>`).join('')}
+        </section>
+        <section class="rd-questions" id="rd-questions" lang="en">${c.parts.map((p, i) => `
+          <div class="rd-part" data-part="${i}">${p.groups.map((g) => readingGroupHtml(g, t.answers || {})).join('')}
+            ${i < c.parts.length - 1 ? `<button type="button" class="rd-next" data-rd-part="${i + 1}">${esc(c.parts[i + 1].title)} →</button>` : ''}
+          </div>`).join('')}
+        </section>
+      </div>
+    </div>`;
+  const qBox = $('#rd-questions');
+  const onAnswer = (e) => {
+    const el = e.target;
+    const key = el.dataset.q;
+    if (!key) return;
+    const answers = reading.answers;
+    if (el.type === 'checkbox') {
+      const boxes = $$(`input[type=checkbox][data-q="${key}"]`, qBox);
+      const max = Number(el.dataset.max) || boxes.length;
+      let picked = boxes.filter((b) => b.checked).map((b) => b.value);
+      if (picked.length > max) { el.checked = false; picked = picked.filter((v) => v !== el.value); toast(`En fazla ${max} seçenek.`, 'info', 1500); }
+      answers[key] = picked;
+    } else {
+      answers[key] = el.value;
+    }
+    if (el.tagName === 'INPUT' && el.type === 'text') el.style.width = `${Math.max(8, el.value.length + 2)}ch`;
+    clearTimeout(reading.saveTimer);
+    // yazarken yarım saniyede bir, seçimlerde hemen kaydedilir
+    if (el.type === 'text') reading.saveTimer = setTimeout(() => store.saveReadingAnswers(id, { ...answers }), 500);
+    else store.saveReadingAnswers(id, { ...answers });
+    renderReadingBar();
+  };
+  qBox.addEventListener('change', onAnswer);
+  qBox.addEventListener('input', (e) => { if (e.target.type === 'text') onAnswer(e); });
+  $('.rd-page').addEventListener('click', (e) => {
+    const part = e.target.closest('[data-rd-part]')?.dataset.rdPart;
+    if (part !== undefined) { reading.part = Number(part); showReadingPart(); return; }
+    const pane = e.target.closest('[data-rd-pane]')?.dataset.rdPane;
+    if (pane) { reading.pane = pane; showReadingPart(); }
+  });
+  setupPassageTools($('#rd-passage'));
+  showReadingPart();
+  renderReadingMarks();
+  renderReadingBar();
+}
+
+function readingGroupHtml(g, answers) {
+  const nums = g.questions.flatMap((q) => (Array.isArray(q.n) ? q.n : [q.n]));
+  const range = nums.length > 1 ? `Questions ${Math.min(...nums)}–${Math.max(...nums)}` : `Question ${nums[0]}`;
+  const val = (q) => answers[qKey(q)] ?? '';
+  const textInput = (q) => `<input type="text" class="rd-gap" data-q="${qKey(q)}" value="${esc(val(q))}" style="width:${Math.max(8, String(val(q)).length + 2)}ch" autocomplete="off" spellcheck="false" aria-label="Soru ${qLabel(q)}">`;
+  const choice = (q, opts) => `<select class="rd-select" data-q="${qKey(q)}" aria-label="Soru ${qLabel(q)}">
+      <option value=""></option>${opts.map((o) => `<option value="${esc(o.key)}" ${String(val(q)) === String(o.key) ? 'selected' : ''}>${esc(o.key)}</option>`).join('')}</select>`;
+  const gapField = (q) => (g.options ? choice(q, g.options) : textInput(q));
+  const numTag = (q) => `<b class="rd-n" data-mark="${qKey(q)}">${qLabel(q)}</b>`;
+  let body = '';
+  if (g.type === 'tfng' || g.type === 'ynng') {
+    body = g.questions.map((q) => `<div class="rd-q">${numTag(q)}<div><p>${esc(q.text)}</p>
+      <div class="rd-tf">${TFNG[g.type].map((o) => `<label><input type="radio" name="q${qKey(q)}" data-q="${qKey(q)}" value="${o}" ${val(q) === o ? 'checked' : ''}><span>${o}</span></label>`).join('')}</div></div></div>`).join('');
+  } else if (g.type === 'mcq' || g.type === 'mcq_multi') {
+    body = g.questions.map((q) => {
+      const opts = q.options || g.options || [];
+      const multi = Array.isArray(q.n);
+      const picked = multi ? (val(q) || []) : [val(q)];
+      return `<div class="rd-q">${numTag(q)}<div><p>${esc(q.text || '')}</p>
+        <div class="rd-opts">${opts.map((o) => `<label><input type="${multi ? 'checkbox' : 'radio'}" name="q${qKey(q)}" data-q="${qKey(q)}" ${multi ? `data-max="${q.n.length}"` : ''} value="${esc(o.key)}" ${picked.includes(o.key) ? 'checked' : ''}><b>${esc(o.key)}</b><span>${esc(o.text)}</span></label>`).join('')}</div></div></div>`;
+    }).join('');
+  } else if (g.type === 'matching') {
+    body = `<div class="rd-optlist">${(g.options || []).map((o) => `<div><b>${esc(o.key)}</b><span>${esc(o.text)}</span></div>`).join('')}</div>
+      ${g.questions.map((q) => `<div class="rd-q rd-q-inline">${numTag(q)}<p>${esc(q.text || '')}</p>${choice(q, g.options || [])}</div>`).join('')}`;
+  } else if (g.type === 'gap') {
+    const byN = new Map(g.questions.map((q) => [String(q.n), q]));
+    const fill = (txt) => esc(txt).replace(/\{\{(\d+)\}\}/g, (m, n) => {
+      const q = byN.get(n);
+      return q ? `<span class="rd-inline">${numTag(q)}${gapField(q)}</span>` : m;
+    });
+    const wordBox = g.options ? `<div class="rd-optlist rd-wordbox">${g.options.map((o) => `<div><b>${esc(o.key)}</b><span>${esc(o.text)}</span></div>`).join('')}</div>` : '';
+    if (g.template) {
+      body = `${g.title ? `<h4 class="rd-gtitle">${esc(g.title)}</h4>` : ''}<div class="rd-template">${g.template.split(/\n+/).map((line) => `<p>${fill(line)}</p>`).join('')}</div>${wordBox}`;
+    } else if (g.table) {
+      body = `${g.title ? `<h4 class="rd-gtitle">${esc(g.title)}</h4>` : ''}<div class="table-wrap"><table class="rd-table">
+        ${g.table.headers ? `<thead><tr>${g.table.headers.map((h) => `<th>${esc(h)}</th>`).join('')}</tr></thead>` : ''}
+        <tbody>${(g.table.rows || []).map((r) => `<tr>${r.map((cell) => `<td>${fill(String(cell))}</td>`).join('')}</tr>`).join('')}</tbody></table></div>${wordBox}`;
+    } else {
+      body = wordBox + g.questions.map((q) => {
+        const t = esc(q.text || '');
+        const html = /_{3,}|…{1,}|\.{4,}/.test(q.text || '') ? t.replace(/_{3,}|…{1,}|\.{4,}/, gapField(q)) : `${t} ${gapField(q)}`;
+        return `<div class="rd-q rd-q-inline">${numTag(q)}<p>${html}</p></div>`;
+      }).join('');
+    }
+  } else if (g.type === 'short') {
+    body = g.questions.map((q) => `<div class="rd-q rd-q-inline">${numTag(q)}<p>${esc(q.text || '')}</p>${textInput(q)}</div>`).join('');
+  }
+  return `<section class="rd-group">
+    <h3>${range}</h3>
+    ${g.instructions ? `<p class="rd-instr">${esc(g.instructions)}</p>` : ''}
+    ${body}
+  </section>`;
+}
+
+/** Okuma sayfasından çıkarken (ya da uygulama arka plana geçerken) bekleyen cevap kaydı hemen yazılır. */
+function flushReading() {
+  if (!reading.saveTimer || !reading.id) return;
+  clearTimeout(reading.saveTimer);
+  reading.saveTimer = null;
+  if (store.getReading(reading.id)) store.saveReadingAnswers(reading.id, { ...reading.answers });
+}
+
+function showReadingPart() {
+  $$('.rd-part').forEach((el) => el.classList.toggle('hidden', Number(el.dataset.part) !== reading.part));
+  $$('[data-rd-part]').forEach((b) => b.classList.toggle('on', !b.classList.contains('rd-next') && Number(b.dataset.rdPart) === reading.part));
+  $('#rd-split')?.setAttribute('data-pane', reading.pane);
+  $$('[data-rd-pane]').forEach((b) => b.classList.toggle('on', b.dataset.rdPane === reading.pane));
+  $('#rd-passage')?.scrollTo({ top: 0 });
+  $('#rd-questions')?.scrollTo({ top: 0 });
+}
+
+function renderReadingBar() {
+  const t = store.getReading(reading.id);
+  if (!t || !$('#rd-progress')) return;
+  const answered = allQuestions(t.content).reduce((a, q) => {
+    const v = reading.answers[qKey(q)];
+    return a + (Array.isArray(v) ? Math.min(v.length, qCount(q)) : (String(v ?? '').trim() ? 1 : 0));
+  }, 0);
+  const total = totalQuestions(t.content);
+  $('#rd-progress').textContent = reading.checked && t.result
+    ? `${t.result.score}/${t.result.total} doğru${t.result.band ? ` · Band ${t.result.band.toFixed(1)}` : ''}`
+    : `${answered}/${total} cevaplandı`;
+  $('#rd-check').textContent = reading.checked ? '↺ Tekrar çöz' : '✓ Kontrol et';
+  renderReadingTimerBtn();
+}
+
+function renderReadingTimerBtn() {
+  const btn = $('#rd-timer-btn');
+  if (!btn) return;
+  const t = store.getReading(reading.id);
+  btn.textContent = timer.status === 'idle' ? `⏱ ${t?.content.minutes || 60} dk` : `⏱ ${fmtClock(timerShown())}`;
+  btn.title = timer.status === 'idle' ? 'Sınav süresini başlat (çalışma süresine de eklenir)' : 'Çalışma sayacı';
+}
+
+/** Kontrol edildiyse her sorunun yanında ✓/✗ ve doğru cevap; değilse işaretler kaldırılır. */
+function renderReadingMarks() {
+  const t = store.getReading(reading.id);
+  const box = $('#rd-questions');
+  if (!t || !box) return;
+  box.classList.toggle('checked', reading.checked);
+  $$('.rd-correct', box).forEach((el) => el.remove());
+  const qs = new Map(allQuestions(t.content).map((q) => [qKey(q), q]));
+  $$('[data-mark]', box).forEach((el) => {
+    el.classList.remove('ok', 'bad', 'half');
+    if (!reading.checked || !t.result) return;
+    const q = qs.get(el.dataset.mark);
+    const got = t.result.marks?.[el.dataset.mark] ?? 0;
+    el.classList.add(got >= qCount(q) ? 'ok' : got > 0 ? 'half' : 'bad');
+    if (got < qCount(q)) {
+      // boşluk içindeyse kutunun yanına, değilse soru metninin sonuna
+      const host = el.parentElement.classList.contains('rd-inline') ? el.parentElement : el.parentElement.querySelector(':scope > div, :scope > p') || el.parentElement;
+      host.insertAdjacentHTML('beforeend', `<span class="rd-correct" title="Doğru cevap">✓ ${esc(correctText(q))}</span>`);
+    }
+  });
+  $$('input, select', box).forEach((el) => { el.disabled = reading.checked; });
+}
+
+function checkReading() {
+  const t = store.getReading(reading.id);
+  if (!t) return;
+  if (reading.checked) {
+    reading.checked = false;
+    renderReadingMarks();
+    renderReadingBar();
+    return;
+  }
+  clearTimeout(reading.saveTimer);
+  const answers = { ...reading.answers };
+  store.saveReadingAnswers(t.id, answers);
+  const result = readingResult(t.content, answers);
+  store.saveReadingResult(t.id, result);
+  reading.checked = true;
+  renderReadingMarks();
+  renderReadingBar();
+  if (timer.status === 'running' && timer.mode === 'countdown') timerPause();
+  toast(`${result.score}/${result.total} doğru${result.band ? ` · tahmini Band ${result.band.toFixed(1)}` : ''}. Yanlışların yanında doğru cevaplar gösteriliyor.`, 'success', 6000);
+}
+
+/* ---- metinde seçim: vurgula ya da kelimeyi desteye ekle */
+
+function setupPassageTools(box) {
+  const pop = document.createElement('div');
+  pop.className = 'rd-pop hidden';
+  pop.innerHTML = '<button type="button" data-rp="mark">🖍 Vurgula</button><button type="button" data-rp="unmark" class="hidden">Vurguyu kaldır</button><button type="button" data-rp="word">＋ Desteye ekle</button>';
+  document.body.append(pop);
+  let range = null;
+  let markEl = null;
+  const hide = () => { pop.classList.add('hidden'); range = null; markEl = null; };
+  const show = (rect) => {
+    pop.classList.remove('hidden');
+    const w = pop.offsetWidth;
+    pop.style.left = `${Math.max(8, Math.min(innerWidth - w - 8, rect.left + rect.width / 2 - w / 2))}px`;
+    pop.style.top = `${Math.max(8, rect.top - pop.offsetHeight - 8)}px`;
+  };
+  const onSelect = () => {
+    const sel = getSelection();
+    if (!sel || sel.isCollapsed || !box.contains(sel.anchorNode) || !box.contains(sel.focusNode)) return;
+    const text = sel.toString().trim();
+    if (!text) return;
+    range = sel.getRangeAt(0).cloneRange();
+    markEl = null;
+    $('[data-rp=unmark]', pop).classList.add('hidden');
+    $('[data-rp=mark]', pop).classList.remove('hidden');
+    $('[data-rp=word]', pop).classList.toggle('hidden', text.split(/\s+/).length > 5 || text.length > 60);
+    show(range.getBoundingClientRect());
+  };
+  box.addEventListener('mouseup', () => setTimeout(onSelect, 0));
+  box.addEventListener('touchend', () => setTimeout(onSelect, 300));
+  box.addEventListener('click', (e) => {
+    const m = e.target.closest('mark.rd-hl');
+    if (!m || !getSelection().isCollapsed) return;
+    markEl = m;
+    range = null;
+    $('[data-rp=unmark]', pop).classList.remove('hidden');
+    $('[data-rp=mark]', pop).classList.add('hidden');
+    $('[data-rp=word]', pop).classList.add('hidden');
+    show(m.getBoundingClientRect());
+  });
+  box.addEventListener('scroll', hide);
+  document.addEventListener('mousedown', (e) => { if (!pop.contains(e.target) && !box.contains(e.target)) hide(); });
+  pop.addEventListener('mousedown', (e) => e.preventDefault()); // seçim kaybolmasın
+  pop.addEventListener('click', (e) => {
+    const act = e.target.closest('[data-rp]')?.dataset.rp;
+    if (act === 'mark' && range) {
+      try {
+        const m = document.createElement('mark');
+        m.className = 'rd-hl';
+        m.append(range.extractContents());
+        range.insertNode(m);
+      } catch { /* seçim birden çok paragrafa yayılıyorsa */ }
+      getSelection().removeAllRanges();
+    } else if (act === 'unmark' && markEl) {
+      markEl.replaceWith(...markEl.childNodes);
+    } else if (act === 'word' && range) {
+      const word = range.toString().trim().replace(/^[^\p{L}]+|[^\p{L}]+$/gu, '');
+      getSelection().removeAllRanges();
+      if (word) addWordModal(word);
+    }
+    hide();
+  });
+  // sayfadan çıkınca açılır menü de kalksın
+  const obs = new MutationObserver(() => { if (!document.body.contains(box)) { pop.remove(); obs.disconnect(); } });
+  obs.observe(main, { childList: true });
+}
+
+/** Okurken seçilen kelimeyi bir desteye ekler (anlamı arkada yapay zekâyla). */
+function addWordModal(word) {
+  const decks = store.getDecks().filter((d) => d.role !== 'viewer');
+  if (!decks.length) { toast('Önce bir deste oluştur.', 'info'); return; }
+  const last = decks.find((d) => d.id === prefs.readingDeck) || decks.find((d) => d.language === 'en') || decks[0];
+  openModal(`
+    <h2>Kelimeyi desteye ekle</h2>
+    <label>Kelime<input name="word" value="${esc(word)}" maxlength="120" autofocus></label>
+    <label>Deste<select name="deck">${decks.map((d) => `<option value="${d.id}" ${d.id === last.id ? 'selected' : ''}>${esc(d.name)} · ${esc(langName(d.language))}</option>`).join('')}</select></label>
+    <p class="muted" style="font-size:12.5px">${sync.user() ? 'Türkçe anlamı, örnek cümlesi ve eş anlamlıları yapay zekâ arkada hazırlar; okumaya devam edebilirsin.' : 'Giriş yapmadığın için kelime anlamsız eklenir; anlamını sonra kendin yazabilirsin.'}</p>
+    <div class="modal-actions">
+      <button type="button" data-close>Vazgeç</button>
+      <button type="submit" class="primary">Ekle</button>
+    </div>`, {
+    onSubmit: (f) => {
+      const w = f.word.value.trim();
+      const deck = deckById(f.deck.value);
+      if (!w || !deck) return false;
+      prefs.readingDeck = deck.id;
+      savePrefs();
+      addWordsToDeck(deck, [w]);
+    },
+  });
+}
+
 /* =========================================================== uzaktan gelen değişiklikler */
 
 let remoteTimer = null;
@@ -3740,6 +4267,11 @@ function onRemoteChange() {
       if (document.activeElement?.id === 'card-search') loadCards(); else renderDeck();
     } else if (state.view === 'essays') {
       showEssays();
+    } else if (state.view === 'readings') {
+      showReadings();
+    } else if (state.view === 'reading') {
+      if (!store.getReading(state.readingId)) { toast('Bu test başka bir cihazda silindi.', 'info'); showReadings(); return; }
+      // cevaplar yazılırken sayfa baştan çizilmez (vurgular ve kaydırma yeri korunur)
     } else if (state.view === 'essay') {
       // Yazarken ekranı yenileme; sadece başka cihazda değiştiyse ve şu an yazılmıyorsa
       if (!store.getEssay(state.essayId)) { toast('Bu yazı başka bir cihazda silindi.', 'info'); showEssays(); return; }
@@ -3786,10 +4318,11 @@ document.addEventListener('click', (e) => {
     if (e.target.tagName !== 'INPUT') chkCell.querySelector('input')?.click();
     return;
   }
-  const el = e.target.closest('[data-act], [data-deck], [data-card], [data-essay]');
+  const el = e.target.closest('[data-act], [data-deck], [data-card], [data-essay], [data-reading]');
   if (!el || (el.closest('#modal-root') && !el.dataset.act)) return;
   if (el.dataset.deck) return guard(() => openDeck(el.dataset.deck));
   if (el.dataset.essay) return guard(() => openEssay(el.dataset.essay));
+  if (el.dataset.reading) return guard(() => openReading(el.dataset.reading));
   if (el.dataset.card && !el.dataset.act) {
     const card = state.cards.get(el.dataset.card);
     if (card) cardForm(card, state.deckId, () => { refreshDecks(); renderDeck(); });
@@ -3817,6 +4350,40 @@ document.addEventListener('click', (e) => {
       case 'speech-settings': speechSettingsModal(); break;
       case 'timer': timerModal(); break;
       case 'essays': showEssays(); break;
+      case 'readings': flushReading(); showReadings(); break;
+      case 'reading-import': readingImportModal(); break;
+      case 'reading-check': checkReading(); break;
+      case 'reading-timer': {
+        if (timer.status !== 'idle') { timerModal(); break; }
+        timer.mode = 'countdown';
+        timer.planned = Math.min(180, store.getReading(state.readingId)?.content.minutes || 60);
+        timerStart();
+        toast(`${timer.planned} dakikalık sınav süresi başladı.`, 'success');
+        break;
+      }
+      case 'reading-reset':
+        if (await confirmBox('Bu testteki tüm cevapların ve sonucun silinecek.', { ok: 'Sıfırla', danger: true })) {
+          store.saveReadingAnswers(state.readingId, {});
+          store.saveReadingResult(state.readingId, null);
+          reading.checked = false;
+          reading.id = null;
+          openReading(state.readingId);
+        }
+        break;
+      case 'reading-rename': {
+        const cur = store.getReading(state.readingId);
+        openModal(`<h2>Testin adı</h2><label>Ad<input name="title" value="${esc(cur.title)}" maxlength="200" autofocus></label>
+          <div class="modal-actions"><button type="button" data-close>Vazgeç</button><button type="submit" class="primary">Kaydet</button></div>`, {
+          onSubmit: (f) => { store.renameReading(cur.id, f.title.value); openReading(cur.id); },
+        });
+        break;
+      }
+      case 'reading-delete':
+        if (await confirmBox('Bu test ve cevapların kalıcı olarak silinecek.', { ok: 'Sil', danger: true })) {
+          store.deleteReading(state.readingId);
+          showReadings();
+        }
+        break;
       case 'phrases': showPhrases(); break;
       case 'chat': showChat(); break;
       case 'json-help': jsonHelpModal(); break;
@@ -3977,6 +4544,10 @@ document.addEventListener('keydown', (e) => {
       if (typing) document.activeElement.blur();
       else showEssays();
     }
+  } else if (state.view === 'reading') {
+    if (e.key === 'Escape') { if (typing) document.activeElement.blur(); else showReadings(); }
+  } else if (state.view === 'readings') {
+    if (e.key === 'Escape' && !typing) showHome();
   } else if (state.view === 'essays' || state.view === 'phrases') {
     if (e.key === 'Escape' && !typing) { if (state.view === 'phrases') showEssays(); else showHome(); }
   } else if (state.view === 'chat') {
@@ -4065,7 +4636,7 @@ async function init() {
   syncTimerTick();
   onTimerTick();
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) state.flushEssay?.(); // telefonda uygulama arka plana geçerken yazıyı kaydet
+    if (document.hidden) { state.flushEssay?.(); flushReading(); } // telefonda uygulama arka plana geçerken yazıyı kaydet
     else onTimerTick();
   });
   addEventListener('pagehide', () => state.flushEssay?.());
@@ -4077,6 +4648,8 @@ async function init() {
       else if (state.view === 'study') backToDeck();
       else if (state.view === 'chat' && chat.peer) closeThread();
       else if (state.view === 'essay' || state.view === 'phrases') showEssays();
+      else if (state.view === 'reading') showReadings();
+      else if (state.view === 'readings') showHome();
       else if (['deck', 'essays', 'chat'].includes(state.view)) showHome();
       else NativeApp.exitApp();
     });

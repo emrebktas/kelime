@@ -1,0 +1,101 @@
+{
+  "format": "kelime-reading",
+  "version": 1,
+  "title": "Örnek test · Rooftop farming",
+  "source": "Kelime uygulaması için yazılmış özgün örnek metin",
+  "minutes": 20,
+  "parts": [
+    {
+      "title": "Part 1",
+      "passage_title": "Farming above the city",
+      "passage_subtitle": "Can rooftop agriculture feed tomorrow's cities?",
+      "passage": [
+        { "label": "A", "text": "Over the past two decades, rooftops in many of the world's largest cities have begun to change colour. Where there was once grey concrete and gravel, there are now beds of lettuce, rows of tomatoes and even small orchards. Rooftop farming, once a hobby for a handful of enthusiasts, has become a serious business in places such as New York, Singapore and Montreal." },
+        { "label": "B", "text": "The appeal is partly practical. Cities contain vast areas of flat roof that receive direct sunlight for most of the day, yet are rarely used. Growing food close to where it is eaten also reduces the distance it must travel, and many urban farms deliver their produce to restaurants on the same morning it is harvested." },
+        { "label": "C", "text": "There are environmental arguments too. A layer of soil and plants absorbs rainwater that would otherwise flood drainage systems during storms. Researchers in Toronto found that a planted roof held back up to 60 per cent of the rain that fell on it during a typical summer. Green roofs also keep the buildings beneath them cooler, lowering the demand for air conditioning." },
+        { "label": "D", "text": "However, the challenges are considerable. Most older buildings were not designed to carry the weight of wet soil, and strengthening a roof can cost more than the farm will earn in several years. Access is another problem: staff, tools and harvested crops must all be carried up and down, often in lifts shared with office workers." },
+        { "label": "E", "text": "To reduce weight, many growers have turned to hydroponics, a method in which plants grow in nutrient-rich water rather than soil. Hydroponic systems can be up to ten times lighter than traditional beds, and they use less water because it is recycled. Critics point out, though, that they depend on electricity for pumps and lighting." },
+        { "label": "F", "text": "The economics remain uncertain. A study of 30 commercial rooftop farms in North America found that only a third were profitable without grants or donations. Those that succeeded tended to grow high-value crops such as herbs and microgreens, or to earn additional income from educational tours and private events." },
+        { "label": "G", "text": "Supporters argue that profit is not the only measure of success. Rooftop farms, they say, reconnect city residents with the origins of their food and create green spaces in neighbourhoods that have few parks. Whether these benefits justify public funding is a question many city councils are now being asked to answer." }
+      ],
+      "groups": [
+        {
+          "type": "tfng",
+          "instructions": "Do the following statements agree with the information given in the passage? Write TRUE if the statement agrees with the information, FALSE if the statement contradicts the information, NOT GIVEN if there is no information on this.",
+          "questions": [
+            { "n": 1, "text": "Rooftop farming was once practised mainly by a small number of keen amateurs.", "answer": "TRUE" },
+            { "n": 2, "text": "Most produce from urban farms is sold to supermarkets.", "answer": "NOT GIVEN" },
+            { "n": 3, "text": "The Toronto study showed that planted roofs could absorb all the rain that fell during summer.", "answer": "FALSE" },
+            { "n": 4, "text": "Strengthening an old roof can cost more than several years of a farm's income.", "answer": "TRUE" },
+            { "n": 5, "text": "Hydroponic systems need more water than soil-based beds.", "answer": "FALSE" }
+          ]
+        },
+        {
+          "type": "matching",
+          "instructions": "Which paragraph contains the following information? Write the correct letter, A–G. You may use any letter more than once.",
+          "options": [
+            { "key": "A", "text": "Paragraph A" }, { "key": "B", "text": "Paragraph B" }, { "key": "C", "text": "Paragraph C" },
+            { "key": "D", "text": "Paragraph D" }, { "key": "E", "text": "Paragraph E" }, { "key": "F", "text": "Paragraph F" },
+            { "key": "G", "text": "Paragraph G" }
+          ],
+          "questions": [
+            { "n": 6, "text": "a reason why some rooftop farms make money", "answer": "F" },
+            { "n": 7, "text": "a disadvantage of growing plants without soil", "answer": "E" },
+            { "n": 8, "text": "a benefit for the buildings underneath rooftop farms", "answer": "C" }
+          ]
+        },
+        {
+          "type": "gap",
+          "instructions": "Complete the summary below. Choose NO MORE THAN TWO WORDS from the passage for each answer.",
+          "title": "Lighter growing systems",
+          "template": "Many growers now use {{9}}, a method in which plants grow in water containing nutrients. These systems are much {{10}} than beds of soil and recycle their water, but they rely on {{11}} to run pumps and lights.",
+          "questions": [
+            { "n": 9, "answer": "hydroponics" },
+            { "n": 10, "answer": "lighter" },
+            { "n": 11, "answer": "electricity" }
+          ]
+        },
+        {
+          "type": "mcq",
+          "instructions": "Choose the correct letter, A, B, C or D.",
+          "questions": [
+            {
+              "n": 12, "text": "According to paragraph F, the rooftop farms that succeeded financially",
+              "options": [
+                { "key": "A", "text": "received the largest grants." },
+                { "key": "B", "text": "grew crops that sell for a high price." },
+                { "key": "C", "text": "sold most of their produce to restaurants." },
+                { "key": "D", "text": "were located in Singapore." }
+              ],
+              "answer": "B"
+            }
+          ]
+        },
+        {
+          "type": "mcq_multi",
+          "instructions": "Choose TWO letters, A–E.",
+          "questions": [
+            {
+              "n": [13, 14], "text": "Which TWO benefits of rooftop farms do supporters mention in paragraph G?",
+              "options": [
+                { "key": "A", "text": "lower food prices" },
+                { "key": "B", "text": "helping people understand where food comes from" },
+                { "key": "C", "text": "more green space in some neighbourhoods" },
+                { "key": "D", "text": "new jobs for local residents" },
+                { "key": "E", "text": "cleaner air in city centres" }
+              ],
+              "answer": ["B", "C"]
+            }
+          ]
+        },
+        {
+          "type": "short",
+          "instructions": "Answer the question below. Choose ONE WORD AND/OR A NUMBER from the passage for the answer.",
+          "questions": [
+            { "n": 15, "text": "How many commercial rooftop farms were included in the North American study?", "answer": "30/thirty" }
+          ]
+        }
+      ]
+    }
+  ]
+}

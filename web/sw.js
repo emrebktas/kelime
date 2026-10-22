@@ -1,13 +1,13 @@
 // Uygulama dosyalarını önbelleğe alır: internet yokken de açılır.
 // Önce ağ (her zaman en yeni sürüm), ağ yoksa ya da yavaşsa önbellek.
 
-const CACHE = 'kelime-v34';
+const CACHE = 'kelime-v36';
 const ASSETS = [
   './', 'index.html', 'app.css', 'manifest.webmanifest',
   'js/app.js', 'js/store.js', 'js/sync.js', 'js/srs.js', 'js/config.js',
   'vendor/supabase.js', 'vendor/capacitor.js',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/logo.png',
-  'content/task1-collocations.json',
+  'content/task1-collocations.json', 'content/reading-sample.json',
 ];
 
 self.addEventListener('install', (e) => {
