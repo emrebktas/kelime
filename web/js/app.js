@@ -250,6 +250,8 @@ function speechSettingsModal() {
     <h2>Seslendirme</h2>
     <label class="radio"><input type="checkbox" name="auto" ${prefs.autoSpeak ? 'checked' : ''}>
       Kart açılınca kelimeyi otomatik seslendir</label>
+    ${sync.enabled ? `<label class="radio"><input type="checkbox" name="chatsound" ${prefs.chatSound !== false ? 'checked' : ''}>
+      Yeni mesaj gelince bildirim sesi çal</label>` : ''}
     <label>Ses seviyesi <small id="vol-val">%${Math.round(speechVolume() * 100)}</small>
       <input type="range" name="volume" min="0" max="100" step="5" value="${Math.round(speechVolume() * 100)}"></label>
     <label>Konuşma hızı <small id="rate-val">${speechRate().toFixed(2)}×</small>
@@ -264,6 +266,7 @@ function speechSettingsModal() {
     </div>`, { onSubmit: () => {} });
   const save = () => {
     prefs.autoSpeak = $('[name=auto]', form).checked;
+    if ($('[name=chatsound]', form)) prefs.chatSound = $('[name=chatsound]', form).checked;
     prefs.volume = +$('[name=volume]', form).value / 100;
     prefs.rate = +$('[name=rate]', form).value / 100;
     $('#vol-val', form).textContent = `%${Math.round(prefs.volume * 100)}`;
@@ -1798,6 +1801,32 @@ function timerFinish(completed) {
 }
 
 // Kısa üç bip + titreşim
+/** Yeni mesaj sesi: kısa iki notalı "ding" (ses dosyası gerekmez). Ses seviyesi ayarı geçerli; %0'da sessiz. */
+let msgAudio = null;
+function messageSound() {
+  const vol = speechVolume();
+  if (!vol || prefs.chatSound === false) return;
+  try {
+    msgAudio ||= new (window.AudioContext || window.webkitAudioContext)();
+    msgAudio.resume?.();
+    const t0 = msgAudio.currentTime;
+    [[988, 0], [1319, 0.11]].forEach(([freq, at]) => {
+      const o = msgAudio.createOscillator();
+      const g = msgAudio.createGain();
+      o.type = 'sine';
+      o.frequency.value = freq;
+      o.connect(g);
+      g.connect(msgAudio.destination);
+      g.gain.setValueAtTime(0.0001, t0 + at);
+      g.gain.exponentialRampToValueAtTime(0.25 * vol, t0 + at + 0.015);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + at + 0.32);
+      o.start(t0 + at);
+      o.stop(t0 + at + 0.34);
+    });
+  } catch { /* ses çalınamadı */ }
+  navigator.vibrate?.(60);
+}
+
 function timerAlarm() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -3313,6 +3342,7 @@ async function checkUnread() {
   chat.unread = new Map(rows.map((r) => [r.sender, r]));
   const newest = rows.reduce((a, r) => (!a || r.last_at > a.last_at ? r : a), null);
   const t = newest ? new Date(newest.last_at).getTime() : 0;
+  if (chat.unreadReady && t > chat.lastNotified) messageSound();
   if (chat.unreadReady && t > chat.lastNotified && state.view !== 'chat') {
     const el = toast(`💬 ${newest.display_name || 'Yeni mesaj'}: ${newest.last_body}`, 'info', 6000);
     el.classList.add('tappable');
@@ -3473,6 +3503,8 @@ async function fetchThread(first = false) {
   const peer = chat.peer;
   const rows = await sync.chatMessages(peer, null, CHAT_PAGE);
   if (chat.peer !== peer || state.view !== 'chat' || rows === null) return;
+  const known = new Set(chat.msgs.map((m) => m.id));
+  if (!first && rows.some((m) => m.sender === peer && !known.has(m.id))) messageSound();
   mergeMessages(rows);
   if (first) chat.hasMore = rows.length === CHAT_PAGE;
   renderMessages(first);
