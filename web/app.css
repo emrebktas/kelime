@@ -1263,3 +1263,31 @@ body.reading-on #main { overflow: hidden; }
 .rd-split.no-passage .rd-passage { display: none; }
 .rd-split.no-passage .rd-questions { max-width: 900px; width: 100%; margin: 0 auto; display: block !important; }
 .rd-n.nokey { background: var(--hover); color: var(--muted); }
+
+/* ---------- IELTS Writing değerlendirme kriterleri ---------- */
+.cr-top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.cr-task { display: inline-flex; gap: 3px; padding: 3px; border-radius: 10px; background: var(--hover); }
+.cr-task button { border: none; background: none; padding: 6px 14px; font-size: 13.5px; border-radius: 8px; font-weight: 600; color: var(--muted); }
+.cr-task button.on { background: var(--panel); color: var(--text); box-shadow: var(--shadow); }
+.cr-note { font-size: 12.5px; flex: 1; min-width: 240px; }
+.cr-scoring { margin-bottom: 14px; }
+.cr-scoring h3 { margin: 0 0 6px; font-size: 15px; }
+.cr-scoring ul, .cr-tips ul { margin: 0; padding-left: 20px; font-size: 13.5px; line-height: 1.6; }
+.cr-crit { margin-bottom: 12px; }
+.cr-crit summary { cursor: pointer; font-size: 15px; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.cr-crit summary span { font-size: 13px; }
+.cr-about { font-size: 13.5px; line-height: 1.6; color: var(--muted); margin: 10px 0 12px; }
+.cr-bands { display: flex; flex-direction: column; }
+.cr-band { display: grid; grid-template-columns: 36px 1fr; gap: 12px; align-items: start; padding: 8px 0; border-top: 1px solid var(--border); }
+.cr-band p { margin: 0; font-size: 14px; line-height: 1.55; }
+.cr-b { display: grid; place-items: center; width: 32px; height: 28px; border-radius: 7px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.cr-b.b9, .cr-b.b8 { background: color-mix(in srgb, var(--good) 28%, transparent); color: var(--good); }
+.cr-b.b7 { background: color-mix(in srgb, var(--slate) 26%, transparent); color: var(--slate); }
+.cr-b.b6 { background: color-mix(in srgb, var(--hard) 26%, transparent); color: var(--hard); }
+.cr-b.b5, .cr-b.b4 { background: color-mix(in srgb, var(--danger) 22%, transparent); color: var(--danger); }
+.cr-tips { margin-top: 10px; padding: 10px 12px; border-radius: 10px; background: var(--hover); font-size: 13.5px; }
+.cr-tips b { display: block; margin-bottom: 4px; }
+@media (max-width: 760px) {
+  .essays-tabs { display: flex; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+  .essays-tabs button { flex: none; padding: 6px 10px; font-size: 12.5px; }
+}

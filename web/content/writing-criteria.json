@@ -1,0 +1,90 @@
+{
+  "title": "IELTS Writing değerlendirme kriterleri",
+  "note": "Bu sayfa resmi band tanımlayıcılarının Türkçe özetidir, resmi metin değildir. Resmi metin IELTS'in sitesinde yayımlanır.",
+  "source_url": "https://ielts.org",
+  "scoring": [
+    "Her yazı dört kriterden ayrı ayrı 0–9 arası band alır; dört kriterin ağırlığı eşittir (her biri %25).",
+    "Writing bölüm puanında Task 2'nin ağırlığı Task 1'in iki katıdır.",
+    "Süre toplam 60 dakika: Task 1 için yaklaşık 20, Task 2 için yaklaşık 40 dakika önerilir.",
+    "Alt sınır Task 1 için 150, Task 2 için 250 kelimedir. Daha az yazmak Task Achievement / Task Response puanını düşürür.",
+    "Sorudan aynen kopyalanan ifadeler kelime sayısına katılmaz. Ezberlenmiş, konuyla ilgisiz metin cezalandırılır.",
+    "Bir kriterde belirli bir bandı almak için o banddaki özelliklerin hepsinin karşılanması gerekir; tek bir zayıf yön bandı aşağı çeker."
+  ],
+  "criteria": [
+    {
+      "key": "task",
+      "name": { "task1": "Task Achievement (TA)", "task2": "Task Response (TR)" },
+      "tr": { "task1": "Görevi karşılama", "task2": "Soruya yanıt" },
+      "about": {
+        "task1": "Görevin istediklerini ne kadar karşıladığın: grafiğin/tablonun/sürecin ana özelliklerini seçip öne çıkarman, net bir genel bakış (overview) vermen ve verileri doğru aktarman. Kişisel yorum ya da sebep tahmini beklenmez.",
+        "task2": "Sorunun her bölümüne yanıt verip vermediğin, yazı boyunca net bir görüş (pozisyon) taşıyıp taşımadığın ve fikirlerini açıklama, örnek ve gerekçeyle ne kadar geliştirdiğin."
+      },
+      "bands": {
+        "9": { "task1": "Görevin tüm gerekleri tam olarak karşılanmış. Genel bakış net; en önemli özellikler eksiksiz, yerinde seçilmiş ve doğru aktarılmış.", "task2": "Sorunun her yönü tam olarak ele alınmış. Görüş baştan sona net ve tutarlı; fikirler tam geliştirilmiş ve güçlü biçimde desteklenmiş." },
+        "8": { "task1": "Gereklerin hepsi karşılanmış. Önemli özellikler açık ve uygun biçimde öne çıkarılmış; çok küçük eksikler olabilir.", "task2": "Soru yeterince ele alınmış. Görüş iyi geliştirilmiş; fikirler ilgili, genişletilmiş ve desteklenmiş; nadiren küçük boşluklar var." },
+        "7": { "task1": "Gereklere değinilmiş. Ana eğilimleri ve farkları gösteren net bir genel bakış var; önemli özellikler öne çıkarılmış ama daha iyi geliştirilebilirdi.", "task2": "Sorunun tüm bölümlerine değinilmiş. Yazı boyunca net bir pozisyon var; ana fikirler genişletilmiş ve desteklenmiş ama bazen aşırı genelleme ya da destekte odak kayması görülüyor." },
+        "6": { "task1": "Gereklere değinilmiş ve bir genel bakış var, ancak bilgi seçimi her zaman yerinde değil; bazı ayrıntılar gereksiz, eksik ya da yanlış.", "task2": "Sorunun tüm bölümlerine değinilmiş ama bazıları diğerlerinden zayıf. Bir pozisyon var ama sonuç belirsiz ya da tekrarlı olabilir; bazı fikirler yeterince geliştirilmemiş." },
+        "5": { "task1": "Görev genel olarak ele alınmış ama genel bakış yok ya da belirsiz. Ayrıntıya boğulma, mekanik anlatım; veriyle destek yetersiz ya da hatalı.", "task2": "Soruya kısmen yanıt verilmiş. Pozisyon her zaman net değil, sonuç olmayabilir. Fikirler sınırlı ve yeterince geliştirilmemiş; ilgisiz ayrıntılar olabilir." },
+        "4": { "task1": "Görev çok sınırlı karşılanmış. Önemli özellikler karışık ya da eksik; konu dışı ya da yanlış bilgi var.", "task2": "Soruya çok sınırlı yanıt verilmiş ya da yazı soruyla zayıf ilişkili. Pozisyon belirsiz; fikirler az, tekrarlı ya da ilgisiz." }
+      },
+      "tips": {
+        "task1": ["Girişte soruyu kendi cümlelerinle yeniden ifade et (paraphrase).", "Mutlaka ayrı bir genel bakış (overview) cümlesi ya da paragrafı yaz: en belirgin eğilim ve karşılaştırma.", "Her veriyi değil, önemli özellikleri seç ve rakamla destekle.", "Kendi yorumunu ya da sebep tahminini ekleme."],
+        "task2": ["Sorunun her bölümünü işaretle ve her birine yanıt ver.", "Girişte pozisyonunu net yaz, sonuçta aynı pozisyonu koru.", "Her ana fikri açıklama ve somut örnekle geliştir.", "Konudan sapma ve ezber kalıplardan kaçın."]
+      }
+    },
+    {
+      "key": "coherence",
+      "name": { "task1": "Coherence & Cohesion (CC)", "task2": "Coherence & Cohesion (CC)" },
+      "tr": { "task1": "Tutarlılık ve bağlantı", "task2": "Tutarlılık ve bağlantı" },
+      "about": {
+        "task1": "Bilginin mantıklı bir sırayla düzenlenmesi, okurun kolayca takip edebilmesi ve cümleler/paragraflar arasındaki bağlantıların (bağlaçlar, zamirler, gönderme) doğru ve doğal kullanılması.",
+        "task2": "Fikirlerin mantıklı bir sırayla ilerlemesi, her paragrafın net bir merkezi fikrinin olması ve cümleler/paragraflar arasındaki bağlantıların (bağlaçlar, zamirler, gönderme) doğru ve doğal kullanılması."
+      },
+      "bands": {
+        "9": "Bağlantılar dikkat çekmeyecek kadar doğal. Paragraflama ustaca; okur hiç zorlanmaz.",
+        "8": "Bilgi ve fikirler mantıklı sırada. Bağlantı araçları her yönüyle iyi yönetilmiş; paragraflama yeterli ve uygun.",
+        "7": "Mantıklı bir düzen ve baştan sona net ilerleme var. Bağlayıcılar uygun kullanılmış; ara sıra eksik ya da fazla kullanım olabilir. Her paragrafın net bir merkezi fikri var.",
+        "6": "Tutarlı bir düzen ve genel bir ilerleme var. Bağlayıcılar etkili ama bazen hatalı ya da mekanik; zamirlerin neyi gösterdiği her zaman net değil; paragraflama her zaman mantıklı değil.",
+        "5": "Bir düzen var ama genel ilerleme zayıf. Bağlayıcılar yetersiz, hatalı ya da aşırı; gönderme eksikliği yüzünden tekrar çok; paragraflama yetersiz olabilir.",
+        "4": "Fikirler var ama tutarlı biçimde düzenlenmemiş. Temel bağlayıcılar hatalı ya da tekrarlı; paragraf yok ya da paragraflama kafa karıştırıcı."
+      },
+      "tips": ["Her paragrafa tek bir ana fikirle başla.", "Bağlaçları (however, moreover…) her cümlenin başına koyma; azı ve doğrusu daha iyi.", "Tekrar yerine zamir ve eş anlamlı kullan; ama zamirin neyi gösterdiği net olsun.", "Paragraflar arasında bir boş satır bırak."]
+    },
+    {
+      "key": "lexical",
+      "name": { "task1": "Lexical Resource (LR)", "task2": "Lexical Resource (LR)" },
+      "tr": { "task1": "Kelime kullanımı", "task2": "Kelime kullanımı" },
+      "about": {
+        "task1": "Kelime dağarcığının genişliği ve isabeti: veriyi anlatan kelimeler, az yaygın kelimelerin doğru kullanımı, eşdizim (collocation), kelime yapısı ve yazım.",
+        "task2": "Kelime dağarcığının genişliği ve isabeti: konuya uygun kelimeler, az yaygın kelimelerin doğru kullanımı, eşdizim (collocation), üslup, kelime yapısı ve yazım."
+      },
+      "bands": {
+        "9": "Çok geniş kelime dağarcığı, doğal ve ustaca kullanılmış. Nadir, çok küçük kaymalar dışında hata yok.",
+        "8": "Geniş dağarcık akıcı ve esnek kullanılmış; az yaygın kelimeler ustaca seçilmiş. Kelime seçimi ve eşdizimde ara sıra hata; yazım hataları nadir.",
+        "7": "Esneklik ve isabet için yeterli dağarcık. Az yaygın kelimeler, üslup ve eşdizim farkındalığı var; kelime seçimi, eşdizim ve yazımda ara sıra hatalar olabilir.",
+        "6": "Görev için yeterli dağarcık. Az yaygın kelime kullanma girişimi var ama isabetsiz kalabiliyor; yazım ve kelime yapısı hataları var ama iletişimi bozmuyor.",
+        "5": "Sınırlı ama görev için asgari yeterli dağarcık. Yazım ve kelime yapısında belirgin hatalar okuru zorlayabilir.",
+        "4": "Sadece temel kelimeler; tekrarlı ya da göreve uygun değil. Kelime yapısı ve yazım hataları okuru belirgin biçimde zorlar."
+      },
+      "tips": ["Kelimeyi eşdizimiyle birlikte öğren (ör. 'rise sharply', 'pose a threat').", "Sorudaki kelimeleri tekrar etmek yerine eş anlamlılarla yeniden ifade et.", "Emin olmadığın 'gösterişli' kelime yerine doğru bildiğin kelimeyi seç.", "Yazım ve kelime yapısını (economy/economic/economical) kontrol et."]
+    },
+    {
+      "key": "grammar",
+      "name": { "task1": "Grammatical Range & Accuracy (GRA)", "task2": "Grammatical Range & Accuracy (GRA)" },
+      "tr": { "task1": "Dilbilgisi çeşitliliği ve doğruluğu", "task2": "Dilbilgisi çeşitliliği ve doğruluğu" },
+      "about": {
+        "task1": "Kullandığın yapıların çeşitliliği (basit, birleşik, karmaşık cümleler) ve doğruluğu: zamanlar, karşılaştırma yapıları, edilgen çatı (process), noktalama.",
+        "task2": "Kullandığın yapıların çeşitliliği (basit, birleşik, karmaşık cümleler; yan cümleler, koşul cümleleri) ve doğruluğu: zamanlar, özne–yüklem uyumu, noktalama."
+      },
+      "bands": {
+        "9": "Geniş bir yapı yelpazesi tam esneklik ve doğrulukla kullanılmış. Nadir, çok küçük hatalar dışında hata yok.",
+        "8": "Geniş yapı yelpazesi; cümlelerin büyük çoğunluğu hatasız. Çok az hata ya da uygunsuzluk var.",
+        "7": "Çeşitli karmaşık yapılar kullanılmış; hatasız cümleler sık. Dilbilgisi ve noktalamaya iyi hâkimiyet, ama birkaç hata olabilir.",
+        "6": "Basit ve karmaşık yapıların karışımı. Dilbilgisi ve noktalamada bazı hatalar var ama iletişimi nadiren bozuyor.",
+        "5": "Sınırlı yapı yelpazesi. Karmaşık cümle girişimleri basit cümlelerden daha hatalı; sık hatalar okuru zorlayabilir; noktalama hatalı olabilir.",
+        "4": "Çok sınırlı yapı; yan cümleler nadir. Bazı yapılar doğru ama hatalar baskın; noktalama sıkça hatalı."
+      },
+      "tips": ["Her paragrafta en az bir karmaşık cümle kur (although, which, if…).", "Hatasız cümle oranı önemli: bildiğin yapıları doğru kullan.", "Task 1'de zaman uyumuna (geçmiş veriler için past tense) dikkat et.", "Bitirince 2–3 dakika ayırıp özne–yüklem uyumunu ve noktalamayı kontrol et."]
+    }
+  ]
+}

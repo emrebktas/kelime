@@ -379,7 +379,7 @@ function renderSidebar() {
       </button>`).join('')
     : '<div class="empty-side">Henüz deste yok. “+ Yeni deste” ile oluştur ya da bir JSON dosyası içe aktar.</div>';
   $('#btn-join').classList.toggle('hidden', !sync.enabled);
-  $('#nav-essays')?.classList.toggle('active', ['essays', 'essay', 'phrases'].includes(state.view));
+  $('#nav-essays')?.classList.toggle('active', ['essays', 'essay', 'phrases', 'criteria'].includes(state.view));
   $('#nav-reading')?.classList.toggle('active', ['readings', 'reading'].includes(state.view));
   document.body.classList.toggle('reading-on', state.view === 'reading');
   renderChatBadges();
@@ -3712,7 +3712,78 @@ function essaysTabs(active) {
   return `<div class="seg essays-tabs" role="tablist">
     <button type="button" role="tab" data-act="essays" class="${active === 'essays' ? 'on' : ''}">✍️ Yazılarım</button>
     <button type="button" role="tab" data-act="phrases" class="${active === 'phrases' ? 'on' : ''}">📚 Task 1 ifadeleri</button>
+    <button type="button" role="tab" data-act="criteria" class="${active === 'criteria' ? 'on' : ''}">📋 Değerlendirme</button>
   </div>`;
+}
+
+/* ---- IELTS Writing değerlendirme kriterleri (resmi band tanımlayıcılarının Türkçe özeti) */
+
+let criteriaData = null;
+async function showCriteria() {
+  leaveStudy();
+  state.view = 'criteria';
+  document.body.classList.remove('menu-open');
+  renderSidebar();
+  setTitle('Değerlendirme kriterleri');
+  main.innerHTML = `
+    <div class="page criteria-page">
+      <header class="deck-head">
+        <button class="icon-btn head-btn" data-act="home" title="Ana sayfaya dön (Esc)" aria-label="Ana sayfaya dön">${ICON.home}</button>
+        <div class="deck-title">
+          <h1>Yazılarım</h1>
+          <div class="sub">IELTS Writing değerlendirme kriterleri · Band 4–9</div>
+        </div>
+        <button class="primary" data-act="essay-new">+ Yeni yazı</button>
+      </header>
+      ${essaysTabs('criteria')}
+      <div id="cr-root"><div class="muted">Yükleniyor…</div></div>
+    </div>`;
+  try {
+    criteriaData ||= await fetch('content/writing-criteria.json').then((r) => { if (!r.ok) throw new Error(); return r.json(); });
+  } catch {
+    $('#cr-root').innerHTML = '<p class="muted">Kriterler yüklenemedi.</p>';
+    return;
+  }
+  renderCriteria();
+}
+
+function renderCriteria() {
+  const box = $('#cr-root');
+  const d = criteriaData;
+  if (!box || !d) return;
+  const task = prefs.criteriaTask === 'task1' ? 'task1' : 'task2';
+  const pick = (v) => (v && typeof v === 'object' ? v[task] : v);
+  const bands = ['9', '8', '7', '6', '5', '4'];
+  box.innerHTML = `
+    <div class="cr-top">
+      <div class="seg cr-task" role="tablist">
+        <button type="button" data-cr-task="task1" class="${task === 'task1' ? 'on' : ''}">Task 1 · Academic</button>
+        <button type="button" data-cr-task="task2" class="${task === 'task2' ? 'on' : ''}">Task 2 · Essay</button>
+      </div>
+      <span class="muted cr-note">${esc(d.note)} <a href="${esc(d.source_url)}" target="_blank" rel="noopener">ielts.org</a></span>
+    </div>
+    <section class="panel cr-scoring">
+      <h3>Puan nasıl verilir?</h3>
+      <ul>${d.scoring.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+    </section>
+    ${d.criteria.map((c) => `
+      <details class="panel cr-crit" ${prefs.criteriaOpen?.[c.key] === false ? '' : 'open'} data-cr="${c.key}">
+        <summary><b>${esc(pick(c.name))}</b> <span class="muted">${esc(pick(c.tr))} · %25</span></summary>
+        <p class="cr-about">${esc(pick(c.about))}</p>
+        <div class="cr-bands">${bands.map((b) => `
+          <div class="cr-band"><span class="cr-b b${b}">${b}</span><p>${esc(pick(c.bands[b]))}</p></div>`).join('')}
+        </div>
+        <div class="cr-tips"><b>Puanını yükseltmek için</b><ul>${(pick(c.tips) || []).map((t) => `<li>${esc(t)}</li>`).join('')}</ul></div>
+      </details>`).join('')}`;
+  box.querySelectorAll('[data-cr-task]').forEach((b) => b.addEventListener('click', () => {
+    prefs.criteriaTask = b.dataset.crTask;
+    savePrefs();
+    renderCriteria();
+  }));
+  box.querySelectorAll('details[data-cr]').forEach((el) => el.addEventListener('toggle', () => {
+    prefs.criteriaOpen = { ...(prefs.criteriaOpen || {}), [el.dataset.cr]: el.open };
+    savePrefs();
+  }));
 }
 
 function showPhrases() {
@@ -4601,6 +4672,7 @@ document.addEventListener('click', (e) => {
         }
         break;
       case 'phrases': showPhrases(); break;
+      case 'criteria': showCriteria(); break;
       case 'chat': showChat(); break;
       case 'json-help': jsonHelpModal(); break;
       case 'activity-more': activity.limit += 20; renderActivity(); break;
@@ -4764,8 +4836,8 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') { if (typing) document.activeElement.blur(); else showReadings(); }
   } else if (state.view === 'readings') {
     if (e.key === 'Escape' && !typing) showHome();
-  } else if (state.view === 'essays' || state.view === 'phrases') {
-    if (e.key === 'Escape' && !typing) { if (state.view === 'phrases') showEssays(); else showHome(); }
+  } else if (state.view === 'essays' || state.view === 'phrases' || state.view === 'criteria') {
+    if (e.key === 'Escape' && !typing) { if (state.view === 'essays') showHome(); else showEssays(); }
   } else if (state.view === 'chat') {
     if (e.key !== 'Escape') return;
     if (typing) document.activeElement.blur();
@@ -4863,7 +4935,7 @@ async function init() {
       else if (document.body.classList.contains('menu-open')) document.body.classList.remove('menu-open');
       else if (state.view === 'study') backToDeck();
       else if (state.view === 'chat' && chat.peer) closeThread();
-      else if (state.view === 'essay' || state.view === 'phrases') showEssays();
+      else if (state.view === 'essay' || state.view === 'phrases' || state.view === 'criteria') showEssays();
       else if (state.view === 'reading') showReadings();
       else if (state.view === 'readings') showHome();
       else if (['deck', 'essays', 'chat'].includes(state.view)) showHome();
