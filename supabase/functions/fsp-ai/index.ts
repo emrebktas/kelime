@@ -10,6 +10,7 @@
 //   evaluate  { part, case, history | brief, konjunktiv } → { report } değerlendirme
 //   case      { fachgebiet, hint }              → { case }            yeni (uydurma) vaka
 //   answer    { question, model, answer, kind } → { check }           soru bankası: tek cevabın kontrolü
+//   translate { text }                          → { tr }              kurs okuyucusu: paragraf çevirisi
 
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
@@ -18,7 +19,7 @@ const MODEL = Deno.env.get('GEMINI_MODEL') ?? 'gemini-3.8-flash';
 const GEMINI_BASE = Deno.env.get('GEMINI_BASE_URL') ?? 'https://generativelanguage.googleapis.com';
 const GEMINI_URL = (model: string) => `${GEMINI_BASE}/v1beta/models/${model}:generateContent`;
 const DAILY_LIMIT = Number(Deno.env.get('FSP_DAILY_LIMIT') ?? 600); // kişi başı, son 24 saatte birim
-const COST = { turn: 1, evaluate: 8, case: 6, answer: 2 };
+const COST = { turn: 1, evaluate: 8, case: 6, answer: 2, translate: 1 };
 const MAX_TURNS = 80;
 const MAX_MSG = 3000;
 
@@ -439,6 +440,23 @@ Antworte NUR mit gültigem JSON:
     const raw = parseJson(r.text);
     if (!raw) return reply({ error: 'Yapay zekâ geçerli bir değerlendirme döndürmedi. Tekrar dene.' }, 502);
     return reply({ check: { punkte: num(raw.punkte), feedback: str(raw.feedback, 1200), fehlend: list(raw.fehlend, 8, 200), korrigiert: str(raw.korrigiert, 1500) } });
+  }
+
+  // Kurs okuyucusu: bir paragrafın Türkçe çevirisi (istemci önbelleğe alır)
+  if (action === 'translate') {
+    const text = str(body.text, 4000);
+    if (!text) return reply({ error: 'Metin boş.' }, 400);
+    const quota = await useQuota(COST.translate);
+    if (quota) return quota;
+    const r = await callGemini(apiKey, {
+      system: `Du übersetzt Lernmaterial für die Fachsprachprüfung Zahnmedizin aus dem Deutschen ins Türkische für eine türkische Zahnärztin.
+Übersetze genau und natürlich. Wichtige deutsche Fachbegriffe bleiben beim ersten Vorkommen in Klammern stehen, z. B. "kanal tedavisi (Wurzelkanalbehandlung)".
+Fragen an Patienten und Redemittel übersetzt du sinngemäß. Gib NUR die Übersetzung aus, ohne Einleitung, ohne Markdown.`,
+      turns: [{ role: 'user', text }],
+      maxTokens: 2500, temperature: 0.2, timeoutMs: 40_000, think: 'low',
+    });
+    if (!r.text) return fail(r);
+    return reply({ tr: r.text.slice(0, 8000) });
   }
 
   return reply({ error: 'Bilinmeyen işlem.' }, 400);

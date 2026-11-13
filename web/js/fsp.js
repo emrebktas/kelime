@@ -1,3 +1,4 @@
+import { initKurs, kursHtml, mountKurs } from './kurs.js';
 // Fachsprachprüfung (FSP) Zahnmedizin: hasta görüşmesi (Teil 1), Arztbrief (Teil 2), Arzt-Arzt-Gespräch (Teil 3),
 // değerlendirme, Fachbegriffe ve rehber. Yapay zekâ sunucudaki fsp-ai fonksiyonundan (Gemini) gelir.
 // app.js bu modüle ortak yardımcıları initFsp(ctx) ile verir.
@@ -24,6 +25,7 @@ const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 
 export function initFsp(ctx) {
   C = ctx;
+  initKurs(ctx);
   C.main.addEventListener('click', onClick);
   C.main.addEventListener('keydown', onKey);
   C.main.addEventListener('input', onInput);
@@ -81,7 +83,7 @@ export async function showFsp(tab) {
 }
 
 function renderHub() {
-  const tabs = [['cases', 'tooth', 'Vakalar'], ...(content.bayern ? [['bayern', 'pin', 'Bayern']] : []), ['history', 'chart', 'Geçmiş'],
+  const tabs = [['cases', 'tooth', 'Vakalar'], ...(content.bayern ? [['bayern', 'pin', 'Bayern']] : []), ['kurs', 'doc', 'Kurs'], ['history', 'chart', 'Geçmiş'],
     ['terms', 'book', 'Fachbegriffe'], ['guide', 'compass', 'Rehber']];
   C.main.innerHTML = `
     <div class="page fsp-page">
@@ -94,8 +96,9 @@ function renderHub() {
         ${ui.tab === 'cases' ? '<button class="primary" data-f="new-case">✦ Yeni vaka (AI)</button>' : ''}
       </header>
       <div class="seg tabs fsp-tabs" role="tablist">${tabs.map(([k, ic, l]) => `<button type="button" role="tab" data-f="tab" data-tab="${k}" class="${ui.tab === k ? 'on' : ''}">${C.ICON[ic]}${l}</button>`).join('')}</div>
-      <div id="fsp-body">${{ cases: casesHtml, bayern: bayernHtml, history: historyHtml, terms: termsHtml, guide: guideHtml }[ui.tab]()}</div>
+      <div id="fsp-body">${{ cases: casesHtml, bayern: bayernHtml, kurs: kursHtml, history: historyHtml, terms: termsHtml, guide: guideHtml }[ui.tab]()}</div>
     </div>`;
+  if (ui.tab === 'kurs') { C.guard(mountKurs); return; }
   if (!C.sync.user()) {
     C.$('#fsp-body').insertAdjacentHTML('afterbegin', '<div class="panel fsp-note">Simülasyon ve değerlendirme yapay zekâyla çalışır; kullanmak için <button class="linkish" data-act="account">giriş yap</button>. Fachbegriffe ve rehber girişsiz de açık.</div>');
   }

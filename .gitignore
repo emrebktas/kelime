@@ -31,3 +31,6 @@ ielts-descriptors/
 
 # IELTS kitaplarından çevrilen okuma testleri (telifli) — depoya girmez
 reading-tests/
+
+# FSP kurs scripti paketi (telifli kurs materyali) — depoya girmez
+fsp-kurs/

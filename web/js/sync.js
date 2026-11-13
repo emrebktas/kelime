@@ -429,6 +429,71 @@ export async function fspAi(body, timeoutMs = 60_000) {
   return data;
 }
 
+/* ------------------------------------------------------------------ FSP kurs kütüphanesi (çevrimiçi, kişiye özel) */
+
+const LIB_BUCKET = 'fsp-kurs';
+function needLogin() {
+  if (!enabled || !session) throw new Error('Kurs içeriği için giriş yapman gerekiyor.');
+}
+/** Sahibi olduğun ya da kodla katıldığın kütüphaneler (içerik hariç). Tablo yoksa boş liste. */
+export async function listLibraries() {
+  needLogin();
+  const { data, error } = await client.from('fsp_library').select('id, title, owner_id, share_code, updated_at').order('created_at');
+  if (error) {
+    if (['PGRST205', '42P01'].includes(error.code)) return null; // SQL henüz çalıştırılmadı
+    throw new Error(message(error));
+  }
+  return data;
+}
+export async function getLibrary(id) {
+  needLogin();
+  return ok(await client.from('fsp_library').select('id, title, owner_id, share_code, content, updated_at').eq('id', id).single());
+}
+export async function saveLibrary({ id, title, content }) {
+  needLogin();
+  const q = id
+    ? client.from('fsp_library').update({ title, content }).eq('id', id).select('id').single()
+    : client.from('fsp_library').insert({ title, content }).select('id').single();
+  return ok(await q).id;
+}
+export async function deleteLibrary(id, paths = []) {
+  needLogin();
+  for (let i = 0; i < paths.length; i += 100) {
+    await client.storage.from(LIB_BUCKET).remove(paths.slice(i, i + 100).map((p) => `${id}/${p}`));
+  }
+  ok(await client.from('fsp_library').delete().eq('id', id));
+}
+export async function uploadLibraryFile(id, path, blob, contentType) {
+  const { error } = await client.storage.from(LIB_BUCKET).upload(`${id}/${path}`, blob, { contentType, upsert: true });
+  if (error) throw new Error(message(error));
+}
+/** Görseller için süreli (1 saat) adresler: { yol: url } */
+export async function libraryUrls(id, paths) {
+  if (!paths.length) return {};
+  const { data, error } = await client.storage.from(LIB_BUCKET).createSignedUrls(paths.map((p) => `${id}/${p}`), 3600);
+  if (error) throw new Error(message(error));
+  const out = {};
+  data.forEach((d, i) => { if (d.signedUrl) out[paths[i]] = d.signedUrl; });
+  return out;
+}
+export async function libraryNewCode(id) {
+  needLogin();
+  const { data, error } = await client.rpc('fsp_library_new_code', { p_lib: id });
+  if (error) throw new Error(message(error));
+  return data;
+}
+export async function joinLibrary(code) {
+  needLogin();
+  const { data, error } = await client.rpc('join_fsp_library', { code });
+  if (error) throw new Error(message(error));
+  if (!data) throw new Error('Bu kodla bir kurs bulunamadı.');
+  return data;
+}
+export async function leaveLibrary(id) {
+  needLogin();
+  ok(await client.from('fsp_library_members').delete().eq('library_id', id).eq('user_id', session.user.id));
+}
+
 /* ------------------------------------------------------------------ çalışma panosu ve çevrimiçi durumu */
 
 // Sunucuda pano fonksiyonları henüz yoksa (SQL çalıştırılmadıysa) sessizce atla

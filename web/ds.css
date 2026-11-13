@@ -612,3 +612,75 @@ button:has(> svg) { display: inline-flex; align-items: center; justify-content: 
   .by-tips { grid-template-columns: 1fr; }
   .pr-actions button { flex: 1; }
 }
+
+/* =====================================================================
+   FSP · Kurs okuyucusu
+   ===================================================================== */
+label.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; padding: 7px 14px; border-radius: var(--r-md); border: 1px solid var(--border); background: var(--panel); font-weight: 600; font-size: 14px; color: var(--text); }
+label.btn:hover { background: var(--hover); }
+label.btn.primary { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
+.kurs-empty { padding: 22px; max-width: 720px; }
+.kurs-empty p { line-height: 1.6; color: var(--muted); }
+.kurs-empty-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+
+.kurs-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.kurs-bar .spacer { flex: 1; }
+.kurs-bar select { width: auto; max-width: 320px; }
+.kurs-title { font-family: var(--font-display); font-size: 18px; }
+.kurs-toc-btn { display: none; }
+.kurs-layout { display: grid; grid-template-columns: 270px minmax(0, 1fr); gap: 16px; align-items: start; }
+.kurs-toc { position: sticky; top: 12px; display: flex; flex-direction: column; gap: 8px; max-height: calc(100dvh - 40px); }
+.kurs-toc #kurs-toc-list { overflow-y: auto; scrollbar-width: thin; }
+.kurs-chs { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; counter-reset: ch; }
+.kurs-chs button { width: 100%; text-align: left; display: flex; flex-direction: column; gap: 1px; padding: 7px 10px; border: 1px solid transparent; background: none; border-radius: var(--r-md); font-weight: 600; font-size: 13.5px; white-space: normal; }
+.kurs-chs button small { font-weight: 400; font-size: 11.5px; color: var(--muted); }
+.kurs-chs button:hover { background: var(--hover); }
+.kurs-chs button.on { background: var(--panel); border-color: var(--border); box-shadow: var(--e1); }
+.kurs-chs button.on span { color: var(--accent); }
+
+.kurs-body { padding: 22px 26px; min-width: 0; }
+.kurs-ch-head { margin-bottom: 12px; }
+.kurs-ch-head h2 { margin: 4px 0 2px; font-family: var(--font-display); font-size: 26px; }
+.kurs-ch-head p { margin: 0 0 8px; }
+.kurs-tr-all { padding: 4px 10px; font-size: 13px; }
+.kurs-blocks { display: flex; flex-direction: column; gap: 4px; }
+.kb-h { margin: 18px 0 4px; font-size: 16.5px; font-weight: 700; color: var(--text); }
+.kb { border-radius: var(--r-md); padding: 2px 4px; transition: background .15s; }
+.kb:hover { background: color-mix(in srgb, var(--hover) 60%, transparent); }
+.kb-row { display: flex; align-items: flex-start; gap: 6px; }
+.kb-x { flex: 1; margin: 0; font-size: 15px; line-height: 1.65; }
+.kb-li .kb-row { padding-left: 6px; }
+.kb-dot { color: var(--accent); font-weight: 700; line-height: 1.65; }
+.kb-tools { display: inline-flex; gap: 2px; opacity: 0; transition: opacity .15s; flex: none; }
+.kb:hover .kb-tools, .kb:focus-within .kb-tools { opacity: 1; }
+.kb-tools .icon-btn { width: 28px; height: 28px; color: var(--muted); }
+.kb-tools .icon-btn svg { width: 15px; height: 15px; }
+.kb-tr-btn { font-size: 11px; font-weight: 800; }
+.kb-tr { margin: 2px 0 6px 0; padding: 6px 10px; border-left: 3px solid var(--sage); background: color-mix(in srgb, var(--sage) 10%, transparent); border-radius: 0 var(--r-sm) var(--r-sm) 0; font-size: 14px; line-height: 1.55; color: var(--text); }
+.kb-tr.err { border-left-color: var(--danger); color: var(--danger); }
+.kb-li .kb-tr { margin-left: 20px; }
+.kb-img { margin: 10px 0; text-align: center; }
+.kb-img img { max-width: 100%; height: auto; border-radius: var(--r-md); border: 1px solid var(--border); background: var(--raised); }
+.kb-img figcaption { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+.flash { animation: kurs-flash 1.6s ease; }
+@keyframes kurs-flash { 0%, 40% { background: var(--accent-soft); } 100% { background: transparent; } }
+.kurs-nav { display: flex; justify-content: space-between; gap: 10px; margin-top: 24px; padding-top: 14px; border-top: 1px solid var(--border); }
+.kurs-nav button { max-width: 48%; white-space: normal; text-align: left; }
+.kurs-hits { display: flex; flex-direction: column; gap: 6px; }
+.kurs-hit { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; text-align: left; white-space: normal; padding: 10px 12px; font-weight: 400; font-size: 14px; line-height: 1.5; }
+.kurs-hit small { color: var(--accent); font-weight: 650; }
+.kurs-hit mark { background: var(--accent-soft); color: var(--text); border-radius: 3px; padding: 0 2px; }
+.kurs-selpop { position: fixed; z-index: 80; }
+.kurs-selpop button { box-shadow: var(--e2); background: var(--primary); color: var(--on-primary); border-color: var(--primary); padding: 6px 12px; font-size: 13px; }
+.kurs-code { display: flex; align-items: center; gap: 10px; margin: 12px 0; }
+.kurs-code b { font: 700 22px ui-monospace, Consolas, monospace; letter-spacing: .12em; padding: 6px 12px; border-radius: var(--r-md); background: var(--hover); }
+
+@media (hover: none) { .kb-tools { opacity: 1; } }
+@media (max-width: 900px) {
+  .kurs-toc-btn { display: inline-flex; }
+  .kurs-layout { grid-template-columns: 1fr; }
+  .kurs-toc { display: none; position: static; max-height: none; }
+  .kurs-layout.toc-open .kurs-toc { display: flex; }
+  .kurs-body { padding: 16px; }
+  .kurs-ch-head h2 { font-size: 21px; }
+}
