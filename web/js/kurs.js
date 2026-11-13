@@ -1,12 +1,11 @@
 // FSP kurs okuyucusu: kişiye özel kurs paketi (fsp_library) — bölümler, arama, görseller,
-// paragraf çevirisi (fsp-ai, Gemini), seslendirme, seçilen kelimeyi desteye ekleme, paylaşım kodu.
+// seslendirme, seçilen kelimeyi desteye ekleme, paylaşım kodu.
 // İçerik telifli kurs materyali olabilir: sadece sahibi ve kodla katılanlar görür; depoya girmez.
 
 let C = null;
 const K = {
   libs: null, libId: null, lib: null, ch: 0, q: '', urls: {}, urlAt: 0, blobs: {}, busy: false, sel: null, tocOpen: false,
 };
-const TR_KEY = 'kelime.kurs.tr';
 const DECK = 'FSP Kurs';
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -27,24 +26,6 @@ function readCache(id) {
 function writeCache(lib) {
   try { localStorage.setItem(cacheKey(lib.id), JSON.stringify(lib)); } catch { /* yer yoksa önemli değil */ }
 }
-let trCache = null;
-function trs() {
-  if (!trCache) { try { trCache = JSON.parse(localStorage.getItem(TR_KEY) || '{}'); } catch { trCache = {}; } }
-  return trCache;
-}
-function hash(s) {
-  let h = 2166136261;
-  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
-  return (h >>> 0).toString(36);
-}
-function saveTr(text, tr) {
-  const c = trs();
-  c[hash(text)] = tr;
-  const keys = Object.keys(c);
-  if (keys.length > 3000) for (const k of keys.slice(0, keys.length - 3000)) delete c[k];
-  try { localStorage.setItem(TR_KEY, JSON.stringify(c)); } catch { /* yer yoksa sadece bu oturumda */ }
-}
-
 /* ------------------------------------------------------------------ giriş noktası */
 
 export function kursHtml() {
@@ -79,7 +60,7 @@ function renderEmpty() {
   root.innerHTML = `
     <section class="panel kurs-empty">
       <h3>Kurs notların burada</h3>
-      <p>Kurs scriptini bir kez içe aktarırsın: bölüm bölüm okursun, arar, paragrafları Türkçeye çevirir, seslendirir ve seçtiğin kelimeleri desteye eklersin. İçerik sadece sana ve paylaşım kodu verdiğin kişilere görünür.</p>
+      <p>Kurs scriptini bir kez içe aktarırsın: bölüm bölüm okursun, arar, paragrafları seslendirir ve seçtiğin kelimeleri desteye eklersin. İçerik sadece sana ve paylaşım kodu verdiğin kişilere görünür.</p>
       <div class="kurs-empty-actions">
         <label class="btn primary kurs-file">＋ Kurs paketini içe aktar (.zip)<input type="file" accept=".zip,application/zip" data-k="import" hidden></label>
         <button data-k="join">Paylaşım koduyla katıl</button>
@@ -143,20 +124,17 @@ function tocHtml() {
 }
 
 function blockHtml(b, i) {
-  const tools = `<span class="kb-tools"><button class="icon-btn" data-k="say" data-i="${i}" title="Seslendir" aria-label="Seslendir">${C.ICON.speaker}</button><button class="icon-btn kb-tr-btn" data-k="tr" data-i="${i}" title="Türkçeye çevir" aria-label="Türkçeye çevir">TR</button></span>`;
-  const cached = b.x ? trs()[hash(b.x)] : null;
-  const tr = cached ? `<div class="kb-tr" id="kb-tr-${i}">${esc(cached)}</div>` : `<div class="kb-tr hidden" id="kb-tr-${i}"></div>`;
+  const tools = `<span class="kb-tools"><button class="icon-btn" data-k="say" data-i="${i}" title="Seslendir" aria-label="Seslendir">${C.ICON.speaker}</button></span>`;
   if (b.t === 'img') return `<figure class="kb-img" data-bi="${i}"><img data-src="${esc(b.src)}" alt="${esc(b.cap || '')}" ${b.w ? `width="${b.w}" height="${b.h}"` : ''} loading="lazy">${b.cap ? `<figcaption>${esc(b.cap)}</figcaption>` : ''}</figure>`;
   if (b.t === 'h') return `<h3 class="kb-h" data-bi="${i}" lang="de">${esc(b.x)}</h3>`;
-  if (b.t === 'li') return `<div class="kb kb-li" data-bi="${i}"><div class="kb-row"><span class="kb-dot">•</span><span class="kb-x" lang="de">${esc(b.x)}</span>${tools}</div>${tr}</div>`;
-  return `<div class="kb" data-bi="${i}"><div class="kb-row"><p class="kb-x" lang="de">${esc(b.x)}</p>${tools}</div>${tr}</div>`;
+  if (b.t === 'li') return `<div class="kb kb-li" data-bi="${i}"><div class="kb-row"><span class="kb-dot">•</span><span class="kb-x" lang="de">${esc(b.x)}</span>${tools}</div></div>`;
+  return `<div class="kb" data-bi="${i}"><div class="kb-row"><p class="kb-x" lang="de">${esc(b.x)}</p>${tools}</div></div>`;
 }
 
 function chapterHtml(ch) {
   const n = K.lib.content.chapters.length;
   return `
-    <header class="kurs-ch-head"><span class="muted">Bölüm ${K.ch + 1} / ${n}</span><h2 lang="de">${esc(ch.title)}</h2>${ch.tr ? `<p class="muted">${esc(ch.tr)}</p>` : ''}
-      <button class="ghost kurs-tr-all" data-k="tr-all">Bölümü Türkçeye çevir</button></header>
+    <header class="kurs-ch-head"><span class="muted">Bölüm ${K.ch + 1} / ${n}</span><h2 lang="de">${esc(ch.title)}</h2>${ch.tr ? `<p class="muted">${esc(ch.tr)}</p>` : ''}</header>
     <div class="kurs-blocks" data-ch="${K.ch}">${ch.blocks.map(blockHtml).join('')}</div>
     <nav class="kurs-nav">
       ${K.ch > 0 ? `<button data-k="ch" data-i="${K.ch - 1}">← ${esc(K.lib.content.chapters[K.ch - 1].title)}</button>` : '<span></span>'}
@@ -204,52 +182,7 @@ async function loadImages() {
   }));
 }
 
-/* ------------------------------------------------------------------ çeviri */
-
 const blockAt = (i) => K.lib.content.chapters[K.ch].blocks[Number(i)];
-
-async function translate(i, quiet) {
-  const b = blockAt(i);
-  const box = document.getElementById(`kb-tr-${i}`);
-  if (!b?.x || !box) return;
-  const cached = trs()[hash(b.x)];
-  if (cached) {
-    if (!quiet) box.classList.toggle('hidden');
-    else box.classList.remove('hidden');
-    box.textContent = cached;
-    return;
-  }
-  box.classList.remove('hidden');
-  box.textContent = 'Çevriliyor…';
-  try {
-    const res = await C.sync.fspAi({ action: 'translate', text: b.x }, 45_000);
-    saveTr(b.x, res.tr);
-    if (document.getElementById(`kb-tr-${i}`) === box) box.textContent = res.tr;
-  } catch (e) {
-    box.textContent = e.message || String(e);
-    box.classList.add('err');
-  }
-}
-
-async function translateAll() {
-  if (K.busy) return;
-  K.busy = true;
-  const blocks = K.lib.content.chapters[K.ch].blocks;
-  const todo = blocks.map((b, i) => [b, i]).filter(([b]) => b.x && b.t !== 'img' && b.t !== 'h');
-  const wait = C.toast(`Bölüm çevriliyor… (${todo.length} paragraf)`, 'info', 600_000);
-  let n = 0;
-  try {
-    for (const [, i] of todo) {
-      if (!document.getElementById(`kb-tr-${i}`)) break; // bölüm değişti
-      await translate(i, true);
-      n++;
-      wait.textContent = `Bölüm çevriliyor… ${n} / ${todo.length}`;
-    }
-  } finally {
-    wait.remove();
-    K.busy = false;
-  }
-}
 
 /* ------------------------------------------------------------------ seçili kelimeyi desteye ekleme */
 
@@ -396,8 +329,6 @@ function onClick(e) {
       }
       case 'toc': K.tocOpen = !K.tocOpen; document.querySelector('.kurs-layout')?.classList.toggle('toc-open', K.tocOpen); break;
       case 'say': C.speak(blockAt(el.dataset.i).x, 'de'); break;
-      case 'tr': await translate(el.dataset.i); break;
-      case 'tr-all': await translateAll(); break;
       case 'add-sel': addSelected(); break;
       case 'share': shareModal(); break;
       case 'join': joinModal(); break;
