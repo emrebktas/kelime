@@ -1,7 +1,7 @@
 // Uygulama dosyalarını önbelleğe alır: internet yokken de açılır.
 // Önce ağ (her zaman en yeni sürüm), ağ yoksa ya da yavaşsa önbellek.
 
-const CACHE = 'kelime-v45';
+const CACHE = 'kelime-v46';
 const ASSETS = [
   './', 'index.html', 'app.css', 'ds.css',
   'vendor/fonts/inter-latin-wght-normal.woff2', 'vendor/fonts/inter-latin-ext-wght-normal.woff2',
