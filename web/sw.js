@@ -1,9 +1,11 @@
 // Uygulama dosyalarını önbelleğe alır: internet yokken de açılır.
 // Önce ağ (her zaman en yeni sürüm), ağ yoksa ya da yavaşsa önbellek.
 
-const CACHE = 'kelime-v40';
+const CACHE = 'kelime-v41';
 const ASSETS = [
-  './', 'index.html', 'app.css', 'manifest.webmanifest',
+  './', 'index.html', 'app.css', 'ds.css',
+  'vendor/fonts/inter-latin-wght-normal.woff2', 'vendor/fonts/inter-latin-ext-wght-normal.woff2',
+  'vendor/fonts/fraunces-latin-wght-normal.woff2', 'vendor/fonts/fraunces-latin-ext-wght-normal.woff2', 'manifest.webmanifest',
   'js/app.js', 'js/store.js', 'js/sync.js', 'js/srs.js', 'js/config.js',
   'vendor/supabase.js', 'vendor/capacitor.js',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/logo.png',

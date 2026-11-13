@@ -107,7 +107,7 @@ function applyTheme() {
   const mode = prefs.theme || 'system';
   const dark = mode === 'dark' || (mode === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
   document.documentElement.dataset.theme = dark ? 'dark' : 'light';
-  $('meta[name=theme-color]').content = dark ? '#1f1e1d' : '#d5ccbb';
+  $('meta[name=theme-color]').content = dark ? '#1F1E1D' : '#D8CFBE';
   $('#btn-theme').textContent = { system: '◐ Sistem', light: '☀ Açık', dark: '☾ Koyu' }[mode];
   const vol = Math.round((prefs.volume ?? 1) * 100);
   $('#btn-autospeak').textContent = `${vol === 0 ? '🔇' : prefs.autoSpeak ? '🔊' : '🔈'} Ses %${vol}`;
