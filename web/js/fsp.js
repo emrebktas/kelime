@@ -4,7 +4,8 @@
 
 let C = null; // app.js'ten gelen yardımcılar
 let content = null; // { cases, guide }
-const ui = { tab: 'cases', fach: '', termQ: '', termKat: '', attemptId: null, pending: false, tick: null, rec: null, saveT: null };
+const ui = { tab: 'cases', fach: '', termQ: '', termKat: '', attemptId: null, pending: false, tick: null, rec: null, saveT: null,
+  bySec: 'fragen', byTopic: '', byQ: '', byTr: true, practice: null };
 
 const PARTS = {
   1: { label: 'Teil 1 · Patientengespräch', short: 'Gespräch', minutes: 20, icon: 'talk' },
@@ -32,8 +33,9 @@ export function initFsp(ctx) {
 async function load() {
   if (content) return content;
   const get = (f) => fetch(f).then((r) => { if (!r.ok) throw new Error(); return r.json(); });
-  const [cases, guide] = await Promise.all([get('content/fsp-cases.json'), get('content/fsp-guide.json')]);
-  content = { cases: cases.cases || [], guide };
+  const [cases, guide, bayern] = await Promise.all([get('content/fsp-cases.json'), get('content/fsp-guide.json'),
+    get('content/fsp-bayern.json').catch(() => null)]);
+  content = { cases: [...(bayern?.cases || []), ...(cases.cases || [])], guide, bayern };
   return content;
 }
 
@@ -79,7 +81,8 @@ export async function showFsp(tab) {
 }
 
 function renderHub() {
-  const tabs = [['cases', 'tooth', 'Vakalar'], ['history', 'chart', 'Geçmiş'], ['terms', 'book', 'Fachbegriffe'], ['guide', 'compass', 'Rehber']];
+  const tabs = [['cases', 'tooth', 'Vakalar'], ...(content.bayern ? [['bayern', 'pin', 'Bayern']] : []), ['history', 'chart', 'Geçmiş'],
+    ['terms', 'book', 'Fachbegriffe'], ['guide', 'compass', 'Rehber']];
   C.main.innerHTML = `
     <div class="page fsp-page">
       <header class="deck-head">
@@ -91,7 +94,7 @@ function renderHub() {
         ${ui.tab === 'cases' ? '<button class="primary" data-f="new-case">✦ Yeni vaka (AI)</button>' : ''}
       </header>
       <div class="seg tabs fsp-tabs" role="tablist">${tabs.map(([k, ic, l]) => `<button type="button" role="tab" data-f="tab" data-tab="${k}" class="${ui.tab === k ? 'on' : ''}">${C.ICON[ic]}${l}</button>`).join('')}</div>
-      <div id="fsp-body">${{ cases: casesHtml, history: historyHtml, terms: termsHtml, guide: guideHtml }[ui.tab]()}</div>
+      <div id="fsp-body">${{ cases: casesHtml, bayern: bayernHtml, history: historyHtml, terms: termsHtml, guide: guideHtml }[ui.tab]()}</div>
     </div>`;
   if (!C.sync.user()) {
     C.$('#fsp-body').insertAdjacentHTML('afterbegin', '<div class="panel fsp-note">Simülasyon ve değerlendirme yapay zekâyla çalışır; kullanmak için <button class="linkish" data-act="account">giriş yap</button>. Fachbegriffe ve rehber girişsiz de açık.</div>');
@@ -99,15 +102,18 @@ function renderHub() {
 }
 
 function casesHtml() {
-  const list = allCases().filter((c) => !ui.fach || c.fachgebiet === ui.fach);
+  const list = allCases().filter((c) => !ui.fach || (ui.fach === 'Bayern' ? c.bundesland === 'Bayern' : c.fachgebiet === ui.fach));
   const fachs = [...new Set(allCases().map((c) => c.fachgebiet))];
   return `
-    <div class="chips">${['', ...fachs].map((f) => `<button type="button" class="chip ${ui.fach === f ? 'on' : ''}" data-f="fach" data-fach="${esc(f)}">${f ? esc(f) : 'Tümü'}</button>`).join('')}</div>
-    <div class="fsp-grid">${list.map((c) => {
+    <div class="chips">${['', ...(content.bayern ? ['Bayern'] : []), ...fachs].map((f) => `<button type="button" class="chip ${ui.fach === f ? 'on' : ''} ${f === 'Bayern' ? 'chip-by' : ''}" data-f="fach" data-fach="${esc(f)}">${f ? esc(f) : 'Tümü'}</button>`).join('')}</div>
+    <div class="fsp-grid">${list.map(caseCardHtml).join('') || '<div class="panel empty">Bu alanda vaka yok.</div>'}</div>`;
+}
+
+function caseCardHtml(c) {
       const p = c.patient || {};
       const tried = attemptsOf(c.id).length > 0;
       return `<article class="panel fsp-case">
-        <div class="fc-top"><span class="badge">${esc(c.fachgebiet)}</span>${c.custom ? '<span class="fc-own">✦ senin vakan</span>' : ''}
+        <div class="fc-top"><span class="badge">${esc(c.fachgebiet)}</span>${c.custom ? '<span class="fc-own">✦ senin vakan</span>' : ''}${c.bundesland ? `<span class="fc-by" title="München raporlarında ${c.freq} kez">${C.ICON.pin}${esc(c.bundesland)} · ${c.freq}×</span>` : ''}
           ${c.custom ? `<button class="icon-btn fc-del" data-f="del-case" data-case="${c.id}" title="Vakayı sil" aria-label="Vakayı sil">${C.ICON.trash}</button>` : ''}</div>
         <h3>${esc(p.name)}${p.age ? `, ${p.age}` : ''}</h3>
         <div class="muted fc-job">${esc(p.job)}</div>
@@ -119,7 +125,6 @@ function casesHtml() {
             <span class="fc-part-l">${C.ICON[PARTS[n].icon]}${n} · ${PARTS[n].short}</span>${b !== null ? `<b class="sc ${scoreClass(b)}">${b}</b>` : ''}</button>`;
         }).join('')}</div>
       </article>`;
-    }).join('') || '<div class="panel empty">Bu alanda vaka yok.</div>'}</div>`;
 }
 
 function historyHtml() {
@@ -427,9 +432,9 @@ function sendFromInput() {
   send(text);
 }
 
-function toggleMic(btn) {
+function toggleMic(btn, target = 'fsp-input') {
   if (ui.rec) { ui.rec.stop(); return; }
-  const box = document.getElementById('fsp-input');
+  const box = document.getElementById(target);
   if (!SR || !box) return;
   const rec = new SR();
   rec.lang = 'de-DE';
@@ -444,12 +449,13 @@ function toggleMic(btn) {
       else interim += e.results[i][0].transcript;
     }
     box.value = base + finalText + interim;
+    if (target === 'pr-answer' && ui.practice) ui.practice.answer = box.value;
   };
   rec.onerror = (e) => {
     if (e.error === 'not-allowed') C.toast('Mikrofon izni verilmedi.', 'error');
     else if (e.error !== 'no-speech' && e.error !== 'aborted') C.toast(`Ses tanıma hatası: ${e.error}`, 'error');
   };
-  rec.onend = () => { ui.rec = null; document.querySelector('.fsp-mic')?.classList.remove('on'); };
+  rec.onend = () => { ui.rec = null; btn.classList.remove('on'); };
   try { rec.start(); } catch { return; }
   C.stopSpeech?.();
   ui.rec = rec;
@@ -517,18 +523,20 @@ export const flushFsp = flushSave;
 
 /* ------------------------------------------------------------------ desteye ekleme */
 
-function fspDeck() {
-  const own = C.state.decks.find((d) => d.name === DECK_NAME && d.role !== 'viewer');
+function fspDeck(name = DECK_NAME) {
+  const own = C.state.decks.find((d) => d.name === name && d.role !== 'viewer');
   if (own) return own;
-  return C.store.createDeck({ name: DECK_NAME, language: 'de' });
+  return C.store.createDeck({ name, language: 'de' });
 }
-function addCards(items) {
+function addCards(items, name = DECK_NAME) {
   if (!items.length) return;
-  const deck = fspDeck();
+  const deck = fspDeck(name);
   const r = C.store.importCards({ deck_id: deck.id }, items);
   C.refreshDecks();
-  C.toast(r.added ? `${r.added} kart “${DECK_NAME}” destesine eklendi${r.updated ? ` (${r.updated} tanesi güncellendi)` : ''}.` : 'Bunlar destede zaten var.', 'success');
+  C.toast(r.added ? `${r.added} kart “${name}” destesine eklendi${r.updated ? ` (${r.updated} tanesi güncellendi)` : ''}.` : 'Bunlar destede zaten var.', 'success');
 }
+const BY_DECK = 'FSP Bayern · Fragen';
+const qCard = (q) => ({ word: q.de, translation: q.tr, sentence: q.a, notes: q.atr });
 const termCard = (t) => ({ word: t.fach, translation: t.tr, sentence: '', notes: `Für Patienten: ${t.umgang}` });
 
 /* ------------------------------------------------------------------ olaylar */
@@ -542,6 +550,17 @@ function onClick(e) {
     switch (f) {
       case 'tab': flushSave(); ui.tab = el.dataset.tab; renderHub(); break;
       case 'fach': ui.fach = el.dataset.fach; renderHub(); break;
+      case 'by-sec': ui.bySec = el.dataset.sec; ui.practice = null; renderHub(); break;
+      case 'by-topic': ui.byTopic = el.dataset.topic; renderHub(); break;
+      case 'by-tr': ui.byTr = !ui.byTr; renderHub(); break;
+      case 'by-add': addCards([qCard(byItem(el.dataset.id))], BY_DECK); break;
+      case 'by-add-all': addCards(byList().map(qCard), BY_DECK); break;
+      case 'by-practice': startPractice(el.dataset.id); break;
+      case 'pr-reveal': ui.practice.revealed = true; renderHub(); break;
+      case 'pr-next': nextPractice(el.dataset.ok === '1'); break;
+      case 'pr-exit': ui.practice = null; renderHub(); break;
+      case 'pr-check': await checkAnswer(); break;
+      case 'pr-mic': toggleMic(el, 'pr-answer'); break;
       case 'kat': ui.termKat = el.dataset.kat; renderHub(); break;
       case 'start': await load(); startAttempt(el.dataset.case, Number(el.dataset.part)); break;
       case 'open': await load(); openAttempt(el.dataset.attempt); break;
@@ -583,6 +602,13 @@ function onChange(e) {
 }
 
 function onInput(e) {
+  if (e.target.id === 'by-q') {
+    ui.byQ = e.target.value;
+    const box = document.getElementById('by-list');
+    if (box) box.innerHTML = byRows();
+    return;
+  }
+  if (e.target.id === 'pr-answer' && ui.practice) { ui.practice.answer = e.target.value; return; }
   if (e.target.id === 'fsp-term-q') {
     ui.termQ = e.target.value;
     const box = document.getElementById('fsp-terms');
@@ -614,6 +640,159 @@ export function fspBack() {
 export function fspRemote() {
   if (C.state.view === 'fsp') renderHub();
   else if (C.state.view === 'fsp-run' && !current()) showFsp();
+}
+
+/* ------------------------------------------------------------------ Bayern: raporlardan soru bankası, hasta soruları, vakalar, ipuçları */
+
+const BY_SECS = [['fragen', 'Teil 3 soruları'], ['patient', 'Hasta soruları (Teil 1)'], ['faelle', 'Sık çıkan vakalar'], ['tipps', 'İpuçları']];
+const known = () => new Set(C.prefs.fspKnown || []);
+const byPool = () => (ui.bySec === 'patient' ? content.bayern.patient : content.bayern.questions);
+const byItem = (id) => [...content.bayern.questions, ...content.bayern.patient].find((q) => q.id === id);
+function byList() {
+  const q = ui.byQ.trim().toLocaleLowerCase('de');
+  return byPool()
+    .filter((x) => ui.bySec === 'patient' || !ui.byTopic || x.topic === ui.byTopic)
+    .filter((x) => !q || `${x.de} ${x.tr} ${x.a}`.toLocaleLowerCase('de').includes(q))
+    .sort((a, b) => (b.n || 0) - (a.n || 0));
+}
+
+function bayernHtml() {
+  const b = content.bayern;
+  const head = `
+    <section class="panel by-intro">
+      <div class="by-stats"><b>${b.reports}</b><span>rapor</span><b>${b.cases.length}</b><span>vaka tipi</span><b>${b.questions.length}</b><span>Teil 3 sorusu</span><b>${b.patient.length}</b><span>hasta sorusu</span></div>
+      <p>${esc(b.intro)}</p>
+      <p class="muted by-period">${esc(b.title)} · ${esc(b.period)}</p>
+    </section>
+    <div class="chips by-secs">${BY_SECS.map(([k, l]) => `<button type="button" class="chip ${ui.bySec === k ? 'on' : ''}" data-f="by-sec" data-sec="${k}">${l}</button>`).join('')}</div>`;
+  if (ui.practice) return head + practiceHtml();
+  if (ui.bySec === 'faelle') {
+    const cs = [...b.cases].sort((x, y) => y.freq - x.freq);
+    return `${head}<p class="muted fsp-lead">Raporlarda en sık çıkan vaka tipleri. Her biri Teil 1, 2 ve 3 olarak simüle edilebilir; hasta, raporlardaki gibi sorular soruyor.</p>
+      <div class="fsp-grid">${cs.map(caseCardHtml).join('')}</div>`;
+  }
+  if (ui.bySec === 'tipps') {
+    return `${head}<div class="by-tips">${b.tips.map((t, i) => `<section class="panel by-tip"><span class="by-num">${i + 1}</span><div><h3>${esc(t.t)}</h3><p>${esc(t.d)}</p></div></section>`).join('')}</div>`;
+  }
+  const topics = ui.bySec === 'fragen'
+    ? `<div class="chips">${[{ key: '', name: 'Tümü' }, ...b.topics].map((t) => {
+      const n = t.key ? b.questions.filter((q) => q.topic === t.key).length : b.questions.length;
+      return `<button type="button" class="chip ${ui.byTopic === t.key ? 'on' : ''}" data-f="by-topic" data-topic="${t.key}">${esc(t.name)} <small>${n}</small></button>`;
+    }).join('')}</div>` : '';
+  const k = known();
+  const pool = byPool();
+  const done = pool.filter((q) => k.has(q.id)).length;
+  return `${head}
+    <div class="by-tools">
+      <input type="search" id="by-q" placeholder="Soru ara (Almanca ya da Türkçe)…" value="${esc(ui.byQ)}">
+      <button class="primary" data-f="by-practice">▶ Pratik yap</button>
+      <button data-f="by-add-all" title="Filtredeki soruları kart olarak ekler; tekrar sistemiyle çalışırsın">＋ Desteye ekle</button>
+      <button class="ghost" data-f="by-tr">${ui.byTr ? 'Türkçeyi gizle' : 'Türkçeyi göster'}</button>
+    </div>
+    <div class="by-progress"><span style="width:${pool.length ? Math.round((done / pool.length) * 100) : 0}%"></span></div>
+    <p class="muted by-prog-l">${done} / ${pool.length} soruyu “bildim” olarak işaretledin.</p>
+    ${topics}
+    <div id="by-list">${byRows()}</div>`;
+}
+
+function byRows() {
+  const k = known();
+  const list = byList();
+  if (!list.length) return '<div class="panel empty">Sonuç yok.</div>';
+  const say = (s) => `<button class="icon-btn ft-say" data-f="say" data-text="${esc(s)}" title="Seslendir" aria-label="Seslendir">${C.ICON.speaker}</button>`;
+  return `<div class="by-list">${list.map((q) => `
+    <details class="panel by-q ${k.has(q.id) ? 'is-known' : ''}">
+      <summary>
+        <span class="by-q-main"><span class="by-q-de" lang="de">${esc(q.de)}</span>${ui.byTr ? `<span class="by-q-tr">${esc(q.tr)}</span>` : ''}</span>
+        <span class="by-q-meta">${q.n ? `<span class="by-freq" title="Raporlarda geçme sayısı">${q.n}×</span>` : ''}${k.has(q.id) ? '<span class="by-ok">✓</span>' : ''}</span>
+      </summary>
+      <div class="by-a">
+        <div class="by-a-de" lang="de">${say(q.a)}<p>${esc(q.a)}</p></div>
+        ${ui.byTr ? `<p class="by-a-tr">${esc(q.atr)}</p>` : ''}
+        <div class="by-a-actions"><button data-f="by-practice" data-id="${q.id}">${C.ICON.mic}Cevaplamayı dene</button><button data-f="by-add" data-id="${q.id}">＋ Desteye ekle</button>${say(q.de)}</div>
+      </div>
+    </details>`).join('')}</div>`;
+}
+
+function startPractice(id) {
+  const k = known();
+  let order = byList().map((q) => q.id);
+  if (id) order = [id, ...order.filter((x) => x !== id)];
+  else order = [...order.filter((x) => !k.has(x)), ...order.filter((x) => k.has(x))];
+  if (!order.length) { C.toast('Bu filtrede soru yok.', 'info'); return; }
+  ui.practice = { order, i: 0, revealed: false, answer: '', check: null, ok: 0 };
+  renderHub();
+  if (C.prefs.fspVoice !== false) C.speak(byItem(order[0]).de, 'de');
+}
+
+function nextPractice(ok) {
+  const p = ui.practice;
+  const id = p.order[p.i];
+  const k = known();
+  if (ok) { k.add(id); p.ok++; } else k.delete(id);
+  C.prefs.fspKnown = [...k];
+  C.savePrefs();
+  p.i++;
+  p.revealed = false;
+  p.answer = '';
+  p.check = null;
+  ui.rec?.stop();
+  if (p.i >= p.order.length) {
+    C.toast(`Bitti: ${p.ok} / ${p.order.length} soruyu bildin.`, 'success', 5000);
+    ui.practice = null;
+  } else if (C.prefs.fspVoice !== false) C.speak(byItem(p.order[p.i]).de, 'de');
+  renderHub();
+}
+
+function practiceHtml() {
+  const p = ui.practice;
+  const q = byItem(p.order[p.i]);
+  const say = (s) => `<button class="icon-btn ft-say" data-f="say" data-text="${esc(s)}" title="Seslendir" aria-label="Seslendir">${C.ICON.speaker}</button>`;
+  const ch = p.check;
+  return `
+    <section class="panel by-practice">
+      <div class="pr-top"><span class="muted">${p.i + 1} / ${p.order.length}</span>
+        <div class="by-progress"><span style="width:${Math.round((p.i / p.order.length) * 100)}%"></span></div>
+        <button class="ghost" data-f="pr-exit">Bitir</button></div>
+      <div class="pr-q"><span lang="de">${esc(q.de)}</span>${say(q.de)}</div>
+      ${ui.byTr ? `<p class="pr-tr">${esc(q.tr)}</p>` : ''}
+      <label class="pr-label">Cevabın <small class="muted">(Almanca yaz ya da mikrofonla söyle; boş da bırakabilirsin)</small></label>
+      <div class="pr-ans">
+        <textarea id="pr-answer" rows="4" placeholder="${ui.bySec === 'patient' ? 'Hastaya günlük dille cevap ver…' : 'Meslektaşına tıp diliyle cevap ver…'}">${esc(p.answer)}</textarea>
+        ${SR ? `<button type="button" class="icon-btn fsp-mic" data-f="pr-mic" title="Konuşarak cevapla (Almanca)" aria-label="Mikrofon">${C.ICON.mic}</button>` : ''}
+      </div>
+      ${ch ? `<div class="pr-check"><div class="pr-check-h"><span class="sc ${scoreClass(ch.punkte)}">${ch.punkte}</span><b>Yapay zekâ değerlendirmesi</b></div>
+        <p>${esc(ch.feedback)}</p>
+        ${ch.fehlend?.length ? `<p class="muted"><b>Eksik:</b> ${ch.fehlend.map(esc).join(' · ')}</p>` : ''}
+        ${ch.korrigiert ? `<div class="pr-fix"><span class="muted">Düzeltilmiş hâli:</span><p lang="de">${esc(ch.korrigiert)}</p></div>` : ''}</div>` : ''}
+      ${p.revealed ? `<div class="pr-model"><div class="by-a-de" lang="de">${say(q.a)}<p>${esc(q.a)}</p></div>${ui.byTr ? `<p class="by-a-tr">${esc(q.atr)}</p>` : ''}</div>` : ''}
+      <div class="pr-actions">
+        ${C.sync.user() ? `<button data-f="pr-check" ${ui.pending ? 'disabled' : ''}>${ui.pending ? 'Değerlendiriliyor…' : 'Cevabımı kontrol et (AI)'}</button>` : ''}
+        ${p.revealed ? `<button data-f="pr-next" data-ok="0">↺ Tekrar sor</button><button class="primary" data-f="pr-next" data-ok="1">✓ Bildim</button>`
+          : '<button class="primary" data-f="pr-reveal">Örnek cevabı göster</button>'}
+      </div>
+    </section>`;
+}
+
+async function checkAnswer() {
+  const p = ui.practice;
+  if (!p || ui.pending) return;
+  const answer = (document.getElementById('pr-answer')?.value || p.answer || '').trim();
+  if (answer.split(/\s+/).length < 4) { C.toast('Önce birkaç cümleyle cevap ver.', 'info'); return; }
+  const q = byItem(p.order[p.i]);
+  ui.rec?.stop();
+  ui.pending = true;
+  p.answer = answer;
+  renderHub();
+  try {
+    const res = await C.sync.fspAi({ action: 'answer', question: q.de, model: q.a, answer, kind: ui.bySec === 'patient' ? 'patient' : 'arzt' }, 60_000);
+    if (ui.practice === p) { p.check = res.check; p.revealed = true; }
+  } catch (e) {
+    C.toast(e.message || String(e), 'error', 5000);
+  } finally {
+    ui.pending = false;
+    if (C.state.view === 'fsp' && ui.tab === 'bayern') renderHub();
+  }
 }
 
 /* ------------------------------------------------------------------ yeni vaka (yapay zekâ) */

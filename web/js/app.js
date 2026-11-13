@@ -68,6 +68,7 @@ const ICON = {
   doc: svg('<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>'),
   steth: svg('<path d="M5 3v5.5a5 5 0 0 0 10 0V3"/><path d="M10 13.5V16a5 5 0 0 0 10 0v-2"/><circle cx="20" cy="12" r="2"/>'),
   chart: svg('<path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/>'),
+  pin: svg('<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>'),
   compass: svg('<circle cx="12" cy="12" r="9.5"/><path d="m15.5 8.5-2 5-5 2 2-5Z"/>'),
   flame: svg('<path d="M12 22c4 0 7-2.7 7-6.7 0-3.6-2.4-5.6-3.6-7.8-.5 1.7-1.5 2.8-2.6 3.3.3-3-1-6.3-4.3-8.3.2 3.2-1.4 5.3-2.9 7.1C4.4 11.1 5 12.7 5 15.3 5 19.3 8 22 12 22Z"/>'),
   back: svg('<path d="m15 18-6-6 6-6"/>', 'width="16" height="16" style="vertical-align:-3px"'),

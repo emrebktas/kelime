@@ -9,6 +9,7 @@
 //   oberarzt  { case, history }                 → { reply, done }     Teil 3: simüle Oberarzt
 //   evaluate  { part, case, history | brief, konjunktiv } → { report } değerlendirme
 //   case      { fachgebiet, hint }              → { case }            yeni (uydurma) vaka
+//   answer    { question, model, answer, kind } → { check }           soru bankası: tek cevabın kontrolü
 
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
@@ -17,7 +18,7 @@ const MODEL = Deno.env.get('GEMINI_MODEL') ?? 'gemini-3.8-flash';
 const GEMINI_BASE = Deno.env.get('GEMINI_BASE_URL') ?? 'https://generativelanguage.googleapis.com';
 const GEMINI_URL = (model: string) => `${GEMINI_BASE}/v1beta/models/${model}:generateContent`;
 const DAILY_LIMIT = Number(Deno.env.get('FSP_DAILY_LIMIT') ?? 600); // kişi başı, son 24 saatte birim
-const COST = { turn: 1, evaluate: 8, case: 6 };
+const COST = { turn: 1, evaluate: 8, case: 6, answer: 2 };
 const MAX_TURNS = 80;
 const MAX_MSG = 3000;
 
@@ -415,6 +416,29 @@ ${CASE_SHAPE}`,
     const c = raw && cleanCase(raw);
     if (!c) return reply({ error: 'Yapay zekâ geçerli bir vaka döndürmedi. Tekrar dene.' }, 502);
     return reply({ case: c });
+  }
+
+  // Soru bankası: adayın tek bir soruya verdiği cevabı örnek cevapla karşılaştırır
+  if (action === 'answer') {
+    const question = str(body.question, 500);
+    const model = str(body.model, 2000);
+    const answer = str(body.answer, 3000);
+    if (!question || answer.split(/\s+/).length < 4) return reply({ error: 'Cevap çok kısa.' }, 400);
+    const quota = await useQuota(COST.answer);
+    if (quota) return quota;
+    const patient = body.kind === 'patient';
+    const r = await callGemini(apiKey, {
+      system: `Du bist Prüfer/in der Fachsprachprüfung Zahnmedizin. Ein ausländischer Zahnarzt beantwortet eine typische Prüfungsfrage auf Deutsch${patient ? ' gegenüber einem Patienten (erwartet: einfache Umgangssprache, keine Fachbegriffe, empathisch)' : ' gegenüber einer Oberärztin (erwartet: kollegiale Fachsprache, strukturiert, vollständige Sätze)'}.
+Bewerte Inhalt und Sprache. Erklärungen auf Türkisch, Korrekturen auf Deutsch.
+Antworte NUR mit gültigem JSON:
+{"punkte": 0-100, "feedback": "2-4 Sätze auf Türkisch: was gut war, was fehlt, sprachliche Hauptfehler", "fehlend": ["fehlende Kernpunkte, kurz, Deutsch"], "korrigiert": "die Antwort des Kandidaten sprachlich korrigiert und leicht ergänzt, Deutsch, höchstens 5 Sätze"}`,
+      turns: [{ role: 'user', text: `Frage: ${question}\n\nMusterantwort (Orientierung, nicht wörtlich verlangt): ${model}\n\nAntwort des Kandidaten: ${answer}` }],
+      json: true, maxTokens: 1500, temperature: 0.2, timeoutMs: 50_000, think: 'low',
+    });
+    if (!r.text) return fail(r);
+    const raw = parseJson(r.text);
+    if (!raw) return reply({ error: 'Yapay zekâ geçerli bir değerlendirme döndürmedi. Tekrar dene.' }, 502);
+    return reply({ check: { punkte: num(raw.punkte), feedback: str(raw.feedback, 1200), fehlend: list(raw.fehlend, 8, 200), korrigiert: str(raw.korrigiert, 1500) } });
   }
 
   return reply({ error: 'Bilinmeyen işlem.' }, 400);
