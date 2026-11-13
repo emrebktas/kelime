@@ -262,6 +262,14 @@ async function push() {
     }
   }, 'reading_tests');
 
+  // FSP: kendi vakalar ve denemeler (her biri tek satır, içerik jsonb)
+  await optionalTable(() => pushTable('fsp', store.dirtyRows('fsp'), (part) => client.from('fsp_items').upsert(
+    part.map(({ rec }) => ({
+      id: rec.id, user_id: uid, kind: rec.kind, data: rec.data || {}, created_at: rec.created_at, edited_at: rec.edited_at,
+      deleted: !!rec.deleted,
+    })),
+  ), 10), 'fsp_items');
+
   await pushTable('revlog', store.dirtyRows('revlog'), (part) => client.from('revlog').upsert(
     part.map(({ rec }) => ({
       id: rec.id, user_id: uid, card_id: rec.card_id, deck_id: rec.deck_id, time: rec.time, rating: rec.rating,
@@ -270,9 +278,9 @@ async function push() {
   ), 500);
 }
 
-const PULL_TABLES = ['deck_members', 'decks', 'cards', 'card_states', 'revlog', 'study_sessions', 'essays', 'essay_images', 'reading_tests'];
-const OWN_TABLES = ['card_states', 'revlog', 'study_sessions', 'essays', 'essay_images', 'reading_tests'];
-const OPTIONAL_TABLES = ['study_sessions', 'essays', 'essay_images', 'reading_tests'];
+const PULL_TABLES = ['deck_members', 'decks', 'cards', 'card_states', 'revlog', 'study_sessions', 'essays', 'essay_images', 'reading_tests', 'fsp_items'];
+const OWN_TABLES = ['card_states', 'revlog', 'study_sessions', 'essays', 'essay_images', 'reading_tests', 'fsp_items'];
+const OPTIONAL_TABLES = ['study_sessions', 'essays', 'essay_images', 'reading_tests', 'fsp_items'];
 
 // Sonradan eklenen tablolar (ör. study_sessions) sunucuda henüz oluşturulmadıysa
 // senkronun geri kalanı bozulmasın: o tablo bu oturumda atlanır, veriler cihazda bekler.
@@ -404,6 +412,21 @@ export async function aiEssayReport({ task, prompt, body, targetWords = [], figu
   }, 170_000, 'Analiz çok uzun sürdü. Biraz sonra tekrar dene.');
   if (!data?.report) throw new Error('Yapay zekâ bir değerlendirme döndürmedi. Sunucu fonksiyonu güncel mi?');
   return data.report;
+}
+
+/* ------------------------------------------------------------------ FSP (Fachsprachprüfung) yapay zekâsı: fsp-ai (Gemini) */
+
+/** body.action: patient | oberarzt | evaluate | case (bkz. supabase/functions/fsp-ai). */
+export async function fspAi(body, timeoutMs = 60_000) {
+  if (!enabled || !session) throw new Error('FSP alıştırmaları için giriş yapman gerekiyor.');
+  if (!navigator.onLine) throw new Error('Yapay zekâ için internet bağlantısı gerekiyor.');
+  const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Yapay zekâ çok uzun sürdü. Tekrar dene.')), timeoutMs));
+  const { data, error } = await Promise.race([client.functions.invoke('fsp-ai', { body }), timeout]);
+  if (error) {
+    if (error.context?.status === 404) throw new Error('fsp-ai fonksiyonu sunucuda yok. Önce fonksiyonu yayınla (deploy).');
+    throw await fnError(error);
+  }
+  return data;
 }
 
 /* ------------------------------------------------------------------ çalışma panosu ve çevrimiçi durumu */

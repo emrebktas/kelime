@@ -1,6 +1,7 @@
 import * as store from './store.js';
 import * as sync from './sync.js';
 import { nowSec } from './srs.js';
+import { initFsp, showFsp, fspBack, fspRemote, flushFsp } from './fsp.js';
 
 // Android uygulaması (Capacitor) içinde mi çalışıyoruz? Orada bazı işler yerel eklentilerle yapılır.
 const Cap = window.Capacitor;
@@ -108,9 +109,11 @@ function applyTheme() {
   const dark = mode === 'dark' || (mode === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
   document.documentElement.dataset.theme = dark ? 'dark' : 'light';
   $('meta[name=theme-color]').content = dark ? '#1F1E1D' : '#D8CFBE';
-  $('#btn-theme').textContent = { system: '◐ Sistem', light: '☀ Açık', dark: '☾ Koyu' }[mode];
+  const [tIc, tLb] = { system: ['◐', 'Sistem'], light: ['☀', 'Açık'], dark: ['☾', 'Koyu'] }[mode];
+  $('#btn-theme').innerHTML = `<span class="ic">${tIc}</span><span class="lb">${tLb}</span>`;
+  $('#btn-theme').title = `Tema: ${tLb}`;
   const vol = Math.round((prefs.volume ?? 1) * 100);
-  $('#btn-autospeak').textContent = `${vol === 0 ? '🔇' : prefs.autoSpeak ? '🔊' : '🔈'} Ses %${vol}`;
+  $('#btn-autospeak').innerHTML = `<span class="ic">${vol === 0 ? '🔇' : prefs.autoSpeak ? '🔊' : '🔈'}</span><span class="lb">Ses %${vol}</span>`;
   $('#btn-autospeak').title = `Seslendirme ayarları · otomatik seslendirme ${prefs.autoSpeak ? 'açık' : 'kapalı'}`;
 }
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
@@ -382,8 +385,14 @@ function renderSidebar() {
       </button>`).join('')
     : '<div class="empty-side">Henüz deste yok. “+ Yeni deste” ile oluştur ya da bir JSON dosyası içe aktar.</div>';
   $('#btn-join').classList.toggle('hidden', !sync.enabled);
+  $('#nav-home')?.classList.toggle('active', state.view === 'home');
+  $('#nav-decks')?.classList.toggle('active', ['decks', 'deck', 'study'].includes(state.view));
+  document.body.classList.toggle('in-study', state.view === 'study');
+  // Telefonda alttaki sekme çubuğu tam ekran gereken görünümlerde gizlenir
+  document.body.classList.toggle('focus-view', ['study', 'reading', 'essay', 'fsp-run'].includes(state.view));
   $('#nav-essays')?.classList.toggle('active', ['essays', 'essay', 'phrases', 'criteria'].includes(state.view));
   $('#nav-reading')?.classList.toggle('active', ['readings', 'reading'].includes(state.view));
+  $('#nav-fsp')?.classList.toggle('active', ['fsp', 'fsp-run'].includes(state.view));
   document.body.classList.toggle('reading-on', state.view === 'reading');
   renderChatBadges();
   checkFigDock();
@@ -620,16 +629,15 @@ function homeHtml() {
           <button class="ghost json-help-btn" data-act="json-help" title="JSON dosya formatı">{ } JSON formatı</button>
         </div>
       </div>
-      <div class="home-row">
-        ${studyTimePanel()}
+      ${studyTimePanel()}
+      <div class="home-grid ${sync.enabled && sync.user() ? '' : 'solo'}">
+        <section class="home-decks">
+          <div class="sec-head"><h3>Destelerin</h3>${state.decks.length > 6 ? `<button class="ghost" data-act="decks">Tümü (${state.decks.length}) →</button>` : ''}</div>
+          ${state.decks.length ? `<div class="tiles">${state.decks.slice(0, 6).map(deckTileHtml).join('')}</div>`
+            : '<div class="panel empty">Henüz deste yok. “+ Yeni deste” ile oluştur ya da bir JSON dosyası içe aktar.</div>'}
+        </section>
         ${sync.enabled && sync.user() ? '<section class="panel board" id="board"><div class="muted">Pano yükleniyor…</div></section>' : ''}
       </div>
-      ${state.decks.length ? `<div class="tiles">${state.decks.map((d) => `
-        <button class="tile" data-deck="${d.id}">
-          <span class="t-name">${esc(d.name)}</span>
-          <span class="t-sub">${esc(langName(d.language))} · ${d.total} kart${d.role !== 'owner' ? ` · ${ROLES[d.role]}` : d.shared ? ' · paylaşılıyor' : ''}</span>
-          <span class="counts">${num(d.new, 'n-new')}${num(d.learn, 'n-learn')}${num(d.review, 'n-review')}</span>
-        </button>`).join('')}</div>` : ''}
       ${sync.enabled && sync.user() ? `<section class="panel activity" id="activity">
         <div class="act-head"><h3>📰 Destedekilerin son etkinlikleri</h3><span class="muted">son 7 gün</span></div>
         <div class="muted">Yükleniyor…</div>
@@ -2190,14 +2198,25 @@ function studyTimePanel() {
   const st = store.studyStats(liveSec());
   const max = Math.max(...st.week.map((d) => d.sec), 1);
   const days = ['Pz', 'Pt', 'Sa', 'Ça', 'Pe', 'Cu', 'Ct'];
+  const due = state.decks.reduce((a, d) => ({ n: a.n + d.new, l: a.l + d.learn, r: a.r + d.review }), { n: 0, l: 0, r: 0 });
+  const dueTotal = due.n + due.l + due.r;
   return `
-    <section class="panel study-time" id="study-time">
-      <div class="st-today">
-        <span class="muted">Bugün çalıştın</span>
-        <b id="home-today">${fmtDur(st.today)}</b>
-        <span class="muted st-meta">${st.streak ? `🔥 ${st.streak} gün üst üste · ` : ''}Bu hafta ${fmtDur(st.weekTotal)}</span>
-        <button class="primary" data-act="timer">${timer.status === 'idle' ? '⏱ Sayacı başlat' : '⏱ Sayacı aç'}</button>
+    <section class="stat-row" id="study-time">
+      <div class="stat-card st-today">
+        <span class="stat-label">Bugün çalıştın</span>
+        <b id="home-today" class="stat-big">${fmtDur(st.today)}</b>
+        <span class="muted st-meta">Bu hafta ${fmtDur(st.weekTotal)}</span>
+        <button class="accent" data-act="timer">${timer.status === 'idle' ? '⏱ Sayacı başlat' : '⏱ Sayacı aç'}</button>
       </div>
+      <div class="stat-card stat-due">
+        <span class="stat-label">Bekleyen kartlar</span>
+        <b class="stat-big">${dueTotal}</b>
+        <span class="due-pills">${num(due.n, 'n-new')} yeni · ${num(due.l, 'n-learn')} öğreniliyor · ${num(due.r, 'n-review')} tekrar</span>
+        ${dueTotal ? '<button class="primary" data-act="study-next">Çalışmaya başla</button>' : '<span class="muted st-meta">Bugünlük her şey tamam 🎉</span>'}
+      </div>
+      <div class="stat-card stat-streak">
+        <span class="stat-label">Seri · son 7 gün</span>
+        <b class="stat-big">${st.streak ? `🔥 ${st.streak} gün` : '—'}</b>
       <div class="st-week" title="Son 7 gün">
         ${st.week.map((d) => `<div class="st-day ${d.today ? 'today' : ''}" title="${esc(d.date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' }))}: ${fmtDur(d.sec)}">
           <span class="st-val">${d.sec >= 60 ? Math.round(d.sec / 60) : ''}</span>
@@ -2205,7 +2224,84 @@ function studyTimePanel() {
           <span class="st-lbl">${days[d.date.getDay()]}</span>
         </div>`).join('')}
       </div>
+      </div>
     </section>`;
+}
+
+// Her desteye kalıcı bir renk (id'den): kartlarda üst şerit ve nokta
+const DECK_COLORS = ['var(--accent)', 'var(--sage)', 'var(--slate)', 'var(--learn)', '#8E6C8A', '#4E8A86'];
+function deckColor(id) {
+  let h = 0;
+  for (const ch of String(id)) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return DECK_COLORS[h % DECK_COLORS.length];
+}
+
+function deckTileHtml(d) {
+  const role = d.role !== 'owner' ? ROLES[d.role] : d.shared ? 'paylaşılıyor' : '';
+  const due = d.new + d.learn + d.review;
+  return `<button class="tile" data-deck="${d.id}" style="--deck:${deckColor(d.id)}">
+    <span class="t-top"><span class="t-dot"></span><span class="badge">${esc(langName(d.language))}</span>${role ? `<span class="t-role">${esc(role)}</span>` : ''}</span>
+    <span class="t-name">${esc(d.name)}</span>
+    <span class="t-sub">${d.total} kart · ${due ? `<b>${due}</b> bekliyor` : 'bugünlük tamam'}</span>
+    <span class="counts">${num(d.new, 'n-new')}${num(d.learn, 'n-learn')}${num(d.review, 'n-review')}</span>
+  </button>`;
+}
+
+/* ---- Desteler sayfası (ikon çubuğundaki 📚) */
+function showDecks() {
+  leaveStudy();
+  state.view = 'decks';
+  document.body.classList.remove('menu-open');
+  renderSidebar();
+  setTitle('Desteler');
+  const cards = state.decks.reduce((a, d) => a + d.total, 0);
+  main.innerHTML = `
+    <div class="page decks-page">
+      <header class="deck-head">
+        <button class="icon-btn head-btn" data-act="home" title="Ana sayfaya dön (Esc)" aria-label="Ana sayfaya dön">${ICON.home}</button>
+        <div class="deck-title"><h1>Desteler</h1><div class="sub">${state.decks.length} deste · ${cards} kart</div></div>
+        <div class="head-actions">
+          ${sync.enabled ? '<button data-act="join">Kodla katıl</button>' : ''}
+          <button data-act="import">İçe aktar</button>
+          <button class="primary" data-act="new-deck">+ Yeni deste</button>
+        </div>
+      </header>
+      ${state.decks.length ? `<input type="search" id="deck-filter" class="deck-filter" placeholder="Deste ara…" value="${esc(state.deckFilter || '')}">
+        <div class="tiles" id="deck-grid">${state.decks.map(deckTileHtml).join('')}</div>`
+        : '<div class="panel empty">Henüz deste yok. “+ Yeni deste” ile oluştur, bir JSON dosyası içe aktar ya da paylaşım koduyla bir desteye katıl.</div>'}
+    </div>`;
+  const filter = $('#deck-filter');
+  const apply = () => {
+    state.deckFilter = filter.value;
+    const q = filter.value.trim().toLocaleLowerCase('tr');
+    $$('#deck-grid .tile').forEach((t) => t.classList.toggle('hidden', !!q && !t.querySelector('.t-name').textContent.toLocaleLowerCase('tr').includes(q)));
+  };
+  filter?.addEventListener('input', apply);
+  if (filter) apply();
+}
+
+/* ---- telefonda ayarlar (tema, seslendirme, hesap) */
+function settingsModal() {
+  const mode = prefs.theme || 'system';
+  const form = openModal(`
+    <h2>Ayarlar</h2>
+    <div class="settings-list">
+      <div class="settings-row"><span>Tema</span>
+        <div class="seg tabs">${[['system', '◐ Sistem'], ['light', '☀ Açık'], ['dark', '☾ Koyu']].map(([k, l]) => `<button type="button" data-theme-set="${k}" class="${mode === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+      </div>
+      <button type="button" class="settings-link" data-act="speech-settings">🔈 Seslendirme ve bildirim sesi <span>›</span></button>
+      <button type="button" class="settings-link" data-act="account">👤 ${sync.user() ? 'Hesap ve eşitleme' : 'Giriş yap / Kayıt ol'} <span>›</span></button>
+      <button type="button" class="settings-link" data-act="timer">⏱ Çalışma sayacı ve geçmişi <span>›</span></button>
+    </div>
+    <div class="modal-actions"><button type="button" class="primary" data-close>Tamam</button></div>`);
+  form.addEventListener('click', (e) => {
+    const k = e.target.closest('[data-theme-set]')?.dataset.themeSet;
+    if (!k) return;
+    prefs.theme = k;
+    savePrefs();
+    applyTheme();
+    $$('[data-theme-set]', form).forEach((b) => b.classList.toggle('on', b.dataset.themeSet === k));
+  });
 }
 
 function refreshStudyTime() {
@@ -4588,6 +4684,10 @@ function onRemoteChange() {
       showEssays();
     } else if (state.view === 'readings') {
       showReadings();
+    } else if (state.view === 'decks') {
+      showDecks();
+    } else if (state.view === 'fsp' || state.view === 'fsp-run') {
+      fspRemote();
     } else if (state.view === 'reading') {
       if (!store.getReading(state.readingId)) { toast('Bu test başka bir cihazda silindi.', 'info'); showReadings(); return; }
       // cevaplar yazılırken sayfa baştan çizilmez (vurgular ve kaydırma yeri korunur)
@@ -4656,6 +4756,14 @@ document.addEventListener('click', (e) => {
       case 'deck-menu': toggleDeckMenu(!deckMenuOpen()); break;
       case 'menu-close': break;
       case 'home': showHome(); break;
+      case 'decks': showDecks(); break;
+      case 'settings': settingsModal(); break;
+      case 'study-next': {
+        // En çok kart bekleyen deste açılır ve çalışma başlar
+        const d = [...state.decks].sort((a, b) => (b.new + b.learn + b.review) - (a.new + a.learn + a.review))[0];
+        if (d) { openDeck(d.id); await startStudy(); }
+        break;
+      }
       case 'new-deck': deckForm(); break;
       case 'import': await importFlow(state.view === 'home' ? null : state.deckId); break;
       case 'import-into': await importFlow(state.deckId); break;
@@ -4670,6 +4778,7 @@ document.addEventListener('click', (e) => {
       case 'timer': timerModal(); break;
       case 'essays': showEssays(); break;
       case 'readings': flushReading(); showReadings(); break;
+      case 'fsp': await showFsp(); break;
       case 'reading-import': readingImportModal(); break;
       case 'reading-check': checkReading(); break;
       case 'reading-timer': {
@@ -4840,6 +4949,11 @@ document.addEventListener('keydown', (e) => {
   if (e.ctrlKey && key === 'n') { e.preventDefault(); deckForm(); return; }
   if (e.ctrlKey && key === 'o') { e.preventDefault(); guard(() => importFlow(state.view === 'home' ? null : state.deckId)); return; }
 
+  if ((state.view === 'fsp' || state.view === 'fsp-run') && e.key === 'Escape') {
+    if (typing) document.activeElement.blur(); else fspBack();
+    return;
+  }
+
   if (state.view === 'study') {
     if (typing) return;
     const s = state.study;
@@ -4866,7 +4980,7 @@ document.addEventListener('keydown', (e) => {
     }
   } else if (state.view === 'reading') {
     if (e.key === 'Escape') { if (typing) document.activeElement.blur(); else showReadings(); }
-  } else if (state.view === 'readings') {
+  } else if (state.view === 'readings' || state.view === 'decks') {
     if (e.key === 'Escape' && !typing) showHome();
   } else if (state.view === 'essays' || state.view === 'phrases' || state.view === 'criteria') {
     if (e.key === 'Escape' && !typing) { if (state.view === 'essays') showHome(); else showEssays(); }
@@ -4881,7 +4995,7 @@ document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') document.activeElement.blur();
       return;
     }
-    if (e.key === 'Escape') { e.preventDefault(); showHome(); }
+    if (e.key === 'Escape') { e.preventDefault(); showDecks(); }
     else if (e.key === 'Enter' && tag !== 'BUTTON') { e.preventDefault(); guard(startStudy); }
     else if (key === 'n' && !e.ctrlKey && store.canEdit(state.deckId)) {
       e.preventDefault();
@@ -4930,6 +5044,8 @@ async function loadProfile() {
 async function init() {
   applyTheme();
   await store.open();
+  initFsp({ $, $$, main, state, prefs, savePrefs, store, sync, ICON, toast, guard, openModal, confirmBox, speak, stopSpeech,
+    renderSidebar, setTitle, leaveStudy, refreshDecks, showHome });
   store.onRemoteChange(onRemoteChange);
   sync.setPresenceProvider(() => (timer.status === 'running' ? Math.floor((Date.now() - liveSec() * 1000) / 1000) : null));
   sync.onStatus(() => renderAccount());
@@ -4956,7 +5072,7 @@ async function init() {
   syncTimerTick();
   onTimerTick();
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) { state.flushEssay?.(); flushReading(); } // telefonda uygulama arka plana geçerken yazıyı kaydet
+    if (document.hidden) { state.flushEssay?.(); flushReading(); flushFsp(); } // telefonda uygulama arka plana geçerken yazıyı kaydet
     else onTimerTick();
   });
   addEventListener('pagehide', () => state.flushEssay?.());
@@ -4970,7 +5086,9 @@ async function init() {
       else if (state.view === 'essay' || state.view === 'phrases' || state.view === 'criteria') showEssays();
       else if (state.view === 'reading') showReadings();
       else if (state.view === 'readings') showHome();
-      else if (['deck', 'essays', 'chat'].includes(state.view)) showHome();
+      else if (state.view === 'deck') showDecks();
+      else if (fspBack()) { /* FSP kendi geri adımını yaptı */ }
+      else if (['decks', 'essays', 'chat'].includes(state.view)) showHome();
       else NativeApp.exitApp();
     });
     NativeApp.addListener('resume', () => { sync.schedule(0); checkForUpdate(); onTimerTick(); resetNativeVoices(); });

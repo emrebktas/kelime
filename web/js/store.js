@@ -4,7 +4,7 @@
 import * as srs from './srs.js';
 
 const DB_NAME = 'kelime';
-const TABLES = ['decks', 'members', 'cards', 'states', 'revlog', 'sessions', 'essays', 'images', 'readings'];
+const TABLES = ['decks', 'members', 'cards', 'states', 'revlog', 'sessions', 'essays', 'images', 'readings', 'fsp'];
 const LOCAL_UID = 'local';
 
 const mem = Object.fromEntries(TABLES.map((t) => [t, new Map()]));
@@ -31,8 +31,9 @@ const txDone = (tx) => new Promise((res, rej) => { tx.oncomplete = res; tx.onerr
 
 export async function open() {
   idb = await new Promise((res, rej) => {
-    // Sürüm 2: çalışma sayacı oturumları, 3: yazılar, 4: yazı görselleri, 5: okuma testleri; eksik tablolar oluşturulur, veriler korunur
-    const r = indexedDB.open(DB_NAME, 5);
+    // Sürüm 2: çalışma sayacı oturumları, 3: yazılar, 4: yazı görselleri, 5: okuma testleri, 6: FSP;
+    // eksik tablolar oluşturulur, veriler korunur
+    const r = indexedDB.open(DB_NAME, 6);
     r.onupgradeneeded = () => {
       for (const t of [...TABLES, 'meta']) if (!r.result.objectStoreNames.contains(t)) r.result.createObjectStore(t);
     };
@@ -133,6 +134,7 @@ function adoptLocal(newUid) {
   for (const [key, e] of mem.essays) setRec('essays', key, { ...e, user_id: newUid });
   for (const [key, i] of mem.images) setRec('images', key, { ...i, user_id: newUid });
   for (const [key, r] of mem.readings) setRec('readings', key, { ...r, user_id: newUid });
+  for (const [key, r] of mem.fsp) setRec('fsp', key, { ...r, user_id: newUid });
 }
 
 /** Çıkış: cihazdaki tüm veriyi siler. */
@@ -165,7 +167,7 @@ export function markClean(table, rows) {
     if (r && r._rev === rev) {
       r._dirty = false;
       r._server = true;
-      if (['cards', 'sessions', 'essays', 'images', 'readings'].includes(table) && r.deleted) delRec(table, key);
+      if (['cards', 'sessions', 'essays', 'images', 'readings', 'fsp'].includes(table) && r.deleted) delRec(table, key);
       else persist(table, key, r);
     }
   }
@@ -216,6 +218,13 @@ export function applyRemote(table, rows) {
       if (r.deleted || !r.data) { if (!cur) continue; delRec('images', r.essay_id); }
       else if (cur?.data === r.data) continue; // aynı görsel tekrar geldi (değişiklik yok)
       else setRec('images', r.essay_id, { essay_id: r.essay_id, user_id: r.user_id, data: r.data, deleted: false, _server: true }, false);
+    } else if (table === 'fsp_items') {
+      if (r.user_id !== meta.uid || mem.fsp.get(r.id)?._dirty) continue;
+      if (r.deleted) delRec('fsp', r.id);
+      else {
+        setRec('fsp', r.id, { id: r.id, user_id: r.user_id, kind: r.kind, data: r.data || {},
+          created_at: Number(r.created_at), edited_at: Number(r.edited_at), deleted: false, _server: true }, false);
+      }
     } else if (table === 'reading_tests') {
       if (r.user_id !== meta.uid || mem.readings.get(r.id)?._dirty) continue;
       if (r.deleted) delRec('readings', r.id);
@@ -956,6 +965,35 @@ export function renameReading(id, title) {
 export function deleteReading(id) {
   const r = mem.readings.get(id);
   if (r) setRec('readings', id, { ...r, deleted: true });
+}
+
+/* ------------------------------------------------------------------ FSP (Fachsprachprüfung): kendi vakalar ve denemeler */
+
+const FSP_MAX = 280_000;
+/** kind: 'case' (kullanıcının vakası) ya da 'attempt' (bir vakadaki deneme: Teil 1/2/3). */
+export function listFsp(kind) {
+  return [...mem.fsp.values()].filter((r) => !r.deleted && r.kind === kind).sort((a, b) => b.edited_at - a.edited_at);
+}
+export function getFsp(id) {
+  const r = mem.fsp.get(id);
+  return r && !r.deleted ? r : null;
+}
+export function createFsp(kind, data) {
+  if (JSON.stringify(data).length > FSP_MAX) throw new Error('Kayıt çok büyük.');
+  const now = Math.floor(Date.now() / 1000);
+  const rec = { id: uuid(), user_id: meta.uid, kind, data, created_at: now, edited_at: now, deleted: false };
+  setRec('fsp', rec.id, rec);
+  return rec;
+}
+export function updateFsp(id, data) {
+  const r = getFsp(id);
+  if (!r) throw new Error('Kayıt bulunamadı.');
+  if (JSON.stringify(data).length > FSP_MAX) throw new Error('Kayıt çok büyük.');
+  setRec('fsp', id, { ...r, data, edited_at: Math.floor(Date.now() / 1000) });
+}
+export function deleteFsp(id) {
+  const r = mem.fsp.get(id);
+  if (r) setRec('fsp', id, { ...r, deleted: true });
 }
 
 /** Yapay zekâ IELTS analiz raporunu yazıyla birlikte saklar. */

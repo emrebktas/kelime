@@ -1,0 +1,185 @@
+{
+  "note": "Übungsfälle für die Fachsprachprüfung Zahnmedizin. Alle Personen sind erfunden.",
+  "cases": [
+    {
+      "id": "pulpitis-46",
+      "title": "Irreversible Pulpitis an Zahn 46",
+      "fachgebiet": "Endodontie",
+      "patient": { "name": "Herr Brandt", "age": 54, "sex": "m", "job": "Busfahrer" },
+      "complaint": "Starke, pochende Schmerzen rechts unten seit vier Tagen.",
+      "greeting": "Guten Tag … ich halt's echt nicht mehr aus. Seit ein paar Tagen tut's unten rechts so weh.",
+      "facts": "Name: Thomas Brandt, 54 Jahre, Busfahrer, verheiratet, zwei erwachsene Kinder.\nBeschwerden: seit 4 Tagen pochende, ziehende Schmerzen rechts unten hinten, zieht bis ins Ohr. Nachts und im Liegen schlimmer, wacht davon auf.\nKalt und warm lösen Schmerzen aus, die lange anhalten (mehrere Minuten). Kauen auf der rechten Seite tut weh.\nSchmerzstärke 8 von 10. Keine Schwellung, kein Fieber.\nSchmerzmittel: Ibuprofen 400 mg, dreimal täglich seit 3 Tagen, hilft nur kurz.\nZahnärztliche Vorgeschichte: an dem Zahn vor ca. 2 Jahren eine große Füllung. Letzter Zahnarztbesuch vor 2 Jahren.\nVorerkrankungen: Diabetes Typ 2 seit 6 Jahren, Bluthochdruck.\nMedikamente: Metformin 1000 mg morgens und abends, Ramipril 5 mg morgens.\nAllergien: Penicillin (Hautausschlag am ganzen Körper).\nKeine Operationen. Raucher, ca. 15 Zigaretten am Tag seit 30 Jahren. Alkohol nur am Wochenende ein, zwei Bier.\nFamilie: Vater hatte Herzinfarkt mit 60.",
+      "worry": "Hat Angst vor der Spritze und möchte den Zahn auf keinen Fall verlieren. Fragt, ob er wieder Bus fahren darf.",
+      "xray": "Zahnfilm Regio 46: ausgedehnte, mesial-okklusale Kompositfüllung mit Sekundärkaries bis in Pulpanähe. Periapikal kein pathologischer Befund, Parodontalspalt unauffällig. Klinisch: Kältetest positiv mit lang anhaltendem Schmerz, Perkussion leicht positiv.",
+      "expected": {
+        "diagnosis": "Irreversible Pulpitis an Zahn 46",
+        "differential": ["Reversible Pulpitis", "Akute apikale Parodontitis", "Infraktion/Cracked-Tooth-Syndrom"],
+        "diagnostics": ["Sensibilitätstest (Kältetest)", "Perkussionstest", "Zahnfilm", "Sondierung"],
+        "therapy": ["Trepanation und Vitalexstirpation", "Wurzelkanalbehandlung", "anschließend Teilkrone/Krone", "Schmerzmittel ohne Penicillin-Antibiose"],
+        "anamnesis": ["Lokalisation", "Beginn/Dauer", "Schmerzcharakter", "Intensität", "Auslöser (Kälte, Wärme, Kauen)", "nächtliche Schmerzen", "Ausstrahlung", "bisherige Schmerzmittel und Dosis", "Vorerkrankungen", "Dauermedikation mit Dosis", "Allergien und Reaktion", "Noxen (Rauchen, Alkohol)", "Familienanamnese", "letzter Zahnarztbesuch"],
+        "risks": ["Penicillinallergie dokumentieren", "Diabetes: Wundheilung, Blutzucker", "Wurzelkanalbehandlung: Instrumentenfraktur, Perforation, Misserfolg mit Extraktion", "Lokalanästhesie: Taubheitsgefühl, nicht essen bis Wirkung nachlässt"]
+      },
+      "questions": ["Bitte stellen Sie mir den Patienten kurz vor.", "Welche Verdachtsdiagnose haben Sie und warum?", "Wie unterscheiden Sie eine reversible von einer irreversiblen Pulpitis?", "Welche Befunde sehen Sie im Zahnfilm?", "Wie gehen Sie therapeutisch vor?", "Was müssen Sie bei der Allergie und dem Diabetes beachten?", "Wie würden Sie dem Patienten den Begriff Wurzelkanalbehandlung erklären?"]
+    },
+    {
+      "id": "perikoronitis-38",
+      "title": "Dentitio difficilis mit Perikoronitis an Zahn 38",
+      "fachgebiet": "Oralchirurgie",
+      "patient": { "name": "Frau Weber", "age": 22, "sex": "w", "job": "Lehramtsstudentin" },
+      "complaint": "Schmerzhafte Schwellung hinten links unten, kann den Mund kaum öffnen.",
+      "greeting": "Hallo … Entschuldigung, ich krieg den Mund nicht richtig auf. Hinten links ist alles dick.",
+      "facts": "Name: Lena Weber, 22 Jahre, studiert Lehramt, wohnt in einer WG.\nBeschwerden: seit 3 Tagen Schmerzen hinten links unten, Zahnfleisch dort geschwollen. Kann den Mund nur etwa zwei Finger breit öffnen. Schlucken tut weh, schlechter Geschmack im Mund.\nSchmerzstärke 6 von 10, dumpf und dauerhaft, strahlt zum Ohr aus.\nGestern Abend 38,2 Grad Fieber.\nVor einem halben Jahr das Gleiche, aber schwächer, ging von allein weg.\nSchmerzmittel: Paracetamol 500 mg, zwei Tabletten gestern.\nVorerkrankungen: keine. Medikamente: Pille (Name weiß sie nicht genau). Allergien: keine bekannt.\nNichtraucherin, Alkohol selten. Nicht schwanger.\nLetzter Zahnarztbesuch vor einem Jahr, Kontrolle.",
+      "worry": "Hat in zwei Wochen Prüfungen. Will wissen, ob sie operiert werden muss und ob die Pille mit Antibiotika noch wirkt.",
+      "xray": "OPG: Zahn 38 teilretiniert, mesioangulär verlagert, Krone teilweise von Schleimhaut bedeckt, perikoronaler Spalt erweitert. Zahn 48 ebenfalls teilretiniert. Klinisch: Schleimhautkapuze über 38 gerötet und geschwollen, Pusaustritt auf Druck, Kieferklemme (Mundöffnung ca. 2 cm), Lymphknoten submandibulär links tastbar.",
+      "expected": {
+        "diagnosis": "Dentitio difficilis mit akuter Perikoronitis an Zahn 38 und Kieferklemme",
+        "differential": ["Odontogener Abszess (Logenabszess)", "Pulpitis an 37", "Tonsillitis"],
+        "diagnostics": ["OPG", "Inspektion und Palpation", "Messung der Mundöffnung", "Lymphknotenpalpation", "Temperatur"],
+        "therapy": ["Spülung der Schlupfwinkeltasche (z. B. Chlorhexidin)", "ggf. Inzision", "Antibiose bei Fieber (Amoxicillin)", "Schmerzmittel", "Osteotomie von 38 im entzündungsfreien Intervall"],
+        "anamnesis": ["Lokalisation", "Beginn", "Schmerzcharakter und Intensität", "Mundöffnung", "Schluckbeschwerden", "Fieber", "frühere Episoden", "Schmerzmittel", "Vorerkrankungen", "Medikamente inkl. Pille", "Allergien", "Schwangerschaft", "Noxen"],
+        "risks": ["Antibiotika können die Wirkung der Pille vermindern, zusätzlich verhüten", "Operation: Nervschädigung (N. alveolaris inferior, N. lingualis), Nachblutung, Schwellung, Alveolitis", "Arbeitsunfähigkeit 2–3 Tage"]
+      },
+      "questions": ["Stellen Sie mir bitte die Patientin vor.", "Was sehen Sie im OPG?", "Wie lautet Ihre Verdachtsdiagnose?", "Was ist eine Kieferklemme und woran erkennen Sie sie?", "Wie behandeln Sie die akute Situation?", "Wann und wie entfernen Sie den Zahn?", "Worüber klären Sie die Patientin vor der Operation auf?"]
+    },
+    {
+      "id": "parodontitis-diabetes",
+      "title": "Generalisierte Parodontitis Stadium III bei Diabetes mellitus",
+      "fachgebiet": "Parodontologie",
+      "patient": { "name": "Frau Yılmaz", "age": 58, "sex": "w", "job": "Verkäuferin" },
+      "complaint": "Zahnfleischbluten, Mundgeruch und lockere Zähne.",
+      "greeting": "Guten Morgen. Mein Zahnfleisch blutet ständig, und unten vorne wackeln die Zähne. Ich mach mir Sorgen.",
+      "facts": "Name: Ayşe Yılmaz, 58 Jahre, Verkäuferin in einer Bäckerei, verheiratet.\nBeschwerden: seit etwa einem Jahr Zahnfleischbluten beim Zähneputzen, seit ein paar Monaten Mundgeruch. Die unteren Frontzähne wackeln seit ca. 3 Monaten. Kaum Schmerzen (2 von 10), eher ein Druckgefühl.\nZähne sind länger geworden, Lücken zwischen den Zähnen.\nPutzt einmal täglich morgens, keine Zahnseide.\nVorerkrankungen: Diabetes Typ 2 seit 10 Jahren, letzter HbA1c laut Hausarzt 8,1 %. Leichte Osteoporose.\nMedikamente: Metformin 850 mg zweimal täglich, Sitagliptin 100 mg einmal täglich, Vitamin D.\nAllergien: Nickel (Hautausschlag).\nRaucherin seit 35 Jahren, ca. 10 Zigaretten pro Tag. Kein Alkohol.\nFamilie: Mutter hatte mit 50 keine eigenen Zähne mehr.\nLetzter Zahnarztbesuch vor 3 Jahren.",
+      "worry": "Hat Angst, alle Zähne zu verlieren und eine Prothese zu bekommen wie die Mutter.",
+      "xray": "OPG: generalisierter horizontaler Knochenabbau bis ins mittlere Wurzeldrittel, an 31, 41 und 46 bis ins apikale Drittel; vertikaler Einbruch mesial 46, Furkationsbeteiligung 46. Klinisch: Sondierungstiefen 5–7 mm, Blutung auf Sondierung an ca. 60 % der Stellen, Lockerungsgrad II an 31 und 41, Plaque und Zahnstein generalisiert.",
+      "expected": {
+        "diagnosis": "Generalisierte Parodontitis Stadium III, Grad C (Rauchen, schlecht eingestellter Diabetes)",
+        "differential": ["Gingivitis", "Parodontitis als Manifestation systemischer Erkrankungen", "Endo-Paro-Läsion an 46"],
+        "diagnostics": ["Parodontalstatus mit Sondierungstiefen und Attachmentverlust", "Lockerungsgrade", "Furkationsdiagnostik", "OPG/Einzelbilder", "Sensibilitätstest 46", "HbA1c beim Hausarzt"],
+        "therapy": ["Mundhygieneinstruktion und professionelle Zahnreinigung", "Rauchentwöhnung", "antiinfektiöse Therapie (subgingivales Debridement)", "Reevaluation nach 3 Monaten", "ggf. chirurgische Therapie", "unterstützende Parodontitistherapie", "Zusammenarbeit mit Hausarzt (Diabetes)"],
+        "anamnesis": ["Blutung seit wann", "Mundgeruch", "Zahnlockerung", "Schmerzen", "Mundhygiene", "Vorerkrankungen (Diabetes, HbA1c)", "Medikamente mit Dosis", "Allergien", "Rauchen (Menge, Dauer)", "Familienanamnese Zahnverlust", "letzter Zahnarztbesuch", "Osteoporose-Therapie (Bisphosphonate?)"],
+        "risks": ["Zusammenhang Parodontitis–Diabetes erklären", "Zahnverlust trotz Therapie möglich", "Empfindliche Zahnhälse und schwarze Dreiecke nach Therapie", "Erfolg hängt von Mitarbeit und Rauchstopp ab"]
+      },
+      "questions": ["Bitte stellen Sie die Patientin vor.", "Wie klassifizieren Sie die Parodontitis nach Stadium und Grad?", "Welche Risikofaktoren hat die Patientin?", "Welche Befunde sehen Sie im OPG?", "Wie sieht Ihr Therapiekonzept aus?", "Welche Rolle spielt der Diabetes?", "Wie erklären Sie der Patientin, was eine Parodontitis ist?"]
+    },
+    {
+      "id": "abszess-36-endokarditis",
+      "title": "Apikale Parodontitis mit Abszess an Zahn 36 bei künstlicher Herzklappe",
+      "fachgebiet": "Endodontie",
+      "patient": { "name": "Herr Kowalski", "age": 67, "sex": "m", "job": "Rentner, früher Elektriker" },
+      "complaint": "Dicke Backe links unten und starke Schmerzen beim Zubeißen.",
+      "greeting": "Tag, Frau Doktor. Gucken Sie mal, meine Backe ist ganz dick geworden. Und beißen kann ich links gar nicht mehr.",
+      "facts": "Name: Jan Kowalski, 67 Jahre, Rentner, früher Elektriker, lebt mit seiner Frau.\nBeschwerden: seit 2 Tagen Schwellung der linken Wange unten, seit 5 Tagen Schmerzen beim Zubeißen links unten, Zahn fühlt sich 'zu hoch' an. Pochender Dauerschmerz, 7 von 10. Kälte macht nichts mehr aus.\nVor einigen Monaten hat der Zahn stark wehgetan, dann hörte es plötzlich auf.\nKein Fieber gemessen, fühlt sich aber schlapp.\nSchmerzmittel: Paracetamol 1000 mg, bis zu dreimal täglich.\nVorerkrankungen: vor 4 Jahren Herzklappenersatz (künstliche Aortenklappe), Vorhofflimmern.\nMedikamente: Phenprocoumon (Marcumar) nach INR, letzter INR-Wert 2,8 vor einer Woche; Bisoprolol 5 mg morgens.\nAllergien: keine bekannt.\nRaucht nicht mehr seit 10 Jahren. Ein Glas Wein am Abend.\nLetzter Zahnarztbesuch vor einem Jahr.",
+      "worry": "Hat Angst wegen seines Herzens und weil er 'blutverdünnende' Tabletten nimmt. Fragt, ob er die Tabletten absetzen soll.",
+      "xray": "Zahnfilm Regio 36: tiefe Karies distal mit Pulpaeröffnung, periapikale Aufhellung an der mesialen und distalen Wurzel (ca. 4 mm), Parodontalspalt erweitert. Klinisch: vestibuläre, fluktuierende Schwellung Regio 36, Perkussion stark positiv, Sensibilitätstest negativ.",
+      "expected": {
+        "diagnosis": "Akute apikale Parodontitis mit submukösem Abszess an Zahn 36 (Pulpanekrose)",
+        "differential": ["Parodontaler Abszess", "Perikoronitis 38", "Logenabszess"],
+        "diagnostics": ["Sensibilitätstest", "Perkussion", "Zahnfilm", "Palpation, Fluktuation", "aktueller INR-Wert", "Temperatur"],
+        "therapy": ["Endokarditisprophylaxe vor dem Eingriff (Amoxicillin 2 g eine Stunde vorher)", "Inzision und Drainage", "Trepanation und Wurzelkanalbehandlung oder Extraktion je nach Erhaltungswürdigkeit", "Antikoagulation nicht absetzen, lokale Blutstillung", "Antibiose bei Allgemeinsymptomen"],
+        "anamnesis": ["Schwellung seit wann", "Schmerzcharakter und Intensität", "Aufbisschmerz", "Vorgeschichte des Zahns", "Fieber/Allgemeinbefinden", "Schluck- und Atembeschwerden", "Herzklappenersatz", "Antikoagulation und INR", "weitere Medikamente", "Allergien", "Noxen"],
+        "risks": ["Endokarditisrisiko bei künstlicher Herzklappe", "Nachblutung bei Antikoagulation", "Ausbreitung der Infektion", "Antikoagulanzien nur nach Rücksprache mit Kardiologen/Hausarzt verändern"]
+      },
+      "questions": ["Stellen Sie mir den Patienten bitte vor.", "Was ist Ihre Verdachtsdiagnose?", "Welche Allgemeinerkrankungen sind hier besonders wichtig und warum?", "Braucht der Patient eine Endokarditisprophylaxe? Womit?", "Wie gehen Sie mit dem Marcumar um?", "Wie behandeln Sie den Abszess?", "Wie erklären Sie dem Patienten das Wort Abszess?"]
+    },
+    {
+      "id": "extraktion-bisphosphonat",
+      "title": "Nicht erhaltungswürdiger Zahn 24 unter Bisphosphonattherapie",
+      "fachgebiet": "Oralchirurgie",
+      "patient": { "name": "Frau Hoffmann", "age": 72, "sex": "w", "job": "pensionierte Lehrerin" },
+      "complaint": "Zahn oben links ist abgebrochen und tut beim Kauen weh.",
+      "greeting": "Guten Tag. Mir ist beim Essen oben links ein Stück vom Zahn abgebrochen. Jetzt tut's beim Kauen weh.",
+      "facts": "Name: Gisela Hoffmann, 72 Jahre, pensionierte Grundschullehrerin, verwitwet, lebt allein.\nBeschwerden: vor 5 Tagen beim Brotessen Stück vom Zahn oben links abgebrochen. Seitdem Schmerzen beim Kauen, 4 von 10, scharfe Kante an der Zunge.\nSchmerzmittel: keine.\nZahnärztliche Vorgeschichte: Zahn hatte eine Wurzelfüllung und eine große Füllung, vor ca. 15 Jahren.\nVorerkrankungen: Brustkrebs vor 6 Jahren, operiert und bestrahlt (nicht im Kopfbereich), seitdem Knochenmetastasen in der Wirbelsäule; Osteoporose; Bluthochdruck.\nMedikamente: Zoledronsäure als Infusion alle 3 Monate seit 4 Jahren (sie sagt 'eine Infusion für die Knochen'), Letrozol 2,5 mg täglich, Amlodipin 5 mg.\nAllergien: Pflaster (Hautreizung).\nNichtraucherin, kein Alkohol.\nLetzter Zahnarztbesuch vor 8 Monaten.",
+      "worry": "Möchte, dass der Zahn schnell gezogen wird. Hat gehört, dass die 'Knochen-Infusion' Probleme machen kann.",
+      "xray": "Zahnfilm Regio 24: Längsfraktur der Krone bis subgingival palatinal, insuffiziente Wurzelfüllung, kleine periapikale Aufhellung. Klinisch: palatinales Fragment beweglich, Perkussion leicht positiv, Schleimhaut reizlos, kein freiliegender Knochen.",
+      "expected": {
+        "diagnosis": "Nicht erhaltungswürdiger Zahn 24 (subgingivale Kronen-Wurzel-Fraktur) bei hohem Risiko für eine Medikamenten-assoziierte Kiefernekrose (MRONJ)",
+        "differential": ["Erhaltbare Kronenfraktur", "Vertikale Wurzelfraktur", "Apikale Parodontitis"],
+        "diagnostics": ["Zahnfilm", "Sondierung der Frakturlinie", "Rücksprache mit Onkologen", "Inspektion auf freiliegenden Knochen"],
+        "therapy": ["möglichst schonende Extraktion unter antibiotischer Abschirmung", "Glättung scharfer Knochenkanten", "plastische Deckung der Alveole", "engmaschige Wundkontrolle", "alternativ Wurzelerhalt (Dekapitieren) prüfen"],
+        "anamnesis": ["Unfallhergang und Zeitpunkt", "Schmerzen", "Vorgeschichte des Zahns", "Tumorerkrankung und Therapie", "Bestrahlung (Bereich)", "Bisphosphonat/Antiresorptiva: Präparat, Art, Dauer", "weitere Medikamente", "Allergien", "Noxen"],
+        "risks": ["Medikamenten-assoziierte Kiefernekrose", "verzögerte Wundheilung", "Nachblutung, Schwellung", "Mund-Antrum-Verbindung bei Zahn 24 möglich"]
+      },
+      "questions": ["Bitte stellen Sie die Patientin vor.", "Welches Medikament ist hier für uns entscheidend und warum?", "Was versteht man unter MRONJ?", "Ist der Zahn erhaltungswürdig?", "Wie führen Sie die Extraktion durch?", "Welche Komplikation ist bei einem oberen Prämolaren noch möglich?", "Wie erklären Sie der Patientin das Risiko in einfachen Worten?"]
+    },
+    {
+      "id": "totalprothese-ok",
+      "title": "Insuffiziente Totalprothese im Oberkiefer",
+      "fachgebiet": "Prothetik",
+      "patient": { "name": "Herr Schulze", "age": 79, "sex": "m", "job": "Rentner, früher Landwirt" },
+      "complaint": "Die obere Prothese hält nicht mehr und drückt.",
+      "greeting": "Moin. Meine obere Prothese hält gar nicht mehr. Beim Essen fällt die immer runter, und hier drückt's.",
+      "facts": "Name: Heinrich Schulze, 79 Jahre, Rentner, früher Landwirt, lebt mit seiner Tochter.\nBeschwerden: obere Vollprothese hält seit ca. 6 Monaten schlecht, fällt beim Kauen und Sprechen herunter. Seit 2 Wochen Druckstelle oben rechts vorne, brennt beim Essen, 3 von 10.\nBenutzt Haftcreme, hilft nur kurz.\nProthese ist 12 Jahre alt, wurde nie unterfüttert. Nimmt sie nachts nicht heraus. Reinigt sie mit Zahnpasta.\nUnten hat er noch eigene Zähne vorne und eine Klammerprothese.\nVorerkrankungen: Herzinsuffizienz, Diabetes Typ 2, leichte Demenz laut Tochter (er selbst sagt: 'Ich vergess manchmal was').\nMedikamente: Ramipril, Torasemid ('Wassertablette'), Insulin abends, ASS 100 mg.\nAllergien: keine bekannt.\nRaucht Pfeife gelegentlich. Abends ein Bier.\nLetzter Zahnarztbesuch vor 4 Jahren.",
+      "worry": "Möchte wieder richtig essen können, vor allem Brot und Fleisch. Fragt, was eine neue Prothese kostet und ob die Krankenkasse zahlt.",
+      "xray": "Klinisch: Oberkiefer zahnlos, stark atrophierter Alveolarkamm, Prothesenbasis überextendiert in Regio 13, dort Druckulkus ca. 4 mm, Ventilrand insuffizient, Prothesenstomatitis am Gaumen (Rötung im Bereich der Prothesenbasis). Unterkiefer: Restbezahnung 33–43, Modellgussprothese mit abgenutzten Kunststoffzähnen.",
+      "expected": {
+        "diagnosis": "Insuffiziente Oberkiefer-Totalprothese mit Druckulkus Regio 13 und Prothesenstomatitis",
+        "differential": ["Orale Candidose", "Plattenepithelkarzinom bei nicht abheilendem Ulkus", "Lichen ruber"],
+        "diagnostics": ["Inspektion der Schleimhaut", "Prothesenkontrolle (Halt, Ventilrand, Okklusion)", "Abstrich bei Pilzverdacht", "Kontrolle des Ulkus nach 2 Wochen, ggf. Biopsie"],
+        "therapy": ["Druckstelle sofort entlasten", "Prothesenhygiene und nachts herausnehmen", "ggf. antimykotische Therapie", "Unterfütterung oder Neuanfertigung der OK-Totalprothese", "ggf. Implantate zur Verbesserung des Halts besprechen"],
+        "anamnesis": ["Alter der Prothese", "Halt und Beschwerden", "Druckstelle seit wann", "Haftcreme", "Prothesenpflege und Tragen nachts", "Vorerkrankungen", "Medikamente (inkl. ASS, Insulin)", "Allergien", "Noxen", "kognitive Einschränkung/Betreuung"],
+        "risks": ["Ulkus, das nach 2 Wochen nicht abheilt, muss abgeklärt werden", "Eingewöhnungszeit neue Prothese", "Kosten: Festzuschuss der Krankenkasse, Eigenanteil"]
+      },
+      "questions": ["Stellen Sie mir den Patienten vor.", "Welche Befunde erheben Sie im Mund?", "Was ist Ihre Diagnose?", "Was tun Sie, wenn das Ulkus nach zwei Wochen nicht abgeheilt ist?", "Unterfütterung oder Neuanfertigung, wie entscheiden Sie?", "Was ist bei diesem älteren, multimorbiden Patienten zu beachten?", "Wie erklären Sie dem Patienten die Prothesenpflege?"]
+    },
+    {
+      "id": "cmd-bruxismus",
+      "title": "Craniomandibuläre Dysfunktion mit Bruxismus",
+      "fachgebiet": "Funktionsdiagnostik",
+      "patient": { "name": "Frau Neumann", "age": 34, "sex": "w", "job": "Projektmanagerin" },
+      "complaint": "Kieferschmerzen morgens, Knacken im Kiefergelenk und Kopfschmerzen.",
+      "greeting": "Hallo. Ich habe morgens immer so Schmerzen im Kiefer, und es knackt beim Kauen. Manchmal auch Kopfweh.",
+      "facts": "Name: Sarah Neumann, 34 Jahre, Projektmanagerin in einer Versicherung, ledig.\nBeschwerden: seit ca. 4 Monaten Schmerzen beidseits vor den Ohren, rechts mehr, besonders morgens nach dem Aufwachen, dumpf, 5 von 10. Knacken rechts beim Mundöffnen. Spannungskopfschmerzen an den Schläfen, etwa dreimal pro Woche.\nPartner sagt, sie knirscht nachts mit den Zähnen. Tagsüber presst sie bei Stress.\nZähne sind empfindlich bei Kälte. Kann den Mund normal öffnen, einmal kurz 'hängengeblieben'.\nViel Stress im Job, schläft schlecht.\nSchmerzmittel: Ibuprofen 400 mg bei Kopfschmerzen, ca. zweimal pro Woche.\nVorerkrankungen: Migräne in der Jugend, sonst gesund.\nMedikamente: keine regelmäßigen.\nAllergien: Heuschnupfen.\nNichtraucherin, Kaffee 5 Tassen am Tag, Alkohol am Wochenende.\nKein Unfall, keine kieferorthopädische Behandlung.\nLetzter Zahnarztbesuch vor 6 Monaten.",
+      "worry": "Fragt, ob das Knacken gefährlich ist und ob der Kiefer 'blockieren' kann. Möchte keine Operation.",
+      "xray": "Klinisch: Schliffacetten an Eck- und Frontzähnen, keilförmige Defekte an den Prämolaren, Linea alba buccalis beidseits, Zungenimpressionen. Palpation: M. masseter und M. temporalis beidseits druckdolent, rechts stärker. Reziprokes Knacken im rechten Kiefergelenk bei Öffnung und Schließung. Maximale Mundöffnung 44 mm, Deviation nach rechts. OPG: Kondylen ohne pathologischen Befund.",
+      "expected": {
+        "diagnosis": "Craniomandibuläre Dysfunktion mit Myopathie der Kaumuskulatur und anteriorer Diskusverlagerung mit Reposition rechts bei Bruxismus",
+        "differential": ["Arthrose/Arthritis des Kiefergelenks", "Spannungskopfschmerz/Migräne", "Pulpitis/Zahnschmerzen", "Otitis"],
+        "diagnostics": ["klinische Funktionsanalyse (Palpation, Mundöffnung, Gelenkgeräusche)", "ggf. instrumentelle Funktionsanalyse", "MRT bei Verdacht auf Diskusverlagerung ohne Reposition", "Schmerzfragebogen"],
+        "therapy": ["Aufklärung und Selbstbeobachtung", "Michigan-Schiene (Aufbissschiene) für die Nacht", "Physiotherapie, Selbstmassage", "Stressbewältigung, Entspannungsverfahren", "kurzfristig NSAR", "keine irreversiblen Maßnahmen am Anfang"],
+        "anamnesis": ["Lokalisation und Seitenbetonung", "Beginn, zeitlicher Verlauf (morgens)", "Intensität", "Gelenkgeräusche", "Kieferklemme/Blockaden", "Kopfschmerzen", "Knirschen/Pressen", "Stress und Schlaf", "Trauma", "Schmerzmittel", "Vorerkrankungen", "Allergien", "Noxen (Kaffee)"],
+        "risks": ["Schiene behandelt Symptome, nicht die Ursache", "Erfolg hängt von Tragen und Stressreduktion ab", "Knacken kann bleiben, ist meist harmlos"]
+      },
+      "questions": ["Bitte stellen Sie die Patientin vor.", "Was haben Sie bei der Funktionsuntersuchung gefunden?", "Was bedeutet reziprokes Knacken?", "Wie lautet Ihre Diagnose?", "Welche Differentialdiagnosen kommen in Frage?", "Wie sieht Ihre Therapie aus?", "Wie erklären Sie der Patientin, was eine Aufbissschiene macht?"]
+    },
+    {
+      "id": "trauma-11",
+      "title": "Kronenfraktur mit Pulpabeteiligung an Zahn 11 nach Sturz",
+      "fachgebiet": "Kinderzahnheilkunde",
+      "patient": { "name": "Leon Becker (mit Mutter)", "age": 11, "sex": "m", "job": "Schüler, 5. Klasse" },
+      "complaint": "Beim Fußball auf den Mund gefallen, Schneidezahn abgebrochen.",
+      "greeting": "Hallo … Leon ist vorhin beim Fußball hingefallen, und jetzt ist vorne ein Stück vom Zahn ab. Das blutet so ein bisschen.",
+      "facts": "Die Mutter, Frau Becker (39), antwortet für ihren Sohn Leon, 11 Jahre, Schüler. Leon sagt selbst nur kurze Sätze.\nUnfall: heute vor ca. 2 Stunden auf dem Sportplatz, Sturz nach vorne auf den Kunstrasen, mit dem Mund aufgeschlagen. Nicht bewusstlos, kein Erbrechen, keine Übelkeit, keine Kopfschmerzen.\nBeschwerden: oberer rechter Schneidezahn abgebrochen, ein roter Punkt in der Mitte, Luft und Kälte tun sehr weh (7 von 10). Oberlippe geschwollen und innen ein kleiner Riss.\nDas Bruchstück haben sie gefunden, liegt in einem Taschentuch (trocken).\nKein anderer Zahn locker.\nVorerkrankungen: Asthma, mild. Medikamente: Salbutamol-Spray bei Bedarf.\nAllergien: keine. Impfungen: laut Impfpass vollständig, Tetanus vor 4 Jahren.\nLetzter Zahnarztbesuch vor 6 Monaten, keine Karies.",
+      "worry": "Die Mutter fragt, ob der Zahn gerettet werden kann, ob man das Stück wieder ankleben kann und ob das Kind heute noch zur Schule muss.",
+      "xray": "Klinisch: Schmelz-Dentin-Fraktur an 11 mit punktförmiger Pulpaeröffnung (ca. 1 mm), blutend, Zahn fest, Perkussion leicht positiv. Zahn 21 Schmelzinfraktion. Oberlippe geschwollen, 5 mm Riss der Lippenschleimhaut. Zahnfilm 11/21: Wurzelwachstum nicht abgeschlossen (offenes Foramen apicale), keine Wurzelfraktur, Parodontalspalt unauffällig.",
+      "expected": {
+        "diagnosis": "Komplizierte Kronenfraktur an Zahn 11 mit Pulpaeröffnung bei nicht abgeschlossenem Wurzelwachstum; Schmelzinfraktion 21; Lippenverletzung",
+        "differential": ["Wurzelfraktur", "Konkussion/Lockerung", "Alveolarfortsatzfraktur"],
+        "diagnostics": ["Zahnfilm (ggf. aus mehreren Winkeln)", "Sensibilitätstest", "Lockerungsgrad", "Perkussion", "Inspektion der Lippe auf Fremdkörper", "Fotodokumentation"],
+        "therapy": ["partielle Pulpotomie (Cvek) mit Calciumsilikatzement", "Wiederbefestigung des Fragments (Fragment vorher feucht lagern) oder Kompositaufbau", "Lippenwunde versorgen", "weiche Kost, Mundhygiene mit Chlorhexidin", "Kontrollen nach 2 Wochen, 6–8 Wochen, 3 und 6 Monaten, 1 Jahr", "Dokumentation für die Unfallversicherung (Schule/Verein)"],
+        "anamnesis": ["Unfallzeitpunkt", "Unfallort und Hergang", "Bewusstlosigkeit, Erbrechen, Übelkeit (Schädel-Hirn-Trauma)", "Schmerzen", "Fragment gefunden und Lagerung", "andere Verletzungen", "Tetanusschutz", "Vorerkrankungen (Asthma)", "Medikamente", "Allergien"],
+        "risks": ["Pulpanekrose und Verfärbung auch später möglich", "Wurzelwachstum muss kontrolliert werden", "geklebtes Fragment kann sich lösen", "Sportmundschutz empfehlen"]
+      },
+      "questions": ["Stellen Sie mir den kleinen Patienten vor.", "Welche Fragen sind nach einem Unfall besonders wichtig?", "Wie lautet Ihre Diagnose?", "Warum ist das offene Foramen apicale wichtig für die Therapie?", "Wie versorgen Sie den Zahn heute?", "Wie lagert man ein abgebrochenes Zahnstück richtig?", "Wie oft und wann kontrollieren Sie?"]
+    },
+    {
+      "id": "implantat-46",
+      "title": "Schaltlücke Regio 46, Implantatberatung bei Raucher",
+      "fachgebiet": "Implantologie",
+      "patient": { "name": "Herr Demir", "age": 45, "sex": "m", "job": "Lagerist" },
+      "complaint": "Möchte die Lücke rechts unten schließen lassen.",
+      "greeting": "Guten Tag. Mir fehlt rechts unten seit einem Jahr ein Zahn, und ich möchte das jetzt gern machen lassen. Am liebsten ein Implantat.",
+      "facts": "Name: Murat Demir, 45 Jahre, Lagerist in einem Logistikzentrum, verheiratet, drei Kinder.\nZahn rechts unten (Backenzahn) vor ca. 12 Monaten gezogen, weil er entzündet war. Seitdem kaut er links. Keine Schmerzen.\nDer obere Zahn darüber 'kommt runter' laut Partnerin.\nVorerkrankungen: Bluthochdruck, Sodbrennen. Schläft mit Schnarchen, kein Schlafapnoe-Test.\nMedikamente: Candesartan 8 mg, Pantoprazol 20 mg bei Bedarf.\nAllergien: Ibuprofen (Atemnot und Ausschlag).\nRaucher, 20 Zigaretten am Tag seit 25 Jahren. Alkohol selten.\nPutzt zweimal täglich, Zahnseide nie.\nFamilie: Vater Diabetes.\nLetzter Zahnarztbesuch vor einem Jahr (Extraktion).\nGesetzlich versichert, hat eine Zusatzversicherung, weiß nicht genau, was sie zahlt.",
+      "worry": "Fragt, wie lange das dauert, ob es weh tut, wie lange ein Implantat hält und was es kostet. Möchte eigentlich nicht mit dem Rauchen aufhören.",
+      "xray": "OPG: Schaltlücke Regio 46, Alveolarkamm gut ausgeheilt, vertikales Knochenangebot ca. 11 mm bis zum Canalis mandibulae, Elongation von 16 um ca. 1,5 mm, leichte Kippung von 47 nach mesial. Klinisch: Gingivitis generalisiert, Sondierungstiefen 3–4 mm, keine Taschen über 4 mm, Kammbreite klinisch ca. 7 mm.",
+      "expected": {
+        "diagnosis": "Schaltlücke Regio 46 mit Elongation 16 und Kippung 47; Gingivitis; starker Raucher",
+        "differential": [],
+        "diagnostics": ["DVT zur Implantatplanung (Knochenbreite, Abstand zum N. alveolaris inferior)", "Parodontaler Befund", "Mundhygieneindex", "Modelle und Bissregistrierung"],
+        "therapy": ["Vorbehandlung: professionelle Zahnreinigung, Mundhygiene", "Rauchentwöhnung empfehlen", "Alternativen: Implantat mit Krone, Brücke 45–47, Lücke belassen", "Implantation nach Planung, Einheilzeit ca. 3 Monate, dann Krone"],
+        "anamnesis": ["Grund und Zeitpunkt der Extraktion", "Beschwerden", "Vorerkrankungen", "Medikamente", "Allergien mit Reaktion", "Rauchen (Menge, Dauer)", "Bruxismus", "Mundhygiene", "Erwartungen und Wünsche", "Versicherung/Kosten"],
+        "risks": ["Rauchen erhöht Risiko für Implantatverlust und Periimplantitis", "Nervschädigung (Taubheit Unterlippe)", "Ibuprofen-Allergie: Schmerzmittel Paracetamol", "Kosten: Implantat ist Privatleistung, Festzuschuss nur für Regelversorgung"]
+      },
+      "questions": ["Stellen Sie mir den Patienten bitte vor.", "Welche Versorgungsmöglichkeiten bieten Sie an?", "Welche zusätzliche Bildgebung brauchen Sie und warum?", "Welche Risikofaktoren sehen Sie?", "Was ist eine Periimplantitis?", "Welche Schmerzmittel geben Sie diesem Patienten?", "Wie erklären Sie dem Patienten den Unterschied zwischen Brücke und Implantat?"]
+    }
+  ]
+}
