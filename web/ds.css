@@ -186,9 +186,6 @@ input[type=range] { accent-color: var(--accent); padding: 0; background: transpa
   #sidebar .nav-btn small { display: none; }
   #sidebar .nav-btn:hover { color: var(--text); }
   #sidebar .nav-btn.active { color: var(--text); background: var(--panel); border-color: var(--border); box-shadow: var(--e1); }
-  #sidebar .nav-btn.active::before {
-    content: ""; position: absolute; left: -7px; top: 12px; bottom: 12px; width: 3px; border-radius: 3px; background: var(--accent);
-  }
   #sidebar .nav-ic { font-style: normal; font-size: 19px; line-height: 1; height: 22px; display: flex; align-items: center; justify-content: center; }
   #sidebar .nav-ic svg { width: 20px; height: 20px; vertical-align: 0; }
   #nav-chat .count-badge { position: absolute; top: 3px; right: 8px; margin: 0; min-width: 17px; height: 17px; font-size: 10px; }
@@ -483,3 +480,65 @@ pre.fsp-facts { white-space: pre-wrap; font: 13px/1.55 var(--font-ui); margin: 8
   .fm { max-width: 92%; }
   .fr-top { flex-direction: column; align-items: flex-start; gap: 12px; }
 }
+
+/* =====================================================================
+   Simgeler (çizgi SVG) · çubuk hover animasyonu · gizlenebilir çubuk
+   ===================================================================== */
+.nav-ic svg, .side-tools .ic svg, .tw-icon svg { width: 20px; height: 20px; stroke-width: 1.75; display: block; }
+.nav-ic, .side-tools .ic, .tw-icon { display: inline-flex; align-items: center; justify-content: center; }
+button > svg, .fsp-tabs button svg, .fc-part-l svg, .fsp-voice svg, .flame svg { width: 16px; height: 16px; stroke-width: 1.9; flex: none; }
+button:has(> svg) { display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
+.fsp-tabs button { display: inline-flex; align-items: center; gap: 6px; }
+.fc-part-l { display: inline-flex; align-items: center; gap: 8px; }
+.fc-part-l svg { color: var(--muted); }
+.fsp-mic svg { width: 18px; height: 18px; }
+.fsp-voice svg { width: 17px; height: 17px; }
+.flame { display: inline-flex; color: var(--accent); margin-right: 4px; vertical-align: -2px; }
+.flame svg { width: 26px; height: 26px; }
+.timer-chip { gap: 5px; }
+.timer-chip svg { width: 16px; height: 16px; stroke-width: 1.9; }
+
+@media (min-width: 761px) {
+  /* hover: arka plan yumuşak geçiş, simge hafif yukarı, seçili şerit büyüyerek gelir */
+  #sidebar .nav-btn, #sidebar .timer-widget, #sidebar .side-tools button, #sidebar .account {
+    transition: background-color .18s ease, color .18s ease, box-shadow .18s ease, transform .18s ease;
+  }
+  #sidebar .nav-btn .nav-ic, #sidebar .tw-icon, #sidebar .side-tools .ic { transition: transform .22s cubic-bezier(.3, 1.5, .5, 1); }
+  #sidebar .nav-btn:hover .nav-ic, #sidebar .timer-widget:hover .tw-icon, #sidebar .side-tools button:hover .ic { transform: translateY(-2px) scale(1.08); }
+  #sidebar .nav-btn:active, #sidebar .side-tools button:active { transform: scale(.95); }
+  #sidebar .nav-btn::before {
+    content: ""; position: absolute; left: -7px; top: 12px; bottom: 12px; width: 3px; border-radius: 3px;
+    background: var(--accent); transform: scaleY(0); transition: transform .22s ease;
+  }
+  #sidebar .nav-btn:hover::before { transform: scaleY(.45); background: var(--border-strong); }
+  #sidebar .nav-btn.active::before { transform: scaleY(1); background: var(--accent); }
+  #sidebar .nav-btn.active .nav-ic { color: var(--accent); }
+
+  /* sayaç: çubukta sadece simge + süre */
+  #sidebar .timer-widget .tw-main:not(.tw-clock) { display: none; }
+  #sidebar .timer-widget { padding: 9px 4px; }
+  #sidebar .timer-widget .tw-icon { color: var(--muted); }
+  #sidebar .timer-widget:hover .tw-icon, #sidebar .timer-widget.running .tw-icon { color: var(--slate); }
+
+  /* gizlenebilir çubuk */
+  #app { transition: grid-template-columns .22s ease; }
+  #rail-hot { display: none; }
+  body.rail-hidden #app { grid-template-columns: 0 1fr; }
+  body.rail-hidden #main { grid-column: 2; }
+  body.rail-hidden #sidebar {
+    position: fixed; z-index: 60; top: 0; bottom: 0; left: 0; width: 78px;
+    transform: translateX(-100%); transition: transform .24s cubic-bezier(.2, .8, .2, 1), box-shadow .24s ease;
+  }
+  body.rail-hidden #rail-hot {
+    display: block; position: fixed; z-index: 59; left: 0; top: 0; bottom: 0; width: 14px;
+  }
+  body.rail-hidden #rail-hot::after {
+    content: ""; position: absolute; left: 3px; top: 50%; width: 4px; height: 56px; margin-top: -28px; border-radius: 4px;
+    background: var(--border-strong); opacity: .55; transition: opacity .2s, height .2s, margin-top .2s;
+  }
+  body.rail-hidden #rail-hot:hover::after { opacity: 1; height: 80px; margin-top: -40px; background: var(--accent); }
+  body.rail-hidden #rail-hot:hover + #sidebar, body.rail-hidden #sidebar:hover, body.rail-hidden #sidebar:focus-within {
+    transform: none; box-shadow: 10px 0 34px rgba(30, 20, 10, .18);
+  }
+}
+@media (max-width: 760px) { #btn-rail { display: none; } }

@@ -7,9 +7,9 @@ let content = null; // { cases, guide }
 const ui = { tab: 'cases', fach: '', termQ: '', termKat: '', attemptId: null, pending: false, tick: null, rec: null, saveT: null };
 
 const PARTS = {
-  1: { label: 'Teil 1 · Patientengespräch', short: 'Gespräch', minutes: 20, icon: '🗣' },
-  2: { label: 'Teil 2 · Arztbrief', short: 'Arztbrief', minutes: 20, icon: '✍️' },
-  3: { label: 'Teil 3 · Arzt-Arzt-Gespräch', short: 'Oberarzt', minutes: 20, icon: '🩺' },
+  1: { label: 'Teil 1 · Patientengespräch', short: 'Gespräch', minutes: 20, icon: 'talk' },
+  2: { label: 'Teil 2 · Arztbrief', short: 'Arztbrief', minutes: 20, icon: 'doc' },
+  3: { label: 'Teil 3 · Arzt-Arzt-Gespräch', short: 'Oberarzt', minutes: 20, icon: 'steth' },
 };
 const BRIEF = [
   ['aktuell', 'Aktuelle Anamnese', 'Anlass der Vorstellung, Beschwerden (Lokalisation, Beginn, Charakter, Intensität, Auslöser…), bisherige Maßnahmen'],
@@ -79,7 +79,7 @@ export async function showFsp(tab) {
 }
 
 function renderHub() {
-  const tabs = [['cases', '🦷 Vakalar'], ['history', '📈 Geçmiş'], ['terms', '📚 Fachbegriffe'], ['guide', '🧭 Rehber']];
+  const tabs = [['cases', 'tooth', 'Vakalar'], ['history', 'chart', 'Geçmiş'], ['terms', 'book', 'Fachbegriffe'], ['guide', 'compass', 'Rehber']];
   C.main.innerHTML = `
     <div class="page fsp-page">
       <header class="deck-head">
@@ -90,7 +90,7 @@ function renderHub() {
         </div>
         ${ui.tab === 'cases' ? '<button class="primary" data-f="new-case">✦ Yeni vaka (AI)</button>' : ''}
       </header>
-      <div class="seg tabs fsp-tabs" role="tablist">${tabs.map(([k, l]) => `<button type="button" role="tab" data-f="tab" data-tab="${k}" class="${ui.tab === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+      <div class="seg tabs fsp-tabs" role="tablist">${tabs.map(([k, ic, l]) => `<button type="button" role="tab" data-f="tab" data-tab="${k}" class="${ui.tab === k ? 'on' : ''}">${C.ICON[ic]}${l}</button>`).join('')}</div>
       <div id="fsp-body">${{ cases: casesHtml, history: historyHtml, terms: termsHtml, guide: guideHtml }[ui.tab]()}</div>
     </div>`;
   if (!C.sync.user()) {
@@ -116,7 +116,7 @@ function casesHtml() {
         <div class="fc-parts">${[1, 2, 3].map((n) => {
           const b = bestScore(c.id, n);
           return `<button class="fc-part" data-f="start" data-case="${c.id}" data-part="${n}" title="${PARTS[n].label}">
-            <span>${PARTS[n].icon} ${n} · ${PARTS[n].short}</span>${b !== null ? `<b class="sc ${scoreClass(b)}">${b}</b>` : ''}</button>`;
+            <span class="fc-part-l">${C.ICON[PARTS[n].icon]}${n} · ${PARTS[n].short}</span>${b !== null ? `<b class="sc ${scoreClass(b)}">${b}</b>` : ''}</button>`;
         }).join('')}</div>
       </article>`;
     }).join('') || '<div class="panel empty">Bu alanda vaka yok.</div>'}</div>`;
@@ -255,7 +255,7 @@ function renderRun() {
       <div class="head-actions">
         ${d.report ? `
           <button data-f="again">↻ Tekrar dene</button>
-          ${d.part < 3 ? `<button class="primary" data-f="next">${PARTS[d.part + 1].icon} ${PARTS[d.part + 1].short} →</button>` : ''}`
+          ${d.part < 3 ? `<button class="primary" data-f="next">${C.ICON[PARTS[d.part + 1].icon]}${PARTS[d.part + 1].short} →</button>` : ''}`
         : `<span class="fsp-clock" id="fsp-clock"></span>
           <button class="primary" data-f="finish">${d.part === 2 ? 'Teslim et ve değerlendir' : 'Bitir ve değerlendir'}</button>`}
       </div>
@@ -316,8 +316,8 @@ function chatHtml(d) {
       <div class="fsp-composer">
         <textarea id="fsp-input" rows="2" placeholder="${d.part === 1 ? 'Hastaya sor… (Enter gönderir, Shift+Enter yeni satır)' : 'Vakayı sun ya da soruyu cevapla…'}" ${ui.pending ? 'disabled' : ''}></textarea>
         <div class="fsp-comp-tools">
-          ${SR ? '<button type="button" class="icon-btn fsp-mic" data-f="mic" title="Konuşarak yaz (Almanca)" aria-label="Mikrofon">🎤</button>' : ''}
-          <label class="fsp-voice" title="${who} cevaplarını sesli oku"><input type="checkbox" data-f="voice" ${voice ? 'checked' : ''}> 🔊</label>
+          ${SR ? `<button type="button" class="icon-btn fsp-mic" data-f="mic" title="Konuşarak yaz (Almanca)" aria-label="Mikrofon">${C.ICON.mic}</button>` : ''}
+          <label class="fsp-voice" title="${who} cevaplarını sesli oku"><input type="checkbox" data-f="voice" ${voice ? 'checked' : ''}> ${C.ICON.speaker}</label>
           <button class="primary" data-f="send" ${ui.pending ? 'disabled' : ''}>Gönder</button>
         </div>
       </div>

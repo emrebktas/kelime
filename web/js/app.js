@@ -48,6 +48,28 @@ const ICON = {
   speaker: svg('<path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/>'),
   undo: svg('<path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/>'),
   edit: svg('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>'),
+  // Gezinme ve araç simgeleri (çizgi stili, 24×24)
+  layers: svg('<path d="m12 2.5 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 16.5 9 5 9-5"/>'),
+  pen: svg('<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/><path d="M14 20h6"/>'),
+  book: svg('<path d="M2 4.5h6a4 4 0 0 1 4 4V21a3 3 0 0 0-3-3H2Z"/><path d="M22 4.5h-6a4 4 0 0 0-4 4V21a3 3 0 0 1 3-3h7Z"/>'),
+  tooth: svg('<path d="M7.5 3C5 3 3.5 5 3.5 7.4c0 2 .7 3.3 1.4 4.8.8 1.9 1 4 1.3 6.2.2 1.7.9 2.6 1.9 2.6s1.5-.8 1.8-2.2l.6-2.8c.2-1 .7-1.5 1.5-1.5s1.3.5 1.5 1.5l.6 2.8c.3 1.4.8 2.2 1.8 2.2s1.7-.9 1.9-2.6c.3-2.2.5-4.3 1.3-6.2.7-1.5 1.4-2.8 1.4-4.8C20.5 5 19 3 16.5 3c-1.9 0-2.6 1-4.5 1S9.4 3 7.5 3Z"/>'),
+  chat: svg('<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'),
+  timer: svg('<circle cx="12" cy="13.5" r="7.5"/><path d="M12 10v3.5l2.2 1.6"/><path d="M9.5 2.5h5"/><path d="m18.5 6 1.5-1.5"/>'),
+  pause: svg('<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>'),
+  sun: svg('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'),
+  moon: svg('<path d="M20.5 13.2A8.5 8.5 0 1 1 10.8 3.5a6.6 6.6 0 0 0 9.7 9.7Z"/>'),
+  monitor: svg('<rect x="2.5" y="3.5" width="19" height="13" rx="2"/><path d="M8 20.5h8M12 16.5v4"/>'),
+  volume1: svg('<path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/>'),
+  volumeX: svg('<path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="m22 9-6 6M16 9l6 6"/>'),
+  panel: svg('<rect x="3" y="3.5" width="18" height="17" rx="2.5"/><path d="M9 3.5v17"/><path d="m15.5 10-2 2 2 2"/>'),
+  panelOpen: svg('<rect x="3" y="3.5" width="18" height="17" rx="2.5"/><path d="M9 3.5v17"/><path d="m13.5 10 2 2-2 2"/>'),
+  mic: svg('<rect x="9" y="2.5" width="6" height="11.5" rx="3"/><path d="M5 10.5a7 7 0 0 0 14 0M12 17.5v4"/>'),
+  talk: svg('<path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.6 8.6 0 0 1-3.8-.9L3 21l1.9-5.3A8.4 8.4 0 1 1 21 11.5Z"/>'),
+  doc: svg('<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>'),
+  steth: svg('<path d="M5 3v5.5a5 5 0 0 0 10 0V3"/><path d="M10 13.5V16a5 5 0 0 0 10 0v-2"/><circle cx="20" cy="12" r="2"/>'),
+  chart: svg('<path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/>'),
+  compass: svg('<circle cx="12" cy="12" r="9.5"/><path d="m15.5 8.5-2 5-5 2 2-5Z"/>'),
+  flame: svg('<path d="M12 22c4 0 7-2.7 7-6.7 0-3.6-2.4-5.6-3.6-7.8-.5 1.7-1.5 2.8-2.6 3.3.3-3-1-6.3-4.3-8.3.2 3.2-1.4 5.3-2.9 7.1C4.4 11.1 5 12.7 5 15.3 5 19.3 8 22 12 22Z"/>'),
   back: svg('<path d="m15 18-6-6 6-6"/>', 'width="16" height="16" style="vertical-align:-3px"'),
   users: svg('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>', 'class="shared-ic"'),
   usersMenu: svg('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>'),
@@ -109,14 +131,24 @@ function applyTheme() {
   const dark = mode === 'dark' || (mode === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
   document.documentElement.dataset.theme = dark ? 'dark' : 'light';
   $('meta[name=theme-color]').content = dark ? '#1F1E1D' : '#D8CFBE';
-  const [tIc, tLb] = { system: ['◐', 'Sistem'], light: ['☀', 'Açık'], dark: ['☾', 'Koyu'] }[mode];
+  const [tIc, tLb] = { system: [ICON.monitor, 'Sistem'], light: [ICON.sun, 'Açık'], dark: [ICON.moon, 'Koyu'] }[mode];
   $('#btn-theme').innerHTML = `<span class="ic">${tIc}</span><span class="lb">${tLb}</span>`;
   $('#btn-theme').title = `Tema: ${tLb}`;
   const vol = Math.round((prefs.volume ?? 1) * 100);
-  $('#btn-autospeak').innerHTML = `<span class="ic">${vol === 0 ? '🔇' : prefs.autoSpeak ? '🔊' : '🔈'}</span><span class="lb">Ses %${vol}</span>`;
+  $('#btn-autospeak').innerHTML = `<span class="ic">${vol === 0 ? ICON.volumeX : prefs.autoSpeak ? ICON.speaker : ICON.volume1}</span><span class="lb">Ses %${vol}</span>`;
   $('#btn-autospeak').title = `Seslendirme ayarları · otomatik seslendirme ${prefs.autoSpeak ? 'açık' : 'kapalı'}`;
 }
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+
+/** Masaüstünde sol çubuk gizlenebilir; gizliyken sol kenara gelince kayarak açılır. */
+function applyRail() {
+  const hidden = !!prefs.railHidden;
+  document.body.classList.toggle('rail-hidden', hidden);
+  const b = $('#btn-rail');
+  if (!b) return;
+  b.innerHTML = `<span class="ic">${hidden ? ICON.panelOpen : ICON.panel}</span><span class="lb">${hidden ? 'Sabitle' : 'Gizle'}</span>`;
+  b.title = hidden ? 'Çubuğu sabitle (hep görünsün)' : 'Çubuğu gizle (sol kenara gelince açılır)';
+}
 
 // Android'in uygulama içi tarayıcısında web seslendirmesi olmayabilir; orada yerel eklenti kullanılır
 const webSpeech = 'speechSynthesis' in window ? window.speechSynthesis : null;
@@ -1890,13 +1922,13 @@ function renderTimer() {
   widget.classList.toggle('running', timer.status === 'running');
   widget.classList.toggle('paused', timer.status === 'paused');
   widget.innerHTML = idle
-    ? `<span class="tw-icon">⏱</span><span class="tw-main">Çalışma sayacı</span>
+    ? `<span class="tw-icon">${ICON.timer}</span><span class="tw-main">Çalışma sayacı</span>
        <span class="tw-sub">Bugün <b>${fmtDur(stats.today)}</b>${stats.streak > 1 ? ` · 🔥 ${stats.streak} gün` : ''}</span>`
-    : `<span class="tw-icon">${timer.status === 'paused' ? '⏸' : '⏱'}</span><span class="tw-main tw-clock">${left}</span>
+    : `<span class="tw-icon">${timer.status === 'paused' ? ICON.pause : ICON.timer}</span><span class="tw-main tw-clock">${left}</span>
        <span class="tw-sub">${timer.status === 'paused' ? 'Duraklatıldı' : isStopwatch() ? 'Kronometre' : `${timer.planned} dk oturum`} · Bugün <b>${fmtDur(stats.today)}</b></span>
        ${isStopwatch() ? '' : `<span class="tw-bar"><span style="width:${pct}%"></span></span>`}`;
   const chip = $('#timer-chip');
-  chip.textContent = idle ? '⏱' : `${timer.status === 'paused' ? '⏸' : '⏱'} ${left}`;
+  chip.innerHTML = idle ? ICON.timer : `${timer.status === 'paused' ? ICON.pause : ICON.timer}<span>${left}</span>`;
   chip.classList.toggle('active', !idle);
   document.title = timer.status === 'running' ? `${left} · Kelime` : 'Kelime';
   const home = $('#home-today');
@@ -2206,7 +2238,7 @@ function studyTimePanel() {
         <span class="stat-label">Bugün çalıştın</span>
         <b id="home-today" class="stat-big">${fmtDur(st.today)}</b>
         <span class="muted st-meta">Bu hafta ${fmtDur(st.weekTotal)}</span>
-        <button class="accent" data-act="timer">${timer.status === 'idle' ? '⏱ Sayacı başlat' : '⏱ Sayacı aç'}</button>
+        <button class="accent" data-act="timer">${ICON.timer}${timer.status === 'idle' ? 'Sayacı başlat' : 'Sayacı aç'}</button>
       </div>
       <div class="stat-card stat-due">
         <span class="stat-label">Bekleyen kartlar</span>
@@ -2216,7 +2248,7 @@ function studyTimePanel() {
       </div>
       <div class="stat-card stat-streak">
         <span class="stat-label">Seri · son 7 gün</span>
-        <b class="stat-big">${st.streak ? `🔥 ${st.streak} gün` : '—'}</b>
+        <b class="stat-big">${st.streak ? `<span class="flame">${ICON.flame}</span>${st.streak} gün` : '—'}</b>
       <div class="st-week" title="Son 7 gün">
         ${st.week.map((d) => `<div class="st-day ${d.today ? 'today' : ''}" title="${esc(d.date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' }))}: ${fmtDur(d.sec)}">
           <span class="st-val">${d.sec >= 60 ? Math.round(d.sec / 60) : ''}</span>
@@ -4769,6 +4801,7 @@ document.addEventListener('click', (e) => {
       case 'import-into': await importFlow(state.deckId); break;
       case 'join': joinModal(); break;
       case 'account': accountModal(); break;
+      case 'rail-toggle': prefs.railHidden = !prefs.railHidden; savePrefs(); applyRail(); break;
       case 'theme': {
         const order = ['system', 'light', 'dark'];
         prefs.theme = order[(order.indexOf(prefs.theme || 'system') + 1) % 3];
@@ -5042,7 +5075,9 @@ async function loadProfile() {
 }
 
 async function init() {
+  $$('[data-ic]').forEach((el) => { el.innerHTML = ICON[el.dataset.ic] || ''; });
   applyTheme();
+  applyRail();
   await store.open();
   initFsp({ $, $$, main, state, prefs, savePrefs, store, sync, ICON, toast, guard, openModal, confirmBox, speak, stopSpeech,
     renderSidebar, setTitle, leaveStudy, refreshDecks, showHome });

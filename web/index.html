@@ -32,6 +32,7 @@
       </button>
       <span id="topbar-sync"></span>
     </header>
+    <div id="rail-hot" aria-hidden="true"></div>
     <aside id="sidebar">
       <div class="brand" data-act="home" title="Ana sayfa">
         <img class="logo" src="icons/logo.png" alt=""><span>Kelime</span>
@@ -41,13 +42,13 @@
         <button data-act="import" title="JSON içe aktar (Ctrl+O)">İçe aktar</button>
         <button data-act="join" id="btn-join" title="Paylaşım koduyla bir desteye katıl">Kodla katıl</button>
       </div>
-      <button id="nav-home" class="nav-btn" data-act="home" title="Ana sayfa"><i class="nav-ic">🏠</i><span>Ana sayfa</span></button>
-      <button id="nav-decks" class="nav-btn" data-act="decks" title="Desteler"><i class="nav-ic">📚</i><span>Desteler</span></button>
-      <button id="nav-essays" class="nav-btn" data-act="essays" title="IELTS Writing yazıların"><i class="nav-ic">✍️</i><span>Yazılarım</span><small>IELTS Writing</small></button>
-      <button id="nav-reading" class="nav-btn" data-act="readings" title="IELTS Reading testlerin"><i class="nav-ic">📖</i><span>Okuma</span><small>IELTS Reading</small></button>
-      <button id="nav-fsp" class="nav-btn" data-act="fsp" title="Fachsprachprüfung Zahnmedizin"><i class="nav-ic">🦷</i><span>FSP</span><small>Zahnmedizin</small></button>
+      <button id="nav-home" class="nav-btn" data-act="home" title="Ana sayfa"><i class="nav-ic" data-ic="home"></i><span>Ana sayfa</span></button>
+      <button id="nav-decks" class="nav-btn" data-act="decks" title="Desteler"><i class="nav-ic" data-ic="layers"></i><span>Desteler</span></button>
+      <button id="nav-essays" class="nav-btn" data-act="essays" title="IELTS Writing yazıların"><i class="nav-ic" data-ic="pen"></i><span>Yazılarım</span><small>IELTS Writing</small></button>
+      <button id="nav-reading" class="nav-btn" data-act="readings" title="IELTS Reading testlerin"><i class="nav-ic" data-ic="book"></i><span>Okuma</span><small>IELTS Reading</small></button>
+      <button id="nav-fsp" class="nav-btn" data-act="fsp" title="Fachsprachprüfung Zahnmedizin"><i class="nav-ic" data-ic="tooth"></i><span>FSP</span><small>Zahnmedizin</small></button>
       <button id="nav-chat" class="nav-btn hidden" data-act="chat" title="Ortak destedeki kişilerle mesajlaş">
-        <span class="nav-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span><span>Mesajlar</span><span class="chat-count count-badge hidden"></span>
+        <i class="nav-ic" data-ic="chat"></i><span>Mesajlar</span><span class="chat-count count-badge hidden"></span>
       </button>
       <div class="side-label">Desteler</div>
       <nav id="deck-list"></nav>
@@ -57,6 +58,7 @@
         <div class="side-tools">
           <button class="ghost" data-act="theme" id="btn-theme" title="Tema"></button>
           <button class="ghost" data-act="speech-settings" id="btn-autospeak" title="Seslendirme ayarları"></button>
+          <button class="ghost" data-act="rail-toggle" id="btn-rail" title="Çubuğu gizle"></button>
         </div>
       </div>
     </aside>
