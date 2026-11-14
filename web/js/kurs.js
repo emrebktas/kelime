@@ -32,6 +32,29 @@ export function kursHtml() {
   return '<div id="kurs-root" class="kurs"><div class="muted">Yükleniyor…</div></div>';
 }
 
+/**
+ * Kurs paketindeki yapılandırılmış çalışma verisi (Krankheitsbilder, Risikopatienten, anamnez, Aufklärung,
+ * Arztbrief, kelimeler). Paket yoksa ya da giriş yapılmamışsa null. Diğer FSP modülleri kullanır.
+ */
+export async function getStudy() {
+  if (!C.sync.user()) return null;
+  if (K.lib?.content?.study) return K.lib.content.study;
+  if (!K.libs) {
+    try { K.libs = await C.sync.listLibraries(); } catch { return null; }
+  }
+  if (!K.libs?.length) return null;
+  // Çalışma verisi olan ilk kursu bul (önce seçili olan)
+  const order = [...K.libs].sort((a, b) => (b.id === K.libId) - (a.id === K.libId));
+  for (const meta of order) {
+    let lib = readCache(meta.id);
+    if (!lib || lib.updated_at !== meta.updated_at) {
+      try { lib = await C.sync.getLibrary(meta.id); writeCache(lib); } catch { continue; }
+    }
+    if (lib.content?.study) return lib.content.study;
+  }
+  return null;
+}
+
 export async function mountKurs() {
   const root = document.getElementById('kurs-root');
   if (!root) return;

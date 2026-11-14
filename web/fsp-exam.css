@@ -1,0 +1,87 @@
+/* FSP: zorluk seviyeleri, tam sınav simülasyonu ve rapor alıştırmaları (fsp.js yükler; ds.css tokenlarını kullanır) */
+
+/* ---- zorluk seçimi */
+.fx-levelbar { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; margin: 4px 0 14px; }
+.fx-levelbar-l { font-size: 13px; font-weight: 600; }
+.fx-levels { display: inline-flex; flex-wrap: wrap; gap: 3px; padding: 3px; border-radius: var(--r-full); background: var(--hover); }
+.fx-levels button { border: none; background: none; padding: 5px 12px; border-radius: var(--r-full); font-size: 12.5px; font-weight: 600; color: var(--muted); }
+.fx-levels button:hover { color: var(--text); }
+.fx-levels button.on { background: var(--raised); color: var(--text); box-shadow: var(--e1); }
+.fx-level-hint { font-size: 12.5px; flex-basis: 100%; }
+.fx-level-sel { width: auto; padding: 5px 10px; font-size: 13px; border-radius: var(--r-full); }
+.fx-lvl-tag { font-size: 11.5px; color: var(--muted); border: 1px solid var(--border); border-radius: var(--r-full); padding: 0 8px; }
+
+/* ---- vaka kartı ve geçmiş */
+.fx-card-exam { margin-top: 6px; font-size: 12.5px; padding: 6px 12px; background: none; border: 1px dashed var(--border-strong); color: var(--muted); }
+.fx-card-exam:hover { color: var(--accent); border-color: var(--accent); }
+.fx-exam-badge { background: var(--accent-soft) !important; color: var(--accent) !important; font-weight: 700; }
+.fx-hist-exam .fh-open { border-left: 3px solid var(--accent); }
+.fsp-stats.fx-4 { grid-template-columns: repeat(4, 1fr); }
+.fx-stat-exam .stat-big { color: var(--accent); }
+
+/* ---- aşama göstergesi */
+.fx-steps { display: flex; gap: 6px; list-style: none; margin: 0 0 16px; padding: 0; overflow-x: auto; }
+.fx-steps li { display: flex; align-items: center; gap: 6px; flex: 1 1 0; min-width: max-content; padding: 6px 10px; border-radius: var(--r-full); font-size: 12.5px; color: var(--muted); background: var(--panel); border: 1px solid var(--border); }
+.fx-steps li span { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; font-size: 11px; font-weight: 700; background: var(--hover); }
+.fx-steps li.on { color: var(--text); border-color: var(--accent); font-weight: 600; }
+.fx-steps li.on span { background: var(--accent); color: var(--on-accent); }
+.fx-steps li.done span { background: var(--good); color: var(--on-accent); }
+
+/* ---- hazırlık */
+.fx-prep { padding: 18px 20px; }
+.fx-prep h3, .fx-eval h3 { margin: 0 0 12px; }
+.fx-form { display: grid; grid-template-columns: max-content 1fr; gap: 8px 16px; margin: 0 0 16px; font-size: 14px; }
+.fx-form dt { color: var(--muted); font-weight: 600; }
+.fx-form dd { margin: 0; }
+.fx-prep-tips { border-top: 1px solid var(--border); padding-top: 12px; font-size: 13.5px; }
+.fx-prep-tips ul { margin: 6px 0 8px; padding-left: 20px; }
+.fx-prep-tips .muted { font-size: 12.5px; margin: 0; }
+
+/* ---- değerlendirme bekleme */
+.fx-eval { padding: 18px 20px; max-width: 620px; }
+.fx-eval-list { list-style: none; margin: 14px 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.fx-eval-list li { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--r-md); background: var(--raised); }
+.fx-eval-list li > span:first-child { display: inline-flex; align-items: center; gap: 8px; flex: 1; font-weight: 600; font-size: 13.5px; }
+.fx-eval-list svg { width: 16px; height: 16px; }
+.fx-spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--border); border-top-color: var(--accent); animation: fx-spin .8s linear infinite; }
+@keyframes fx-spin { to { transform: rotate(360deg); } }
+.fx-eval-err p { margin: 0 0 8px; }
+
+/* ---- sonuç */
+.fx-result-h { margin: 0 0 6px; font-size: 20px; }
+.fx-guess { display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; padding: 2px 8px; border-radius: var(--r-full); border: 1px dashed var(--border-strong); color: var(--muted); }
+.fx-disclaimer { font-size: 12.5px; margin: 8px 0; }
+.fx-parts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.fx-part { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; }
+.fx-part-l { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; }
+.fx-part-l svg { width: 16px; height: 16px; }
+.fx-part .sc { align-self: flex-start; font-size: 16px; padding: 2px 12px; }
+.fx-part .muted { font-size: 12px; }
+.fx-part p { margin: 0; font-size: 13px; }
+.fx-sec-h { grid-column: 1 / -1; margin: 0; }
+.fx-top { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 6px; }
+.fx-top .badge { font-size: 11px; }
+.fx-tips { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.fx-tips li { padding: 10px 12px; border-radius: var(--r-md); background: var(--raised); border: 1px solid var(--border); }
+.fx-tips p { margin: 4px 0 0; font-size: 13.5px; }
+.fx-part-rep > summary { cursor: pointer; display: flex; align-items: center; gap: 8px; }
+.fx-part-rep .fsp-report { margin-top: 12px; }
+
+/* ---- rapor alıştırmaları */
+.fx-uebung { display: flex; flex-direction: column; gap: 10px; }
+.fx-uebung h3 { margin: 0; }
+.fx-ue { padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--r-md); background: var(--raised); }
+.fx-ue-h { display: flex; align-items: center; gap: 8px; }
+.fx-ue-n { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font-size: 12px; font-weight: 700; }
+.fx-ue-q { margin: 8px 0 6px; }
+.fx-ue-sol summary { cursor: pointer; font-size: 13px; color: var(--accent); }
+.fx-ue-sol p { margin: 6px 0 0; }
+
+@media (max-width: 760px) {
+  .fx-parts { grid-template-columns: 1fr; }
+  .fsp-stats.fx-4 { grid-template-columns: repeat(2, 1fr); }
+  .fx-steps li { flex: none; }
+  .fx-form { grid-template-columns: 1fr; gap: 2px; }
+  .fx-form dd { margin-bottom: 8px; }
+  .fx-level-sel { flex: 1; }
+}

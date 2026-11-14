@@ -5080,7 +5080,7 @@ async function init() {
   applyTheme();
   applyRail();
   await store.open();
-  initFsp({ $, $$, main, state, prefs, savePrefs, store, sync, ICON, toast, guard, openModal, confirmBox, speak, stopSpeech, addWordsToDeck,
+  initFsp({ $, $$, main, state, prefs, savePrefs, store, sync, ICON, toast, guard, openModal, confirmBox, speak, stopSpeech, addWordsToDeck, openDeck,
     renderSidebar, setTitle, leaveStudy, refreshDecks, showHome });
   store.onRemoteChange(onRemoteChange);
   sync.setPresenceProvider(() => (timer.status === 'running' ? Math.floor((Date.now() - liveSec() * 1000) / 1000) : null));

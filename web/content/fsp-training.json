@@ -1,0 +1,3147 @@
+{
+ "grammar": [
+  {
+   "id": "konj1",
+   "title_de": "Konjunktiv I (indirekte Rede)",
+   "title_tr": "Dilek kipi I – dolaylı anlatım",
+   "erklaerung_tr": "Arztbrief'te ve vaka sunumunda hastanın söylediklerini kendi sözün gibi değil, aktarılan bilgi olarak yazarsın. Bunun için Konjunktiv I kullanılır: fiil kökü + -e (er habe, er sei, sie könne, er nehme). Özellikle 3. tekil şahısta (er/sie) biçim belirgindir. Zaman: şimdiki zaman için 'er habe Schmerzen', geçmiş için 'er habe … genommen / er sei … gewesen'. Konjunktiv I biçimi Indikativ ile aynıysa (çoğunlukla çoğul: sie haben) Konjunktiv II'ye geçilir (sie hätten). Emir cümleleri 'sollen' ile, soru cümleleri 'ob' ya da soru kelimesiyle aktarılır. Giriş fiilleri: angeben, berichten, erklären, mitteilen, verneinen, äußern.",
+   "beispiele": [
+    "Der Patient gab an, er habe seit einer Woche Zahnschmerzen im rechten Unterkiefer.",
+    "Die Patientin berichtete, die Beschwerden seien beim Kauen besonders stark.",
+    "Er teilte mit, er nehme täglich 100 mg ASS ein.",
+    "Laut eigener Aussage könne sie den Mund seit gestern kaum öffnen.",
+    "Der Patient erklärte, er sei vor zwei Jahren an der Hüfte operiert worden.",
+    "Die Patientin fragte, ob die Behandlung wehtun werde."
+   ],
+   "uebungen": [
+    {
+     "typ": "transform",
+     "aufgabe": "Der Patient sagt: „Ich habe seit drei Tagen Schmerzen.“ → indirekte Rede (Der Patient gab an, …)",
+     "loesung": "Der Patient gab an, er habe seit drei Tagen Schmerzen.",
+     "optionen": [],
+     "erklaerung_tr": "'ich habe' → 'er habe'. Şahıs zamiri de 3. şahsa döner."
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "Die Patientin sagt: „Der Zahn ist sehr empfindlich auf Kälte.“ → indirekte Rede (Die Patientin berichtete, …)",
+     "loesung": "Die Patientin berichtete, der Zahn sei sehr empfindlich auf Kälte.",
+     "optionen": [],
+     "erklaerung_tr": "'sein' fiilinin Konjunktiv I biçimi 'sei'dir; Indikativ'den her zaman farklıdır."
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "Der Patient sagt: „Ich nehme Marcumar.“ → indirekte Rede (Er gab an, …)",
+     "loesung": "Er gab an, er nehme Marcumar.",
+     "optionen": [],
+     "erklaerung_tr": "'nehmen' → 'er nehme' (kök + -e). Indikativ 'er nimmt' ile karıştırma."
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "Die Mutter sagt: „Meine Kinder haben auch Karies.“ → indirekte Rede (Sie erzählte, …)",
+     "loesung": "Sie erzählte, ihre Kinder hätten auch Karies.",
+     "optionen": [],
+     "erklaerung_tr": "Çoğulda Konjunktiv I 'sie haben' Indikativ ile aynıdır; bu yüzden Konjunktiv II 'hätten' kullanılır."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "Die Patientin gab an, sie ___ (können) nachts nicht schlafen.",
+     "loesung": "könne",
+     "optionen": [],
+     "erklaerung_tr": "'können' → 'sie könne'. Modal fiillerde de kök + -e."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "Er berichtete, die Schwellung ___ (sein) seit gestern größer geworden.",
+     "loesung": "sei",
+     "optionen": [],
+     "erklaerung_tr": "'größer werden' Perfekt'te 'sein' ile kurulur: ist geworden → sei geworden."
+    },
+    {
+     "typ": "choice",
+     "aufgabe": "Der Patient sagte, er ___ gestern eine Tablette Ibuprofen genommen.",
+     "loesung": "habe",
+     "optionen": [
+      "hat",
+      "habe",
+      "hatte",
+      "hätte gehabt"
+     ],
+     "erklaerung_tr": "Geçmişteki olay: Konjunktiv I 'habe' + Partizip II. 'hat' Indikativ'dir, yazıda aktarılan söz için uygun değildir."
+    },
+    {
+     "typ": "choice",
+     "aufgabe": "Die Patienten berichteten, sie ___ große Angst vor der Spritze.",
+     "loesung": "hätten",
+     "optionen": [
+      "haben",
+      "hätten",
+      "habe",
+      "seien"
+     ],
+     "erklaerung_tr": "Çoğul 'sie haben' Indikativ ile aynı olduğundan Konjunktiv II 'hätten' seçilir."
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "Der Patient sagt: „Ich war letztes Jahr beim Zahnarzt.“ → indirekte Rede (Er gab an, …)",
+     "loesung": "Er gab an, er sei letztes Jahr beim Zahnarzt gewesen.",
+     "optionen": [],
+     "erklaerung_tr": "Geçmiş zaman dolaylı anlatımda tek biçimle yapılır: sei + gewesen / habe + Partizip II."
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "Die Patientin fragt: „Muss der Zahn gezogen werden?“ → indirekte Rede (Die Patientin fragte, …)",
+     "loesung": "Die Patientin fragte, ob der Zahn gezogen werden müsse.",
+     "optionen": [],
+     "erklaerung_tr": "Evet/hayır sorusu 'ob' ile aktarılır; çekimli fiil sona gider ve Konjunktiv I olur (müsse)."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "Laut Angaben des Patienten ___ (werden) die Schmerzen beim Liegen stärker.",
+     "loesung": "würden",
+     "optionen": [],
+     "erklaerung_tr": "Çoğul 'sie werden' Indikativ ile aynı; bu yüzden Konjunktiv II 'würden' kullanılır."
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "Der Zahnarzt sagt zur Patientin: „Nehmen Sie zweimal täglich eine Tablette!“ → indirekte Rede (Der Zahnarzt sagte, …)",
+     "loesung": "Der Zahnarzt sagte, sie solle zweimal täglich eine Tablette nehmen.",
+     "optionen": [],
+     "erklaerung_tr": "Emir cümlesi dolaylı anlatımda 'sollen' (Konjunktiv I: solle) ile aktarılır."
+    }
+   ]
+  },
+  {
+   "id": "konj2",
+   "title_de": "Konjunktiv II und Ersatzform (würde + Infinitiv)",
+   "title_tr": "Dilek kipi II ve 'würde' yedek biçimi",
+   "erklaerung_tr": "Konjunktiv II üç işte kullanılır: (1) Dolaylı anlatımda Konjunktiv I Indikativ ile aynı olduğunda yedek biçim olarak (sie haben → sie hätten, sie kommen → sie kämen). Konjunktiv II de Präteritum ile aynıysa (sie putzten) 'würde + Infinitiv' kullanılır. (2) Gerçek dışı koşul ve dileklerde (Wenn der Zahn vital wäre, …). (3) Kibar rica ve tavsiyede (Könnten Sie …? Sie sollten …). Sık biçimler: wäre, hätte, könnte, müsste, dürfte, sollte, würde; düzenli fiillerde çoğunlukla 'würde + Infinitiv'.",
+   "beispiele": [
+    "Die Patienten gaben an, sie hätten bereits zwei Kronen im Oberkiefer.",
+    "Die Eltern berichteten, die Kinder würden abends nicht regelmäßig putzen.",
+    "Wenn Sie früher gekommen wären, hätten wir den Zahn vielleicht erhalten können.",
+    "An Ihrer Stelle würde ich die Schiene jede Nacht tragen.",
+    "Es wäre sinnvoll, vor dem Eingriff Ihren INR-Wert zu kontrollieren."
+   ],
+   "uebungen": [
+    {
+     "typ": "cloze",
+     "aufgabe": "Die Patienten berichteten, sie ___ (haben) keine Vorerkrankungen.",
+     "loesung": "hätten",
+     "optionen": [],
+     "erklaerung_tr": "Çoğul Konjunktiv I 'haben' Indikativ ile aynı → Konjunktiv II 'hätten'."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "Die Eltern gaben an, die Kinder ___ (bekommen) regelmäßig Fluoridtabletten.",
+     "loesung": "bekämen",
+     "optionen": [],
+     "erklaerung_tr": "Konjunktiv I 'bekommen' Indikativ ile aynı → Konjunktiv II 'bekämen'. 'würden … bekommen' de kabul edilir."
+    },
+    {
+     "typ": "choice",
+     "aufgabe": "Die Patienten sagten, sie ___ seit Jahren nicht beim Zahnarzt gewesen.",
+     "loesung": "seien",
+     "optionen": [
+      "sind",
+      "seien",
+      "wären",
+      "waren"
+     ],
+     "erklaerung_tr": "'sein' fiilinin Konjunktiv I'i çoğulda da farklıdır (seien); bu yüzden yedek biçime gerek yoktur."
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "Die Patienten sagen: „Wir putzen zweimal täglich.“ → indirekte Rede (Sie gaben an, …)",
+     "loesung": "Sie gaben an, sie würden zweimal täglich putzen.",
+     "optionen": [],
+     "erklaerung_tr": "Konjunktiv I 'putzen' = Indikativ, Konjunktiv II 'putzten' = Präteritum; bu yüzden 'würden + Infinitiv'."
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "Der Zahn ist nicht vital. Wir müssen ihn wurzelbehandeln. → irrealer Bedingungssatz (Wenn …)",
+     "loesung": "Wenn der Zahn vital wäre, müssten wir ihn nicht wurzelbehandeln.",
+     "optionen": [],
+     "erklaerung_tr": "Gerçek dışı koşul: iki yan cümlede de Konjunktiv II (wäre, müssten) ve olumsuzluk tersine çevrilir."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "Wenn Sie das Rauchen aufgeben ___ (können), wäre das für Ihr Zahnfleisch sehr gut.",
+     "loesung": "könnten",
+     "optionen": [],
+     "erklaerung_tr": "Gerçek dışı/varsayımsal koşul: 'können' → 'könnten'."
+    },
+    {
+     "typ": "choice",
+     "aufgabe": "An Ihrer Stelle ___ ich den Zahn nicht ziehen lassen.",
+     "loesung": "würde",
+     "optionen": [
+      "würde",
+      "werde",
+      "wurde",
+      "wäre"
+     ],
+     "erklaerung_tr": "Tavsiye kalıbı 'An Ihrer Stelle würde ich …' Konjunktiv II ile kurulur."
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "„Sie sollen die Schiene nachts tragen.“ → höflicher Rat mit Konjunktiv II",
+     "loesung": "Sie sollten die Schiene nachts tragen.",
+     "optionen": [],
+     "erklaerung_tr": "'sollten' tavsiyeyi yumuşatır; 'sollen' emir/talimat gibi duyulur."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "Es ___ (sein) besser, wenn wir zuerst ein Röntgenbild machen.",
+     "loesung": "wäre",
+     "optionen": [],
+     "erklaerung_tr": "Kibar öneri: 'Es wäre besser, …'."
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "Die Patientin sagt: „Die Zähne bluten beim Putzen.“ → indirekte Rede (Die Patientin berichtete, …)",
+     "loesung": "Die Patientin berichtete, die Zähne würden beim Putzen bluten.",
+     "optionen": [],
+     "erklaerung_tr": "'bluten' çoğulda Konjunktiv I ve II biçimleri Indikativ/Präteritum ile aynıdır → 'würden bluten'."
+    },
+    {
+     "typ": "choice",
+     "aufgabe": "Wenn ich heute mehr Zeit ___, würde ich die Füllung sofort machen.",
+     "loesung": "hätte",
+     "optionen": [
+      "hätte",
+      "habe",
+      "hatte",
+      "hat"
+     ],
+     "erklaerung_tr": "Gerçek dışı koşulun 'wenn' kısmında da Konjunktiv II gerekir: hätte."
+    },
+    {
+     "typ": "choice",
+     "aufgabe": "___ Sie mir bitte kurz helfen, den Patienten aufzurichten?",
+     "loesung": "Könnten",
+     "optionen": [
+      "Könnten",
+      "Konnten",
+      "Könntest",
+      "Kannst"
+     ],
+     "erklaerung_tr": "Kibar rica: 'Könnten Sie …?' (Sie-Form, Konjunktiv II). 'Konnten' Präteritum'dur."
+    }
+   ]
+  },
+  {
+   "id": "passiv",
+   "title_de": "Passiv (Vorgangs-, Zustandspassiv, Passiv mit Modalverb)",
+   "title_tr": "Edilgen yapı",
+   "erklaerung_tr": "Arztbrief'te kimin yaptığı değil, ne yapıldığı önemlidir; bu yüzden edilgen çok kullanılır. Vorgangspassiv (süreç): werden + Partizip II (Der Zahn wird/wurde extrahiert). Perfekt: ist … worden (Der Zahn ist extrahiert worden – 'geworden' değil!). Zustandspassiv (sonuç durumu): sein + Partizip II (Die Wunde ist vernäht). Modal fiille: Modalverb + Partizip II + werden (Der Zahn muss extrahiert werden). Özne yoksa 'es' ile başlanabilir: Es wurde ein OPG angefertigt.",
+   "beispiele": [
+    "Der Zahn 48 wurde unter Lokalanästhesie operativ entfernt.",
+    "Die Wunde ist mit zwei Einzelknopfnähten versorgt.",
+    "Der Kanal muss gründlich mit Natriumhypochlorit gespült werden.",
+    "Es wurde ein Orthopantomogramm angefertigt.",
+    "Die Nähte sollen nach sieben bis zehn Tagen entfernt werden.",
+    "Der Patient ist über Risiken und Alternativen aufgeklärt worden."
+   ],
+   "uebungen": [
+    {
+     "typ": "transform",
+     "aufgabe": "Wir extrahierten den Zahn 38. → Vorgangspassiv Präteritum",
+     "loesung": "Der Zahn 38 wurde extrahiert.",
+     "optionen": [],
+     "erklaerung_tr": "Akkusativ nesne özne olur; 'wurde + Partizip II'."
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "Man fertigte einen Zahnfilm an. → Vorgangspassiv Präteritum",
+     "loesung": "Ein Zahnfilm wurde angefertigt.",
+     "optionen": [],
+     "erklaerung_tr": "'Es wurde ein Zahnfilm angefertigt.' de doğrudur."
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "Wir müssen den Zahn trepanieren. → Passiv mit Modalverb",
+     "loesung": "Der Zahn muss trepaniert werden.",
+     "optionen": [],
+     "erklaerung_tr": "Modalverb + Partizip II + werden (sonda)."
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "Man hat die Patientin über die Risiken aufgeklärt. → Passiv Perfekt",
+     "loesung": "Die Patientin ist über die Risiken aufgeklärt worden.",
+     "optionen": [],
+     "erklaerung_tr": "Edilgen Perfekt: ist + Partizip II + worden ('geworden' değil)."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "Die Fäden ___ in sieben Tagen entfernt.",
+     "loesung": "werden",
+     "optionen": [],
+     "erklaerung_tr": "Gelecekteki işlem için Präsens Passiv yeterlidir: werden + Partizip II."
+    },
+    {
+     "typ": "choice",
+     "aufgabe": "Die Wunde ___ bereits genäht. (Ergebnis, Zustand)",
+     "loesung": "ist",
+     "optionen": [
+      "ist",
+      "wird",
+      "hat",
+      "wurde worden"
+     ],
+     "erklaerung_tr": "Sonuç durumu Zustandspassiv: sein + Partizip II."
+    },
+    {
+     "typ": "choice",
+     "aufgabe": "Vor der Behandlung ___ eine Lokalanästhesie gesetzt. (Vorgang, Präteritum)",
+     "loesung": "wurde",
+     "optionen": [
+      "wurde",
+      "war",
+      "hat",
+      "ist geworden"
+     ],
+     "erklaerung_tr": "Geçmişteki işlem: Vorgangspassiv Präteritum 'wurde'."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "Der Zahn ist gestern extrahiert ___.",
+     "loesung": "worden",
+     "optionen": [],
+     "erklaerung_tr": "Edilgen Perfekt'te 'worden' kullanılır."
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "Man sollte den Blutdruck vor dem Eingriff messen. → Passiv mit Modalverb",
+     "loesung": "Der Blutdruck sollte vor dem Eingriff gemessen werden.",
+     "optionen": [],
+     "erklaerung_tr": "Modalverb çekimli kalır, 'gemessen werden' sona gider."
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "Wir konnten die Wurzelspitze nicht darstellen. → Passiv mit Modalverb (Präteritum)",
+     "loesung": "Die Wurzelspitze konnte nicht dargestellt werden.",
+     "optionen": [],
+     "erklaerung_tr": "Geçmişte: konnte + Partizip II + werden."
+    },
+    {
+     "typ": "choice",
+     "aufgabe": "Die Kanäle ___ vor der Füllung gründlich gespült werden.",
+     "loesung": "müssen",
+     "optionen": [
+      "müssen",
+      "haben",
+      "sind",
+      "hatten"
+     ],
+     "erklaerung_tr": "'werden' sonda olduğu için önde bir Modalverb gerekir."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "Befund heute: Der Zahn 36 ___ bereits wurzelkanalbehandelt.",
+     "loesung": "ist",
+     "optionen": [],
+     "erklaerung_tr": "Muayenede görülen sonuç durumu: Zustandspassiv (ist + Partizip II)."
+    }
+   ]
+  },
+  {
+   "id": "relativ",
+   "title_de": "Relativsätze",
+   "title_tr": "İlgi cümleleri",
+   "erklaerung_tr": "İlgi cümlesi bir ismi açıklar ve virgülle ayrılır; çekimli fiil sona gider. İlgi zamirinin cinsiyeti ve sayısı açıklanan isimden, hâli (Nominativ/Akkusativ/Dativ/Genitiv) ise yan cümledeki görevinden gelir. Çoğul Dativ 'denen', Genitiv 'dessen' (der/das) ve 'deren' (die/Plural). Edatlı fiillerde edat ilgi zamirinin önüne gelir (die Brücke, auf die der Patient beißt). 'alles, etwas, nichts, das' sonrası 'was' kullanılır.",
+   "beispiele": [
+    "Der Zahn, der seit drei Tagen schmerzt, ist tief kariös.",
+    "Das Medikament, das der Patient einnimmt, hemmt die Blutgerinnung.",
+    "Die Patientin, deren Mutter an Diabetes leidet, möchte ihren Blutzucker kontrollieren lassen.",
+    "Der Kollege, dem ich den Patienten überwiesen habe, ist Kieferchirurg.",
+    "Die Krone, unter der sich eine Karies gebildet hat, muss erneuert werden."
+   ],
+   "uebungen": [
+    {
+     "typ": "cloze",
+     "aufgabe": "Der Patient, ___ sich heute vorstellte, klagt über Zahnschmerzen.",
+     "loesung": "der",
+     "optionen": [],
+     "erklaerung_tr": "Eril, yan cümlede özne → Nominativ 'der'."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "Die Füllung, ___ vor zwei Jahren gelegt wurde, ist undicht.",
+     "loesung": "die",
+     "optionen": [],
+     "erklaerung_tr": "Dişil, yan cümlede özne → 'die'."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "Das Implantat, ___ wir im letzten Jahr gesetzt haben, ist entzündet.",
+     "loesung": "das",
+     "optionen": [],
+     "erklaerung_tr": "Nötr, yan cümlede nesne (Akkusativ) → 'das'."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "Die Patientin, ___ ich die Behandlung erklärt habe, war einverstanden.",
+     "loesung": "der",
+     "optionen": [],
+     "erklaerung_tr": "'jemandem etwas erklären' → Dativ; dişil Dativ ilgi zamiri 'der'."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "Der Patient, ___ Zahnfleisch stark blutet, raucht seit 20 Jahren.",
+     "loesung": "dessen",
+     "optionen": [],
+     "erklaerung_tr": "İyelik (hastanın diş eti) → Genitiv; eril isim için 'dessen'."
+    },
+    {
+     "typ": "choice",
+     "aufgabe": "Die Brücke, ___ der Patient nicht mehr richtig beißen kann, ist gelockert.",
+     "loesung": "auf die",
+     "optionen": [
+      "auf die",
+      "auf der",
+      "auf den",
+      "auf dem"
+     ],
+     "erklaerung_tr": "'beißen auf + Akkusativ'; dişil Akkusativ 'die'. Edat zamirin önüne gelir."
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "Der Patient nimmt ein Medikament. Das Medikament hemmt die Blutgerinnung. → ein Satz mit Relativsatz",
+     "loesung": "Der Patient nimmt ein Medikament, das die Blutgerinnung hemmt.",
+     "optionen": [],
+     "erklaerung_tr": "Tekrarlanan isim yerine ilgi zamiri 'das'; fiil sona."
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "Die Kollegin hat den Patienten überwiesen. Ich danke der Kollegin. → ein Satz mit Relativsatz",
+     "loesung": "Ich danke der Kollegin, die den Patienten überwiesen hat.",
+     "optionen": [],
+     "erklaerung_tr": "Yan cümlede 'die Kollegin' özne → Nominativ 'die'."
+    },
+    {
+     "typ": "choice",
+     "aufgabe": "Die Zähne, ___ Füllungen erneuert werden müssen, sind 16 und 17.",
+     "loesung": "deren",
+     "optionen": [
+      "deren",
+      "dessen",
+      "denen",
+      "die"
+     ],
+     "erklaerung_tr": "Çoğul isim için Genitiv ilgi zamiri 'deren'."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "Die Kinder, ___ wir die Tabletten gegeben haben, dürfen nach Hause gehen.",
+     "loesung": "denen",
+     "optionen": [],
+     "erklaerung_tr": "Çoğul Dativ ilgi zamiri 'denen' (jemandem etwas geben)."
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "Das ist der Zahn. Ich habe Ihnen von diesem Zahn erzählt. → ein Satz mit Relativsatz",
+     "loesung": "Das ist der Zahn, von dem ich Ihnen erzählt habe.",
+     "optionen": [],
+     "erklaerung_tr": "'erzählen von + Dativ' → 'von dem'."
+    },
+    {
+     "typ": "choice",
+     "aufgabe": "Der Patient erzählte alles, ___ ihm wichtig war.",
+     "loesung": "was",
+     "optionen": [
+      "was",
+      "das",
+      "dass",
+      "welches"
+     ],
+     "erklaerung_tr": "'alles, nichts, etwas' sonrası ilgi zamiri 'was' olur."
+    }
+   ]
+  },
+  {
+   "id": "nebensatz",
+   "title_de": "Nebensätze (weil, da, obwohl, nachdem, sodass, damit)",
+   "title_tr": "Yan cümleler",
+   "erklaerung_tr": "Bağlaçla başlayan yan cümlede çekimli fiil sona gider. weil/da: sebep (da genelde cümle başında, bilinen sebep). obwohl: beklenene rağmen. nachdem: önce olan olay; zaman uyumu: ana cümle Präteritum ise yan cümle Plusquamperfekt (nachdem … hatte/war). sodass: sonuç. damit: amaç (iki öznede farklı kişi olabilir; özne aynıysa 'um … zu' daha doğal). 'denn' ve 'deshalb' yan cümle bağlacı değildir: 'denn' sonrası fiil ikinci sırada, 'deshalb' sonrası fiil hemen gelir.",
+   "beispiele": [
+    "Der Zahn muss extrahiert werden, weil er nicht mehr erhaltungswürdig ist.",
+    "Da der Patient Phenprocoumon einnimmt, wird vor dem Eingriff der INR-Wert bestimmt.",
+    "Obwohl die Patientin Schmerzmittel einnahm, besserten sich die Beschwerden nicht.",
+    "Nachdem der Zahn trepaniert worden war, ließen die Schmerzen deutlich nach.",
+    "Die Schwellung war so ausgeprägt, dass der Patient den Mund kaum öffnen konnte.",
+    "Wir legen eine medikamentöse Einlage, damit die Entzündung abklingen kann."
+   ],
+   "uebungen": [
+    {
+     "typ": "choice",
+     "aufgabe": "___ der Patient Penicillin nicht verträgt, verordnen wir Clindamycin.",
+     "loesung": "Da",
+     "optionen": [
+      "Da",
+      "Obwohl",
+      "Damit",
+      "Nachdem"
+     ],
+     "erklaerung_tr": "Sebep: 'da' (bilinen sebep, cümle başında)."
+    },
+    {
+     "typ": "choice",
+     "aufgabe": "___ die Wunde gut heilt, sollten Sie heute nicht rauchen.",
+     "loesung": "Damit",
+     "optionen": [
+      "Damit",
+      "Weil",
+      "Obwohl",
+      "Sodass"
+     ],
+     "erklaerung_tr": "Amaç: 'damit'."
+    },
+    {
+     "typ": "choice",
+     "aufgabe": "___ sie Ibuprofen genommen hatte, hatte sie weiterhin starke Schmerzen.",
+     "loesung": "Obwohl",
+     "optionen": [
+      "Obwohl",
+      "Weil",
+      "Damit",
+      "Da"
+     ],
+     "erklaerung_tr": "Beklenenin tersi: 'obwohl'."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "___ die Betäubung gewirkt hatte, begannen wir mit der Behandlung.",
+     "loesung": "Nachdem",
+     "optionen": [],
+     "erklaerung_tr": "Önce olan olay (Plusquamperfekt 'hatte gewirkt') → 'nachdem'."
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "Der Patient hat Angst. Deshalb kommt er selten zum Zahnarzt. → mit „weil“",
+     "loesung": "Der Patient kommt selten zum Zahnarzt, weil er Angst hat.",
+     "optionen": [],
+     "erklaerung_tr": "'weil' yan cümlesinde çekimli fiil 'hat' sona gider."
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "Die Schwellung nahm zu. Die Patientin konnte nicht mehr schlucken. → mit „sodass“",
+     "loesung": "Die Schwellung nahm zu, sodass die Patientin nicht mehr schlucken konnte.",
+     "optionen": [],
+     "erklaerung_tr": "Sonuç: 'sodass'; Modalverb 'konnte' sona."
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "Der Zahn war stark gelockert. Trotzdem wollte der Patient ihn behalten. → mit „obwohl“ am Satzanfang",
+     "loesung": "Obwohl der Zahn stark gelockert war, wollte der Patient ihn behalten.",
+     "optionen": [],
+     "erklaerung_tr": "Yan cümle başta olunca ana cümle çekimli fiille başlar: 'wollte der Patient'."
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "Wir haben den Zahn gezogen. Dann haben wir die Wunde vernäht. → mit „nachdem“, Präteritum im Hauptsatz",
+     "loesung": "Nachdem wir den Zahn gezogen hatten, vernähten wir die Wunde.",
+     "optionen": [],
+     "erklaerung_tr": "Zaman uyumu: ana cümle Präteritum → yan cümle Plusquamperfekt."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "Ich verschreibe Ihnen ein Schmerzmittel, damit Sie heute Nacht schlafen ___.",
+     "loesung": "können",
+     "optionen": [],
+     "erklaerung_tr": "Yan cümlede Modalverb en sona gider."
+    },
+    {
+     "typ": "choice",
+     "aufgabe": "Der Patient hat den Termin abgesagt, ___ er Fieber hatte.",
+     "loesung": "weil",
+     "optionen": [
+      "weil",
+      "damit",
+      "obwohl",
+      "sodass"
+     ],
+     "erklaerung_tr": "Sebep: 'weil' + fiil sonda. ('denn' olsaydı: denn er hatte Fieber.)"
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "Wir machen ein Röntgenbild. Wir wollen die Wurzel beurteilen. → mit „um … zu“",
+     "loesung": "Wir machen ein Röntgenbild, um die Wurzel zu beurteilen.",
+     "optionen": [],
+     "erklaerung_tr": "Özne aynıysa amaç 'um … zu + Infinitiv' ile kısaltılır."
+    }
+   ]
+  },
+  {
+   "id": "nominal",
+   "title_de": "Partizipialattribute und Nominalstil",
+   "title_tr": "Sıfat-fiiller ve isim üslubu",
+   "erklaerung_tr": "Yazılı tıp dilinde yan cümleler sık sık kısaltılır. Partizip I (Infinitiv + d) etken ve eş zamanlı: der ausstrahlende Schmerz (ağrı yayılıyor). Partizip II edilgen ya da tamamlanmış: die eingegliederte Krone (kron takıldı). 'zu + Partizip I' gereklilik: der zu extrahierende Zahn (çekilmesi gereken diş). Bu sıfatlar normal sıfat gibi çekimlenir. Nominalstil: fiil yerine isim + edat: Nachdem extrahiert wurde → nach der Extraktion; weil … → aufgrund + Genitiv; um … zu → zur + isim; wenn … → bei + isim. Abartma: bir cümlede en fazla bir uzun sıfat grubu kullan.",
+   "beispiele": [
+    "Der seit drei Tagen bestehende Schmerz strahlt ins rechte Ohr aus.",
+    "Die vor zwei Jahren eingegliederte Brücke ist gelockert.",
+    "Der zu extrahierende Zahn 18 ist nicht erhaltungswürdig.",
+    "Nach erfolgter Lokalanästhesie wurde der Zahn trepaniert.",
+    "Zur Abklärung der Beschwerden wurde ein Zahnfilm angefertigt.",
+    "Bei anhaltenden Beschwerden stellt sich die Patientin erneut vor."
+   ],
+   "uebungen": [
+    {
+     "typ": "transform",
+     "aufgabe": "der Schmerz, der in das Ohr ausstrahlt → Partizipialattribut",
+     "loesung": "der in das Ohr ausstrahlende Schmerz",
+     "optionen": [],
+     "erklaerung_tr": "Etken ve eş zamanlı → Partizip I (ausstrahlend) + sıfat çekimi."
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "die Krone, die 2019 eingegliedert wurde → Partizipialattribut",
+     "loesung": "die 2019 eingegliederte Krone",
+     "optionen": [],
+     "erklaerung_tr": "Edilgen/tamamlanmış → Partizip II (eingegliedert) + -e."
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "der Zahn, der extrahiert werden muss → Partizipialattribut mit „zu“",
+     "loesung": "der zu extrahierende Zahn",
+     "optionen": [],
+     "erklaerung_tr": "Gereklilik: zu + Partizip I."
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "Nachdem der Zahn extrahiert worden war, … → Nominalstil mit „nach“",
+     "loesung": "Nach der Extraktion des Zahnes …",
+     "optionen": [],
+     "erklaerung_tr": "Fiil 'extrahieren' → isim 'die Extraktion' + Genitiv."
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "Weil der Patient eine Penicillinallergie hat, … → Nominalstil mit „aufgrund“",
+     "loesung": "Aufgrund der Penicillinallergie des Patienten …",
+     "optionen": [],
+     "erklaerung_tr": "'aufgrund' Genitiv ister."
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "Um die Diagnose zu sichern, … → Nominalstil mit „zur“",
+     "loesung": "Zur Sicherung der Diagnose …",
+     "optionen": [],
+     "erklaerung_tr": "Amaç 'um … zu' → 'zur/zum + isim'."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "der seit Jahren ___ (bestehen) Diabetes",
+     "loesung": "bestehende",
+     "optionen": [],
+     "erklaerung_tr": "Süregelen durum → Partizip I 'bestehend' + eril Nominativ eki -e."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "die vor zwei Tagen ___ (auftreten) Schwellung",
+     "loesung": "aufgetretene",
+     "optionen": [],
+     "erklaerung_tr": "Tamamlanmış olay → Partizip II 'aufgetreten' + -e."
+    },
+    {
+     "typ": "choice",
+     "aufgabe": "der stark ___ Zahn (der Zahn ist stark gelockert)",
+     "loesung": "gelockerte",
+     "optionen": [
+      "gelockerte",
+      "lockernde",
+      "gelockerten",
+      "lockernd"
+     ],
+     "erklaerung_tr": "Sonuç durumu → Partizip II; 'der' ile eril Nominativ eki -e."
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "Wenn die Schmerzen anhalten, … → Nominalstil mit „bei“",
+     "loesung": "Bei anhaltenden Schmerzen …",
+     "optionen": [],
+     "erklaerung_tr": "'wenn' → 'bei + Dativ'; Partizip I sıfat olarak çoğul Dativ eki -en alır."
+    },
+    {
+     "typ": "choice",
+     "aufgabe": "___ Behandlung wurde der Patient nach Hause entlassen.",
+     "loesung": "Nach erfolgter",
+     "optionen": [
+      "Nach erfolgter",
+      "Nach erfolgte",
+      "Nachdem erfolgter",
+      "Nach erfolgten"
+     ],
+     "erklaerung_tr": "'nach' Dativ ister; dişil tekil Dativ ekli sıfat: erfolgter."
+    }
+   ]
+  },
+  {
+   "id": "praep",
+   "title_de": "Präpositionen (bei, nach, seit, aufgrund, infolge, zur)",
+   "title_tr": "Edatlar",
+   "erklaerung_tr": "bei + Dativ: durum/koşul (bei Kälte, beim Kauen, bei Verdacht auf). nach + Dativ: sonra (nach der Extraktion). seit + Dativ: geçmişte başlayıp hâlâ süren (seit drei Tagen – 'vor' ile karıştırma: vor drei Tagen = üç gün önce, bitti). aufgrund/infolge/wegen + Genitiv: sebep (infolge = sonucunda, olay zinciri). zur/zum (zu + Dativ): amaç ve yön (zur Kontrolle, zum Kieferchirurgen). Kişiye sevk 'zum/zur', kuruma 'in die Klinik', 'an' + Akk. de kullanılır (an einen Kollegen überweisen).",
+   "beispiele": [
+    "Bei Kälte reagiert der Zahn mit einem kurzen, scharfen Schmerz.",
+    "Nach der Extraktion kam es zu einer Nachblutung.",
+    "Seit drei Tagen bestehen Schmerzen regio 46.",
+    "Aufgrund der dualen Plättchenhemmung wurde der Eingriff mit dem Kardiologen abgestimmt.",
+    "Infolge eines Fahrradsturzes ist Zahn 11 frakturiert.",
+    "Zur weiteren Abklärung wurde die Patientin an die MKG-Chirurgie überwiesen."
+   ],
+   "uebungen": [
+    {
+     "typ": "cloze",
+     "aufgabe": "___ einer Woche hat der Patient Schmerzen. (sie bestehen noch)",
+     "loesung": "Seit",
+     "optionen": [],
+     "erklaerung_tr": "Hâlâ süren durum → 'seit + Dativ'."
+    },
+    {
+     "typ": "choice",
+     "aufgabe": "___ des erhöhten INR-Werts wurde der Eingriff verschoben.",
+     "loesung": "Aufgrund",
+     "optionen": [
+      "Aufgrund",
+      "Seit",
+      "Bei",
+      "Nach"
+     ],
+     "erklaerung_tr": "Sebep + Genitiv (des … Werts) → 'aufgrund'."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "Infolge ___ Unfalls (der Unfall) brach die Schneidekante ab.",
+     "loesung": "des",
+     "optionen": [],
+     "erklaerung_tr": "'infolge' Genitiv ister: des Unfalls."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "Die Schmerzen treten vor allem ___ Kauen auf.",
+     "loesung": "beim",
+     "optionen": [],
+     "erklaerung_tr": "'bei dem Kauen' → 'beim Kauen'; durum bildirir."
+    },
+    {
+     "typ": "choice",
+     "aufgabe": "___ Kontrolle kommen Sie bitte in einer Woche wieder.",
+     "loesung": "Zur",
+     "optionen": [
+      "Zur",
+      "Zum",
+      "Nach",
+      "Seit"
+     ],
+     "erklaerung_tr": "Amaç: zu + der Kontrolle → 'zur'."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "___ der Behandlung dürfen Sie zwei Stunden nichts essen.",
+     "loesung": "Nach",
+     "optionen": [],
+     "erklaerung_tr": "Zaman sırası 'sonra' → 'nach + Dativ'."
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "Weil der Patient Diabetes hat, heilt die Wunde langsamer. → mit „aufgrund“",
+     "loesung": "Aufgrund des Diabetes heilt die Wunde langsamer.",
+     "optionen": [],
+     "erklaerung_tr": "'aufgrund' + Genitiv; ardından fiil ikinci sırada."
+    },
+    {
+     "typ": "choice",
+     "aufgabe": "Der Patient wurde ___ Kieferchirurgen überwiesen.",
+     "loesung": "zum",
+     "optionen": [
+      "zum",
+      "zur",
+      "beim",
+      "nach dem"
+     ],
+     "erklaerung_tr": "Kişiye yönelme: zu + dem Kieferchirurgen → 'zum'."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "___ Verdacht auf eine Wurzelfraktur wird ein DVT angefertigt.",
+     "loesung": "Bei",
+     "optionen": [],
+     "erklaerung_tr": "Kalıp: 'bei Verdacht auf + Akkusativ'."
+    },
+    {
+     "typ": "choice",
+     "aufgabe": "Seit ___ Operation nimmt sie ASS ein.",
+     "loesung": "der",
+     "optionen": [
+      "der",
+      "die",
+      "den",
+      "dem"
+     ],
+     "erklaerung_tr": "'seit' Dativ ister; dişil Dativ 'der'."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "Die Patientin stellte sich ___ Schmerzen im Oberkiefer links vor.",
+     "loesung": "mit",
+     "optionen": [],
+     "erklaerung_tr": "Kalıp: 'sich mit Beschwerden vorstellen'."
+    }
+   ]
+  },
+  {
+   "id": "fragen",
+   "title_de": "Fragebildung, W-Fragen und Höflichkeit",
+   "title_tr": "Soru kurma ve nezaket",
+   "erklaerung_tr": "Evet/hayır sorusunda çekimli fiil başa gelir (Nehmen Sie Medikamente?). W-sorusunda soru kelimesi başta, fiil ikinci sırada (Seit wann haben Sie Schmerzen?). Hastayla her zaman 'Sie' kullanılır; 'du' ya da 'Sie' + 2. tekil fiil eki (Hast Sie) ağır hatadır. Kibarlık: 'Könnten/Würden Sie bitte …?', 'Darf ich fragen, …?'. Dolaylı soruda fiil sona gider: 'Können Sie mir sagen, wo es wehtut?', evet/hayır sorusu 'ob' ile. Kısa, tek bilgi soran sorular sor; aynı cümlede iki soru sorma.",
+   "beispiele": [
+    "Seit wann haben Sie die Beschwerden?",
+    "Könnten Sie mir bitte mit dem Finger zeigen, wo es wehtut?",
+    "Darf ich fragen, welche Medikamente Sie regelmäßig einnehmen?",
+    "Würden Sie bitte den Mund weit öffnen?",
+    "Wissen Sie, ob Sie gegen ein Medikament allergisch sind?",
+    "Wie oft am Tag putzen Sie sich die Zähne?"
+   ],
+   "uebungen": [
+    {
+     "typ": "transform",
+     "aufgabe": "Sie nehmen Blutverdünner. → Ja/Nein-Frage",
+     "loesung": "Nehmen Sie Blutverdünner?",
+     "optionen": [],
+     "erklaerung_tr": "Evet/hayır sorusunda çekimli fiil başa gelir."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "___ lange hält der Schmerz nach dem Kältereiz an?",
+     "loesung": "Wie",
+     "optionen": [],
+     "erklaerung_tr": "Süre sorusu: 'Wie lange …?'."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "___ ___ nehmen Sie die Tabletten? – Dreimal täglich.",
+     "loesung": "Wie oft",
+     "optionen": [],
+     "erklaerung_tr": "Sıklık sorusu: 'Wie oft …?'."
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "Öffnen Sie den Mund! → höfliche Bitte mit Konjunktiv II",
+     "loesung": "Würden Sie bitte den Mund öffnen?",
+     "optionen": [],
+     "erklaerung_tr": "'Könnten Sie bitte den Mund öffnen?' de doğrudur."
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "Wo tut es weh? → indirekte Frage (Können Sie mir sagen, …)",
+     "loesung": "Können Sie mir sagen, wo es wehtut?",
+     "optionen": [],
+     "erklaerung_tr": "Dolaylı soruda soru kelimesi kalır, fiil sona gider."
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "Sind Sie schwanger? → indirekte Frage (Darf ich fragen, …)",
+     "loesung": "Darf ich fragen, ob Sie schwanger sind?",
+     "optionen": [],
+     "erklaerung_tr": "Evet/hayır sorusu dolaylıda 'ob' ile başlar."
+    },
+    {
+     "typ": "choice",
+     "aufgabe": "___ Sie mir bitte Ihren Medikamentenplan zeigen?",
+     "loesung": "Könnten",
+     "optionen": [
+      "Könnten",
+      "Konnten",
+      "Kannst",
+      "Könntest"
+     ],
+     "erklaerung_tr": "Sie-Form + Konjunktiv II = kibar rica."
+    },
+    {
+     "typ": "choice",
+     "aufgabe": "___ Seite ist betroffen, rechts oder links?",
+     "loesung": "Welche",
+     "optionen": [
+      "Welche",
+      "Was für",
+      "Wie",
+      "Wo"
+     ],
+     "erklaerung_tr": "Belirli seçenekler arasından seçim: 'welche' (Seite dişil)."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "___ wann ist die Schwellung da?",
+     "loesung": "Seit",
+     "optionen": [],
+     "erklaerung_tr": "Başlangıç zamanı: 'Seit wann …?'."
+    },
+    {
+     "typ": "choice",
+     "aufgabe": "Richtige Anrede für eine erwachsene Patientin:",
+     "loesung": "Haben Sie Schmerzen?",
+     "optionen": [
+      "Haben Sie Schmerzen?",
+      "Hast Sie Schmerzen?",
+      "Hast du Schmerzen?",
+      "Habt Sie Schmerzen?"
+     ],
+     "erklaerung_tr": "'Sie' her zaman 3. çoğul fiil çekimi alır: Haben Sie."
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "Wohin strahlt der Schmerz aus? → indirekte Frage (Könnten Sie mir sagen, …)",
+     "loesung": "Könnten Sie mir sagen, wohin der Schmerz ausstrahlt?",
+     "optionen": [],
+     "erklaerung_tr": "Ayrılabilen fiil dolaylı soruda birleşik olarak sona gider: ausstrahlt."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "___ für Medikamente nehmen Sie ein?",
+     "loesung": "Was",
+     "optionen": [],
+     "erklaerung_tr": "'Was für …?' tür sorar; gündelik dilde çok yaygın."
+    }
+   ]
+  },
+  {
+   "id": "tempus",
+   "title_de": "Tempus im Arztbrief (Präteritum, Perfekt, Plusquamperfekt)",
+   "title_tr": "Arztbrief'te zamanlar",
+   "erklaerung_tr": "Yazılı raporda geçmişteki olaylar (başvuru, anamnez, yapılan işlemler) Präteritum ile anlatılır: stellte sich vor, klagte, wurde extrahiert. Muayene anındaki ve hâlâ geçerli bulgular, tanılar Präsens olabilir (Es besteht der Verdacht auf …). Daha önce olmuş olaylar Plusquamperfekt: war … worden, hatte … erhalten. Plan için Präsens + zaman ifadesi ya da 'ist geplant/vorgesehen' kullanılır; 'werden + Infinitiv' (Futur) gerekmez. Konuşmada (Teil 1 ve 3) Perfekt daha doğaldır: Der Patient hat mir erzählt, … Bir paragrafta zamanları karıştırma.",
+   "beispiele": [
+    "Die Patientin stellte sich am 12.03. erstmals in unserer Praxis vor.",
+    "Sie klagte über ziehende Schmerzen regio 26.",
+    "Klinisch zeigte sich eine fluktuierende vestibuläre Schwellung.",
+    "Der Zahn war bereits vor zwei Jahren wurzelkanalbehandelt worden.",
+    "Eine Kontrolle ist in einer Woche vorgesehen.",
+    "Mündlich: Der Patient hat mir erzählt, dass er nachts von den Schmerzen aufwacht."
+   ],
+   "uebungen": [
+    {
+     "typ": "transform",
+     "aufgabe": "Der Patient hat sich heute vorgestellt. → Präteritum (Arztbrief)",
+     "loesung": "Der Patient stellte sich heute vor.",
+     "optionen": [],
+     "erklaerung_tr": "Ayrılabilen fiil Präteritum'da ayrılır: stellte … vor."
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "Wir haben eine Leitungsanästhesie gesetzt. → Präteritum",
+     "loesung": "Wir setzten eine Leitungsanästhesie.",
+     "optionen": [],
+     "erklaerung_tr": "Düzenli fiil: setz-te."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "Die Patientin ___ (klagen) über Schmerzen beim Aufbeißen.",
+     "loesung": "klagte",
+     "optionen": [],
+     "erklaerung_tr": "Düzenli fiil Präteritum: klag-te."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "Der Kältetest ___ negativ ___. (ausfallen, Präteritum)",
+     "loesung": "fiel … aus",
+     "optionen": [],
+     "erklaerung_tr": "Düzensiz ve ayrılabilen fiil: ausfallen → fiel … aus."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "Der Zahn ___ bereits 2020 überkront worden. (Plusquamperfekt Passiv)",
+     "loesung": "war",
+     "optionen": [],
+     "erklaerung_tr": "Daha önceki olay, edilgen: war + Partizip II + worden."
+    },
+    {
+     "typ": "choice",
+     "aufgabe": "Die Patientin ___ eine Penicillinallergie an. (Arztbrief, Präteritum)",
+     "loesung": "gab",
+     "optionen": [
+      "gab",
+      "hat gegeben",
+      "gibt gegeben",
+      "gebte"
+     ],
+     "erklaerung_tr": "angeben → gab … an (düzensiz)."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "Der Patient ___ (mitbringen) einen aktuellen Medikamentenplan ___. (Präteritum)",
+     "loesung": "brachte … mit",
+     "optionen": [],
+     "erklaerung_tr": "mitbringen karışık çekimli: brachte … mit."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "Die Wunde ___ (heilen) komplikationslos. (Präteritum)",
+     "loesung": "heilte",
+     "optionen": [],
+     "erklaerung_tr": "Düzenli fiil: heil-te."
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "Das Röntgenbild hat eine periapikale Aufhellung gezeigt. → Präteritum",
+     "loesung": "Das Röntgenbild zeigte eine periapikale Aufhellung.",
+     "optionen": [],
+     "erklaerung_tr": "Rapor dilinde Perfekt yerine Präteritum."
+    },
+    {
+     "typ": "choice",
+     "aufgabe": "Wie formuliert man das weitere Vorgehen im Arztbrief am besten?",
+     "loesung": "Eine Kontrolle ist in sieben Tagen geplant.",
+     "optionen": [
+      "Eine Kontrolle ist in sieben Tagen geplant.",
+      "Eine Kontrolle wurde in sieben Tagen geplant.",
+      "Eine Kontrolle war in sieben Tagen geplant.",
+      "Eine Kontrolle hat in sieben Tagen geplant."
+     ],
+     "erklaerung_tr": "Gelecek plan: Präsens 'ist geplant' (Zustandspassiv) + zaman ifadesi."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "Er ___ (einnehmen) am Morgen zwei Tabletten Paracetamol ___. (Präteritum)",
+     "loesung": "nahm … ein",
+     "optionen": [],
+     "erklaerung_tr": "einnehmen → nahm … ein (düzensiz, ayrılabilen)."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "Die Schmerzen ___ (beginnen) vor drei Tagen.",
+     "loesung": "begannen",
+     "optionen": [],
+     "erklaerung_tr": "Düzensiz fiil: beginnen → begann → begannen (çoğul)."
+    }
+   ]
+  },
+  {
+   "id": "verbpraep",
+   "title_de": "Verben mit Präpositionen",
+   "title_tr": "Edatlı fiiller",
+   "erklaerung_tr": "Bu fiiller sabit bir edatla kullanılır; edat ve hâl ezberlenmelidir. Sık olanlar: klagen über + Akk, leiden an + Dat (kronik hastalık) / unter + Dat (sıkıntı), berichten von + Dat / über + Akk, allergisch sein gegen + Akk, reagieren auf + Akk, Angst haben vor + Dat, raten zu + Dat, achten auf + Akk, fragen nach + Dat, einverstanden sein mit + Dat, sich erkundigen nach + Dat, ausstrahlen in + Akk, überweisen an + Akk / zu + Dat, aufklären über + Akk, sich beschweren über + Akk. Soru: Worüber klagt er? Wogegen ist sie allergisch? Kişi için: Vor wem hat das Kind Angst?",
+   "beispiele": [
+    "Die Patientin klagt über pochende Schmerzen im Unterkiefer links.",
+    "Er leidet seit zehn Jahren an Diabetes mellitus Typ 2.",
+    "Sie berichtete von nächtlichen Schmerzattacken.",
+    "Der Patient reagiert allergisch auf Penicillin.",
+    "Wir raten Ihnen zu einer professionellen Zahnreinigung.",
+    "Ich habe den Patienten über mögliche Komplikationen aufgeklärt."
+   ],
+   "uebungen": [
+    {
+     "typ": "cloze",
+     "aufgabe": "Der Patient klagt ___ Schmerzen beim Kauen.",
+     "loesung": "über",
+     "optionen": [],
+     "erklaerung_tr": "klagen über + Akkusativ."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "Sie leidet ___ Bluthochdruck.",
+     "loesung": "an",
+     "optionen": [],
+     "erklaerung_tr": "leiden an + Dativ (hastalık)."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "Er berichtete ___ einer Schwellung an der Wange.",
+     "loesung": "von",
+     "optionen": [],
+     "erklaerung_tr": "berichten von + Dativ."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "Die Patientin ist allergisch ___ Latex.",
+     "loesung": "gegen",
+     "optionen": [],
+     "erklaerung_tr": "allergisch sein gegen + Akkusativ."
+    },
+    {
+     "typ": "choice",
+     "aufgabe": "Wir beginnen jetzt ___ der Behandlung.",
+     "loesung": "mit",
+     "optionen": [
+      "mit",
+      "an",
+      "bei",
+      "zu"
+     ],
+     "erklaerung_tr": "beginnen mit + Dativ."
+    },
+    {
+     "typ": "choice",
+     "aufgabe": "Der Schmerz strahlt ___ Ohr aus.",
+     "loesung": "ins",
+     "optionen": [
+      "ins",
+      "zum",
+      "am",
+      "im"
+     ],
+     "erklaerung_tr": "ausstrahlen in + Akkusativ (yön): in das → ins."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "Wir raten Ihnen ___ einer Aufbissschiene.",
+     "loesung": "zu",
+     "optionen": [],
+     "erklaerung_tr": "raten zu + Dativ."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "Bitte achten Sie ___ eine gründliche Mundhygiene.",
+     "loesung": "auf",
+     "optionen": [],
+     "erklaerung_tr": "achten auf + Akkusativ."
+    },
+    {
+     "typ": "choice",
+     "aufgabe": "Das Kind hat Angst ___ der Spritze.",
+     "loesung": "vor",
+     "optionen": [
+      "vor",
+      "von",
+      "über",
+      "an"
+     ],
+     "erklaerung_tr": "Angst haben vor + Dativ."
+    },
+    {
+     "typ": "choice",
+     "aufgabe": "Die Patientin fragt ___ den Kosten der Krone.",
+     "loesung": "nach",
+     "optionen": [
+      "nach",
+      "über",
+      "von",
+      "um"
+     ],
+     "erklaerung_tr": "fragen nach + Dativ (bilgi istemek)."
+    },
+    {
+     "typ": "cloze",
+     "aufgabe": "Er ist ___ der vorgeschlagenen Behandlung einverstanden.",
+     "loesung": "mit",
+     "optionen": [],
+     "erklaerung_tr": "einverstanden sein mit + Dativ."
+    },
+    {
+     "typ": "transform",
+     "aufgabe": "Der Patient klagt über Schmerzen. → Frage nach dem Präpositionalobjekt",
+     "loesung": "Worüber klagt der Patient?",
+     "optionen": [],
+     "erklaerung_tr": "Nesne bir şeyse soru 'wo(r) + Edat': worüber, wogegen, wovor."
+    }
+   ]
+  }
+ ],
+ "redemittel": [
+  {
+   "bereich": "Fallvorstellung",
+   "de": "Darf ich Ihnen einen Patienten vorstellen, den ich heute in der Sprechstunde gesehen habe?",
+   "tr": "Bugün muayenede gördüğüm bir hastayı size sunabilir miyim?"
+  },
+  {
+   "bereich": "Fallvorstellung",
+   "de": "Es handelt sich um eine 38-jährige Patientin, die sich mit akuten Schmerzen im Oberkiefer rechts vorgestellt hat.",
+   "tr": "Sağ üst çenede akut ağrıyla başvuran 38 yaşında bir kadın hasta söz konusu."
+  },
+  {
+   "bereich": "Fallvorstellung",
+   "de": "Die Beschwerden bestehen seit etwa einer Woche und haben in den letzten zwei Tagen deutlich zugenommen.",
+   "tr": "Şikâyetler yaklaşık bir haftadır var ve son iki günde belirgin şekilde arttı."
+  },
+  {
+   "bereich": "Fallvorstellung",
+   "de": "Der Schmerz wird als pochend beschrieben und auf der Schmerzskala mit 8 von 10 angegeben.",
+   "tr": "Ağrı zonklayıcı olarak tarif ediliyor ve skalada 10 üzerinden 8 olarak belirtiliyor."
+  },
+  {
+   "bereich": "Fallvorstellung",
+   "de": "Die Allgemeinanamnese ist bis auf eine medikamentös eingestellte Hypertonie unauffällig.",
+   "tr": "Genel anamnez, ilaçla kontrol altındaki hipertansiyon dışında olağandır."
+  },
+  {
+   "bereich": "Fallvorstellung",
+   "de": "Relevant ist die Einnahme von Apixaban wegen Vorhofflimmerns.",
+   "tr": "Önemli nokta: atriyal fibrilasyon nedeniyle apiksaban kullanımı."
+  },
+  {
+   "bereich": "Fallvorstellung",
+   "de": "Bei der klinischen Untersuchung fiel auf, dass …",
+   "tr": "Klinik muayenede … dikkati çekti."
+  },
+  {
+   "bereich": "Fallvorstellung",
+   "de": "Radiologisch zeigt sich eine periapikale Aufhellung an der mesialen Wurzel.",
+   "tr": "Radyolojik olarak mezial kökte periapikal radyolüsens görülüyor."
+  },
+  {
+   "bereich": "Fallvorstellung",
+   "de": "Zusammenfassend gehe ich von einer symptomatischen apikalen Parodontitis aus.",
+   "tr": "Özetle semptomatik apikal periodontit olduğunu düşünüyorum."
+  },
+  {
+   "bereich": "Fallvorstellung",
+   "de": "Meine Arbeitsdiagnose lautet …, differenzialdiagnostisch müsste man an … denken.",
+   "tr": "Çalışma tanım …, ayırıcı tanıda … düşünülmeli."
+  },
+  {
+   "bereich": "Fallvorstellung",
+   "de": "Als nächsten Schritt schlage ich vor, …",
+   "tr": "Bir sonraki adım olarak … öneriyorum."
+  },
+  {
+   "bereich": "Fallvorstellung",
+   "de": "Haben Sie dazu noch Fragen, oder soll ich auf einen Punkt genauer eingehen?",
+   "tr": "Bununla ilgili sorunuz var mı, yoksa bir noktayı daha ayrıntılı anlatayım mı?"
+  },
+  {
+   "bereich": "Arztbrief: Einleitung",
+   "de": "Sehr geehrte Frau Dr. Meier,",
+   "tr": "Sayın Dr. Meier,"
+  },
+  {
+   "bereich": "Arztbrief: Einleitung",
+   "de": "vielen Dank für die Überweisung Ihres Patienten Herrn K., geb. am 04.05.1971.",
+   "tr": "04.05.1971 doğumlu hastanız Bay K.'yı sevk ettiğiniz için teşekkür ederiz."
+  },
+  {
+   "bereich": "Arztbrief: Einleitung",
+   "de": "Herr K. stellte sich am 10.11. notfallmäßig in unserer Praxis vor.",
+   "tr": "Bay K. 10.11.'de acil olarak muayenehanemize başvurdu."
+  },
+  {
+   "bereich": "Arztbrief: Einleitung",
+   "de": "Wir möchten Sie über den bisherigen Behandlungsverlauf informieren.",
+   "tr": "Sizi şimdiye kadarki tedavi süreci hakkında bilgilendirmek istiyoruz."
+  },
+  {
+   "bereich": "Arztbrief: Anamnese",
+   "de": "Aktuelle Anamnese: Die Patientin klagte über seit vier Tagen bestehende, ziehende Schmerzen regio 36.",
+   "tr": "Güncel anamnez: Hasta 36 bölgesinde dört gündür süren, çekici ağrıdan yakındı."
+  },
+  {
+   "bereich": "Arztbrief: Anamnese",
+   "de": "Die Schmerzen träten vor allem bei Kälte auf und hielten mehrere Minuten an.",
+   "tr": "Ağrının özellikle soğukla ortaya çıktığı ve birkaç dakika sürdüğü belirtildi."
+  },
+  {
+   "bereich": "Arztbrief: Anamnese",
+   "de": "Allgemeinanamnese: Bekannt sind ein Diabetes mellitus Typ 2 sowie eine Hypothyreose.",
+   "tr": "Genel anamnez: Tip 2 diyabet ve hipotiroidi bilinmektedir."
+  },
+  {
+   "bereich": "Arztbrief: Anamnese",
+   "de": "Medikamentenanamnese: Metformin 1000 mg 1-0-1, L-Thyroxin 75 µg 1-0-0.",
+   "tr": "İlaç anamnezi: Metformin 1000 mg sabah-akşam, L-tiroksin 75 µg sabah."
+  },
+  {
+   "bereich": "Arztbrief: Anamnese",
+   "de": "Allergien und Unverträglichkeiten wurden verneint.",
+   "tr": "Alerji ve intolerans olmadığı belirtildi."
+  },
+  {
+   "bereich": "Arztbrief: Anamnese",
+   "de": "Noxen: Nikotinabusus von ca. 15 Zigaretten täglich, Alkohol gelegentlich.",
+   "tr": "Zararlı alışkanlıklar: günde yaklaşık 15 sigara, ara sıra alkol."
+  },
+  {
+   "bereich": "Arztbrief: Befund",
+   "de": "Extraoral: keine Schwellung, Lymphknoten nicht tastbar, Kiefergelenk unauffällig.",
+   "tr": "Ağız dışı: şişlik yok, lenf düğümleri ele gelmiyor, çene eklemi normal."
+  },
+  {
+   "bereich": "Arztbrief: Befund",
+   "de": "Intraoral: Zahn 36 mit insuffizienter Kompositfüllung okklusal-distal.",
+   "tr": "Ağız içi: 36 numaralı dişte okluzal-distal yetersiz kompozit dolgu."
+  },
+  {
+   "bereich": "Arztbrief: Befund",
+   "de": "Der Sensibilitätstest an Zahn 36 war positiv mit verlängerter Reaktion.",
+   "tr": "36'da duyarlılık testi pozitif, yanıt uzamış."
+  },
+  {
+   "bereich": "Arztbrief: Befund",
+   "de": "Perkussion vertikal leicht positiv, horizontal negativ.",
+   "tr": "Dikey perküsyon hafif pozitif, yatay negatif."
+  },
+  {
+   "bereich": "Arztbrief: Befund",
+   "de": "Sondierungstiefen bis 3 mm, kein Bluten auf Sondieren.",
+   "tr": "Sondalama derinlikleri 3 mm'ye kadar, sondalamada kanama yok."
+  },
+  {
+   "bereich": "Arztbrief: Befund",
+   "de": "Lockerungsgrad 0, die Mundschleimhaut ist reizlos.",
+   "tr": "Mobilite derecesi 0, ağız mukozası iritasyonsuz."
+  },
+  {
+   "bereich": "Arztbrief: Befund",
+   "de": "Röntgenologisch: tiefe Sekundärkaries distal mit Nähe zur Pulpa, apikal ohne pathologischen Befund.",
+   "tr": "Radyolojik: distalde pulpaya yakın derin sekonder çürük, apikalde patolojik bulgu yok."
+  },
+  {
+   "bereich": "Arztbrief: Diagnose",
+   "de": "Diagnose: irreversible Pulpitis an Zahn 36.",
+   "tr": "Tanı: 36 numaralı dişte geri dönüşümsüz pulpit."
+  },
+  {
+   "bereich": "Arztbrief: Diagnose",
+   "de": "Verdachtsdiagnose: Längsfraktur der distalen Wurzel von Zahn 46.",
+   "tr": "Şüpheli tanı: 46 numaralı dişin distal kökünde dikey kırık."
+  },
+  {
+   "bereich": "Arztbrief: Diagnose",
+   "de": "Differenzialdiagnostisch ist eine Sinusitis maxillaris abzugrenzen.",
+   "tr": "Ayırıcı tanıda maksiller sinüzit ekarte edilmelidir."
+  },
+  {
+   "bereich": "Arztbrief: Diagnose",
+   "de": "Nebenbefundlich zeigte sich eine generalisierte Gingivitis.",
+   "tr": "Ek bulgu olarak generalize gingivit görüldü."
+  },
+  {
+   "bereich": "Arztbrief: Diagnose",
+   "de": "Die Diagnose wurde klinisch und radiologisch gesichert.",
+   "tr": "Tanı klinik ve radyolojik olarak doğrulandı."
+  },
+  {
+   "bereich": "Arztbrief: Therapie",
+   "de": "Nach ausführlicher Aufklärung und Einwilligung der Patientin erfolgte die Vitalexstirpation an Zahn 36.",
+   "tr": "Hastanın ayrıntılı bilgilendirilmesi ve onayından sonra 36'da vital ekstirpasyon yapıldı."
+  },
+  {
+   "bereich": "Arztbrief: Therapie",
+   "de": "Unter Leitungsanästhesie mit Articain 4 % mit Adrenalin 1:200.000 wurde der Zahn trepaniert.",
+   "tr": "Artikain %4 adrenalin 1:200.000 ile mandibular blok altında diş trepane edildi."
+  },
+  {
+   "bereich": "Arztbrief: Therapie",
+   "de": "Die Kanäle wurden aufbereitet, mit NaOCl gespült und mit Calciumhydroxid medikamentös versorgt.",
+   "tr": "Kanallar şekillendirildi, NaOCl ile yıkandı ve kalsiyum hidroksit ile pansuman yapıldı."
+  },
+  {
+   "bereich": "Arztbrief: Therapie",
+   "de": "Der provisorische Verschluss erfolgte mit Glasionomerzement.",
+   "tr": "Geçici kapatma cam iyonomer simanla yapıldı."
+  },
+  {
+   "bereich": "Arztbrief: Therapie",
+   "de": "Der Eingriff verlief komplikationslos.",
+   "tr": "İşlem komplikasyonsuz geçti."
+  },
+  {
+   "bereich": "Arztbrief: Therapie",
+   "de": "Zur Schmerztherapie wurde Ibuprofen 400 mg bei Bedarf, max. 3 x täglich, empfohlen.",
+   "tr": "Ağrı tedavisi için gerektiğinde ibuprofen 400 mg, günde en fazla 3 kez önerildi."
+  },
+  {
+   "bereich": "Arztbrief: Procedere",
+   "de": "Im weiteren Verlauf ist die definitive Wurzelkanalfüllung geplant.",
+   "tr": "İlerleyen süreçte kalıcı kanal dolgusu planlandı."
+  },
+  {
+   "bereich": "Arztbrief: Procedere",
+   "de": "Anschließend empfehlen wir eine Versorgung mit einer Teilkrone.",
+   "tr": "Ardından bir parsiyel kron ile restorasyon öneriyoruz."
+  },
+  {
+   "bereich": "Arztbrief: Procedere",
+   "de": "Eine Wiedervorstellung ist in sieben Tagen zur Nahtentfernung vorgesehen.",
+   "tr": "Dikiş alımı için yedi gün sonra kontrol planlandı."
+  },
+  {
+   "bereich": "Arztbrief: Procedere",
+   "de": "Wir bitten um Mitbeurteilung und gegebenenfalls Anpassung der Antikoagulation.",
+   "tr": "Değerlendirmenizi ve gerekirse antikoagülasyonun düzenlenmesini rica ederiz."
+  },
+  {
+   "bereich": "Arztbrief: Procedere",
+   "de": "Bei Zunahme der Beschwerden soll sich der Patient umgehend wieder vorstellen.",
+   "tr": "Şikâyetler artarsa hasta derhal tekrar başvurmalıdır."
+  },
+  {
+   "bereich": "Arztbrief: Procedere",
+   "de": "Eine Röntgenkontrolle nach sechs Monaten halten wir für sinnvoll.",
+   "tr": "Altı ay sonra kontrol röntgeni uygun olur."
+  },
+  {
+   "bereich": "Arztbrief: Gruß",
+   "de": "Für Rückfragen stehen wir Ihnen jederzeit gern zur Verfügung.",
+   "tr": "Sorularınız için her zaman hizmetinizdeyiz."
+  },
+  {
+   "bereich": "Arztbrief: Gruß",
+   "de": "Mit freundlichen kollegialen Grüßen",
+   "tr": "Saygılar ve meslektaş selamlarımla"
+  },
+  {
+   "bereich": "Arztbrief: Gruß",
+   "de": "Mit freundlichen Grüßen aus der Praxis",
+   "tr": "Muayenehaneden saygılarımızla"
+  },
+  {
+   "bereich": "Arztbrief: Gruß",
+   "de": "Anlagen: Röntgenbild (OPG vom 10.11.), Befundbogen",
+   "tr": "Ekler: Röntgen (10.11. tarihli OPG), bulgu formu"
+  },
+  {
+   "bereich": "Aufklärung",
+   "de": "Ich möchte Ihnen jetzt erklären, was wir heute machen und warum.",
+   "tr": "Şimdi bugün ne yapacağımızı ve nedenini açıklamak istiyorum."
+  },
+  {
+   "bereich": "Aufklärung",
+   "de": "Ihr Zahnnerv ist entzündet und kann sich leider nicht mehr erholen.",
+   "tr": "Diş siniriniz iltihaplı ve maalesef artık kendini toparlayamaz."
+  },
+  {
+   "bereich": "Aufklärung",
+   "de": "Es gibt zwei Möglichkeiten: Wir können den Zahn erhalten oder ihn entfernen.",
+   "tr": "İki seçenek var: Dişi koruyabiliriz ya da çekebiliriz."
+  },
+  {
+   "bereich": "Aufklärung",
+   "de": "Der Vorteil dieser Behandlung ist, dass Sie Ihren eigenen Zahn behalten.",
+   "tr": "Bu tedavinin avantajı kendi dişinizi korumanızdır."
+  },
+  {
+   "bereich": "Aufklärung",
+   "de": "Wie bei jedem Eingriff gibt es auch hier Risiken, über die ich Sie informieren muss.",
+   "tr": "Her işlemde olduğu gibi burada da size bildirmem gereken riskler var."
+  },
+  {
+   "bereich": "Aufklärung",
+   "de": "In seltenen Fällen kann es zu einem Taubheitsgefühl an der Unterlippe kommen, das meistens wieder verschwindet.",
+   "tr": "Nadiren alt dudakta uyuşma olabilir; çoğunlukla geçer."
+  },
+  {
+   "bereich": "Aufklärung",
+   "de": "Wenn wir nichts machen, kann sich die Entzündung ausbreiten.",
+   "tr": "Hiçbir şey yapmazsak iltihap yayılabilir."
+  },
+  {
+   "bereich": "Aufklärung",
+   "de": "Nach der Behandlung sollten Sie zwei Stunden nichts essen, bis die Betäubung nachlässt.",
+   "tr": "Tedaviden sonra uyuşukluk geçene kadar iki saat bir şey yememelisiniz."
+  },
+  {
+   "bereich": "Aufklärung",
+   "de": "Haben Sie das so verstanden? Können Sie mir mit Ihren eigenen Worten sagen, was wir vorhaben?",
+   "tr": "Bunu anladınız mı? Planımızı kendi cümlelerinizle anlatabilir misiniz?"
+  },
+  {
+   "bereich": "Aufklärung",
+   "de": "Sie müssen sich nicht sofort entscheiden. Sie können sich gern Bedenkzeit nehmen.",
+   "tr": "Hemen karar vermek zorunda değilsiniz. Düşünmek için zaman alabilirsiniz."
+  },
+  {
+   "bereich": "Aufklärung",
+   "de": "Wenn Sie einverstanden sind, würde ich Sie bitten, den Aufklärungsbogen zu unterschreiben.",
+   "tr": "Kabul ediyorsanız bilgilendirme formunu imzalamanızı rica ederim."
+  },
+  {
+   "bereich": "Rückfragen beantworten",
+   "de": "Das ist eine gute Frage. Ich würde das folgendermaßen begründen: …",
+   "tr": "Güzel bir soru. Bunu şöyle gerekçelendiririm: …"
+  },
+  {
+   "bereich": "Rückfragen beantworten",
+   "de": "Meines Wissens empfiehlt die aktuelle Leitlinie in diesem Fall …",
+   "tr": "Bildiğim kadarıyla güncel kılavuz bu durumda … öneriyor."
+  },
+  {
+   "bereich": "Rückfragen beantworten",
+   "de": "Da bin ich mir nicht ganz sicher, ich würde es aber vor der Behandlung nachschlagen.",
+   "tr": "Bundan tam emin değilim ama tedaviden önce kontrol ederdim."
+  },
+  {
+   "bereich": "Rückfragen beantworten",
+   "de": "Wenn ich Sie richtig verstehe, fragen Sie nach …",
+   "tr": "Sizi doğru anladıysam … hakkında soruyorsunuz."
+  },
+  {
+   "bereich": "Rückfragen beantworten",
+   "de": "Das habe ich in der Anamnese leider nicht erfragt; ich würde es nachholen.",
+   "tr": "Bunu anamnezde maalesef sormadım; sonradan sorardım."
+  },
+  {
+   "bereich": "Rückfragen beantworten",
+   "de": "Für mich stand zunächst die Schmerzbeseitigung im Vordergrund.",
+   "tr": "Benim için öncelik ağrının giderilmesiydi."
+  },
+  {
+   "bereich": "Rückfragen beantworten",
+   "de": "Alternativ käme auch … infrage, allerdings mit dem Nachteil, dass …",
+   "tr": "Alternatif olarak … da düşünülebilir, ancak … dezavantajıyla."
+  },
+  {
+   "bereich": "Rückfragen beantworten",
+   "de": "Dem Patienten würde ich das ungefähr so erklären: …",
+   "tr": "Hastaya bunu yaklaşık şöyle anlatırdım: …"
+  },
+  {
+   "bereich": "Zeit gewinnen",
+   "de": "Einen Moment bitte, darüber muss ich kurz nachdenken.",
+   "tr": "Bir dakika lütfen, bunu biraz düşünmem gerekiyor."
+  },
+  {
+   "bereich": "Zeit gewinnen",
+   "de": "Lassen Sie mich das kurz zusammenfassen, bevor ich antworte.",
+   "tr": "Cevaplamadan önce kısaca özetleyeyim."
+  },
+  {
+   "bereich": "Zeit gewinnen",
+   "de": "Könnten Sie die Frage bitte noch einmal wiederholen?",
+   "tr": "Soruyu bir kez daha tekrarlayabilir misiniz?"
+  },
+  {
+   "bereich": "Zeit gewinnen",
+   "de": "Meinen Sie damit …, oder geht es Ihnen eher um …?",
+   "tr": "Bununla …'yı mı kastediyorsunuz, yoksa daha çok … mı?"
+  },
+  {
+   "bereich": "Zeit gewinnen",
+   "de": "Ich schaue kurz in meine Notizen.",
+   "tr": "Notlarıma kısaca bakıyorum."
+  },
+  {
+   "bereich": "Zeit gewinnen",
+   "de": "Das ist ein wichtiger Punkt, auf den ich gleich noch eingehen möchte.",
+   "tr": "Bu önemli bir nokta, birazdan ona değinmek istiyorum."
+  },
+  {
+   "bereich": "Zeit gewinnen",
+   "de": "Wie soll ich es am besten ausdrücken …",
+   "tr": "Bunu en iyi nasıl ifade edeyim …"
+  },
+  {
+   "bereich": "Empathie",
+   "de": "Ich kann gut verstehen, dass Sie sich Sorgen machen.",
+   "tr": "Endişelenmenizi çok iyi anlıyorum."
+  },
+  {
+   "bereich": "Empathie",
+   "de": "Das klingt wirklich unangenehm.",
+   "tr": "Bu gerçekten rahatsız edici görünüyor."
+  },
+  {
+   "bereich": "Empathie",
+   "de": "Sie haben richtig gehandelt, dass Sie heute gekommen sind.",
+   "tr": "Bugün gelmekle doğru yaptınız."
+  },
+  {
+   "bereich": "Empathie",
+   "de": "Wir nehmen uns Zeit, Sie müssen sich nicht beeilen.",
+   "tr": "Zaman ayırıyoruz, acele etmenize gerek yok."
+  },
+  {
+   "bereich": "Empathie",
+   "de": "Wenn es wehtut, heben Sie bitte die linke Hand, dann höre ich sofort auf.",
+   "tr": "Ağrırsa lütfen sol elinizi kaldırın, hemen dururum."
+  },
+  {
+   "bereich": "Empathie",
+   "de": "Viele Patienten haben ähnliche Ängste, das ist ganz normal.",
+   "tr": "Birçok hastanın benzer korkuları var, bu çok normal."
+  },
+  {
+   "bereich": "Empathie",
+   "de": "Ich erkläre Ihnen jeden Schritt, bevor ich ihn mache.",
+   "tr": "Her adımı yapmadan önce size açıklayacağım."
+  },
+  {
+   "bereich": "Empathie",
+   "de": "Wie geht es Ihnen gerade? Sollen wir eine kurze Pause machen?",
+   "tr": "Şu an nasılsınız? Kısa bir ara verelim mi?"
+  },
+  {
+   "bereich": "Überweisung",
+   "de": "Ich möchte Sie gern zu einem Spezialisten überweisen, der auf solche Eingriffe spezialisiert ist.",
+   "tr": "Sizi bu tür işlemlerde uzman bir hekime sevk etmek istiyorum."
+  },
+  {
+   "bereich": "Überweisung",
+   "de": "Für diesen Eingriff ist eine Kieferchirurgin besser ausgestattet.",
+   "tr": "Bu işlem için bir çene cerrahı daha iyi donanımlı."
+  },
+  {
+   "bereich": "Überweisung",
+   "de": "Ich gebe Ihnen eine Überweisung und einen kurzen Bericht für die Kollegin mit.",
+   "tr": "Size sevk belgesi ve meslektaşım için kısa bir rapor veriyorum."
+  },
+  {
+   "bereich": "Überweisung",
+   "de": "Bitte vereinbaren Sie zeitnah einen Termin, am besten noch diese Woche.",
+   "tr": "Lütfen kısa sürede, mümkünse bu hafta randevu alın."
+  },
+  {
+   "bereich": "Überweisung",
+   "de": "Überweisung an: MKG-Chirurgie. Fragestellung: operative Entfernung 38 bei Nähe zum Nervkanal.",
+   "tr": "Sevk: Ağız-çene-yüz cerrahisi. Soru: Sinir kanalına yakın 38'in cerrahi çekimi."
+  },
+  {
+   "bereich": "Überweisung",
+   "de": "Mit Ihrem Einverständnis würde ich vorher kurz mit Ihrem Hausarzt sprechen.",
+   "tr": "İzninizle önce aile hekiminizle kısaca görüşmek isterim."
+  }
+ ],
+ "abkuerzungen": [
+  {
+   "abk": "WKB",
+   "voll": "Wurzelkanalbehandlung",
+   "tr": "kanal tedavisi"
+  },
+  {
+   "abk": "WF",
+   "voll": "Wurzelfüllung / Wurzelkanalfüllung",
+   "tr": "kök kanal dolgusu"
+  },
+  {
+   "abk": "VitE",
+   "voll": "Vitalexstirpation",
+   "tr": "vital pulpa ekstirpasyonu"
+  },
+  {
+   "abk": "PZR",
+   "voll": "professionelle Zahnreinigung",
+   "tr": "profesyonel diş temizliği"
+  },
+  {
+   "abk": "PA / PAR",
+   "voll": "Parodontitis bzw. Parodontitistherapie (Abrechnungsbegriff)",
+   "tr": "periodontit / periodontal tedavi"
+  },
+  {
+   "abk": "AIT",
+   "voll": "antiinfektiöse Therapie (geschlossene Parodontitistherapie)",
+   "tr": "anti-enfektif (kapalı) periodontal tedavi"
+  },
+  {
+   "abk": "UPT",
+   "voll": "unterstützende Parodontitistherapie",
+   "tr": "destekleyici periodontal tedavi (idame)"
+  },
+  {
+   "abk": "CPT",
+   "voll": "chirurgische Parodontitistherapie",
+   "tr": "cerrahi periodontal tedavi"
+  },
+  {
+   "abk": "BEV",
+   "voll": "Befundevaluation (nach Parodontitistherapie)",
+   "tr": "tedavi sonrası bulgu değerlendirmesi"
+  },
+  {
+   "abk": "MHU",
+   "voll": "Mundhygieneunterweisung",
+   "tr": "ağız hijyeni eğitimi"
+  },
+  {
+   "abk": "ATG",
+   "voll": "Aufklärungs- und Therapiegespräch (Parodontitis)",
+   "tr": "periodontit bilgilendirme ve tedavi görüşmesi"
+  },
+  {
+   "abk": "OPG / OPT",
+   "voll": "Orthopantomogramm / Orthopantomographie",
+   "tr": "panoramik röntgen"
+  },
+  {
+   "abk": "DVT",
+   "voll": "digitale Volumentomographie",
+   "tr": "konik ışınlı bilgisayarlı tomografi (KIBT)"
+  },
+  {
+   "abk": "ZF",
+   "voll": "Zahnfilm (Einzelzahnaufnahme)",
+   "tr": "periapikal röntgen"
+  },
+  {
+   "abk": "BW / BF",
+   "voll": "Bissflügelaufnahme (engl. bitewing)",
+   "tr": "bitewing röntgen"
+  },
+  {
+   "abk": "FRS",
+   "voll": "Fernröntgenseitenbild",
+   "tr": "sefalometrik (lateral sefalometri) röntgen"
+  },
+  {
+   "abk": "Rö",
+   "voll": "Röntgen / Röntgenbild",
+   "tr": "röntgen"
+  },
+  {
+   "abk": "ZE",
+   "voll": "Zahnersatz",
+   "tr": "protetik restorasyon"
+  },
+  {
+   "abk": "HKP",
+   "voll": "Heil- und Kostenplan",
+   "tr": "tedavi ve maliyet planı (sigortaya sunulur)"
+  },
+  {
+   "abk": "KFO",
+   "voll": "Kieferorthopädie",
+   "tr": "ortodonti"
+  },
+  {
+   "abk": "MKG",
+   "voll": "Mund-, Kiefer- und Gesichtschirurgie",
+   "tr": "ağız, çene ve yüz cerrahisi"
+  },
+  {
+   "abk": "LA",
+   "voll": "Lokalanästhesie",
+   "tr": "lokal anestezi"
+  },
+  {
+   "abk": "ILA",
+   "voll": "intraligamentäre Anästhesie",
+   "tr": "intraligamenter anestezi"
+  },
+  {
+   "abk": "ITN",
+   "voll": "Intubationsnarkose",
+   "tr": "entübasyonlu genel anestezi"
+  },
+  {
+   "abk": "Adr.",
+   "voll": "Adrenalin (Epinephrin)",
+   "tr": "adrenalin"
+  },
+  {
+   "abk": "BOP",
+   "voll": "Bleeding on Probing (Blutung auf Sondieren)",
+   "tr": "sondalamada kanama"
+  },
+  {
+   "abk": "PSI",
+   "voll": "Parodontaler Screening-Index",
+   "tr": "periodontal tarama indeksi"
+  },
+  {
+   "abk": "ST / TST",
+   "voll": "Sondierungstiefe / Taschensondierungstiefe",
+   "tr": "sondalama (cep) derinliği"
+  },
+  {
+   "abk": "CAL / AL",
+   "voll": "klinisches Attachmentlevel / Attachmentverlust",
+   "tr": "klinik ataşman seviyesi / kaybı"
+  },
+  {
+   "abk": "API",
+   "voll": "Approximalraum-Plaque-Index",
+   "tr": "aproksimal plak indeksi"
+  },
+  {
+   "abk": "SBI",
+   "voll": "Sulkus-Blutungs-Index",
+   "tr": "sulkus kanama indeksi"
+  },
+  {
+   "abk": "PBI",
+   "voll": "Papillen-Blutungs-Index",
+   "tr": "papil kanama indeksi"
+  },
+  {
+   "abk": "DMF-T",
+   "voll": "Index: Decayed, Missing, Filled Teeth (bleibende Zähne)",
+   "tr": "çürük-eksik-dolgulu diş indeksi"
+  },
+  {
+   "abk": "dmf-t",
+   "voll": "derselbe Index für Milchzähne",
+   "tr": "süt dişleri için DMF indeksi"
+  },
+  {
+   "abk": "Vipr / VP",
+   "voll": "Vitalitätsprobe (Sensibilitätstest)",
+   "tr": "vitalite (duyarlılık) testi"
+  },
+  {
+   "abk": "Perk",
+   "voll": "Perkussion(sprobe)",
+   "tr": "perküsyon testi"
+  },
+  {
+   "abk": "SKD",
+   "voll": "Schneidekantendistanz (maximale Mundöffnung)",
+   "tr": "kesici kenar mesafesi (maksimum ağız açıklığı)"
+  },
+  {
+   "abk": "CMD",
+   "voll": "kraniomandibuläre Dysfunktion",
+   "tr": "temporomandibular bozukluk"
+  },
+  {
+   "abk": "KG",
+   "voll": "Kiefergelenk",
+   "tr": "temporomandibular eklem"
+  },
+  {
+   "abk": "o.B.",
+   "voll": "ohne (pathologischen) Befund",
+   "tr": "patolojik bulgu yok"
+  },
+  {
+   "abk": "V.a.",
+   "voll": "Verdacht auf",
+   "tr": "… şüphesi"
+  },
+  {
+   "abk": "DD",
+   "voll": "Differenzialdiagnose",
+   "tr": "ayırıcı tanı"
+  },
+  {
+   "abk": "Z.n.",
+   "voll": "Zustand nach",
+   "tr": "… sonrası durum (geçirilmiş)"
+  },
+  {
+   "abk": "St.p.",
+   "voll": "Status post (= Zustand nach)",
+   "tr": "… sonrası durum"
+  },
+  {
+   "abk": "Dg.",
+   "voll": "Diagnose",
+   "tr": "tanı"
+  },
+  {
+   "abk": "Th.",
+   "voll": "Therapie",
+   "tr": "tedavi"
+  },
+  {
+   "abk": "HbA1c",
+   "voll": "glykiertes Hämoglobin (Langzeitblutzucker)",
+   "tr": "uzun dönem kan şekeri (glikozillenmiş hemoglobin)"
+  },
+  {
+   "abk": "BZ",
+   "voll": "Blutzucker",
+   "tr": "kan şekeri"
+  },
+  {
+   "abk": "INR",
+   "voll": "International Normalized Ratio (Gerinnungswert)",
+   "tr": "pıhtılaşma değeri (INR)"
+  },
+  {
+   "abk": "aPTT",
+   "voll": "aktivierte partielle Thromboplastinzeit",
+   "tr": "aktive parsiyel tromboplastin zamanı"
+  },
+  {
+   "abk": "Thrombos",
+   "voll": "Thrombozyten",
+   "tr": "trombositler"
+  },
+  {
+   "abk": "Leukos",
+   "voll": "Leukozyten",
+   "tr": "lökositler"
+  },
+  {
+   "abk": "Hb",
+   "voll": "Hämoglobin",
+   "tr": "hemoglobin"
+  },
+  {
+   "abk": "CRP",
+   "voll": "C-reaktives Protein",
+   "tr": "C-reaktif protein"
+  },
+  {
+   "abk": "GFR / eGFR",
+   "voll": "(geschätzte) glomeruläre Filtrationsrate",
+   "tr": "(tahmini) glomerüler filtrasyon hızı"
+  },
+  {
+   "abk": "RR",
+   "voll": "Blutdruck (nach Riva-Rocci)",
+   "tr": "kan basıncı"
+  },
+  {
+   "abk": "HF",
+   "voll": "Herzfrequenz",
+   "tr": "kalp hızı (nabız)"
+  },
+  {
+   "abk": "SpO2",
+   "voll": "periphere Sauerstoffsättigung",
+   "tr": "periferik oksijen satürasyonu"
+  },
+  {
+   "abk": "AZ / EZ",
+   "voll": "Allgemeinzustand / Ernährungszustand",
+   "tr": "genel durum / beslenme durumu"
+  },
+  {
+   "abk": "ASS",
+   "voll": "Acetylsalicylsäure",
+   "tr": "asetilsalisilik asit (aspirin)"
+  },
+  {
+   "abk": "NSAR",
+   "voll": "nichtsteroidale Antirheumatika (z. B. Ibuprofen)",
+   "tr": "steroid olmayan antiinflamatuvar ilaçlar (NSAİİ)"
+  },
+  {
+   "abk": "OAK",
+   "voll": "orale Antikoagulation",
+   "tr": "oral antikoagülasyon"
+  },
+  {
+   "abk": "VKA",
+   "voll": "Vitamin-K-Antagonist (z. B. Phenprocoumon)",
+   "tr": "K vitamini antagonisti"
+  },
+  {
+   "abk": "DOAK / NOAK",
+   "voll": "direkte (neue) orale Antikoagulanzien (z. B. Apixaban, Rivaroxaban)",
+   "tr": "doğrudan etkili oral antikoagülanlar"
+  },
+  {
+   "abk": "NMH",
+   "voll": "niedermolekulares Heparin",
+   "tr": "düşük molekül ağırlıklı heparin"
+  },
+  {
+   "abk": "TAH",
+   "voll": "Thrombozytenaggregationshemmer",
+   "tr": "trombosit agregasyon inhibitörü"
+  },
+  {
+   "abk": "PPI",
+   "voll": "Protonenpumpenhemmer",
+   "tr": "proton pompası inhibitörü"
+  },
+  {
+   "abk": "CHX",
+   "voll": "Chlorhexidin(digluconat)",
+   "tr": "klorheksidin"
+  },
+  {
+   "abk": "NaOCl",
+   "voll": "Natriumhypochlorit",
+   "tr": "sodyum hipoklorit"
+  },
+  {
+   "abk": "EDTA",
+   "voll": "Ethylendiamintetraessigsäure",
+   "tr": "EDTA (şelasyon ajanı)"
+  },
+  {
+   "abk": "Ca(OH)2",
+   "voll": "Calciumhydroxid",
+   "tr": "kalsiyum hidroksit"
+  },
+  {
+   "abk": "MTA",
+   "voll": "Mineral Trioxide Aggregate",
+   "tr": "mineral trioksit agregat"
+  },
+  {
+   "abk": "GIZ",
+   "voll": "Glasionomerzement",
+   "tr": "cam iyonomer siman"
+  },
+  {
+   "abk": "MOD",
+   "voll": "mesial-okklusal-distal (Füllungsflächen)",
+   "tr": "mezial-okluzal-distal"
+  },
+  {
+   "abk": "m / d",
+   "voll": "mesial / distal",
+   "tr": "mezial / distal"
+  },
+  {
+   "abk": "o / i",
+   "voll": "okklusal / inzisal",
+   "tr": "okluzal / insizal"
+  },
+  {
+   "abk": "b / v",
+   "voll": "bukkal / vestibulär",
+   "tr": "bukkal / vestibüler"
+  },
+  {
+   "abk": "l / p",
+   "voll": "lingual / palatinal",
+   "tr": "lingual / palatinal"
+  },
+  {
+   "abk": "OK / UK",
+   "voll": "Oberkiefer / Unterkiefer",
+   "tr": "üst çene / alt çene"
+  },
+  {
+   "abk": "re / li",
+   "voll": "rechts / links",
+   "tr": "sağ / sol"
+  },
+  {
+   "abk": "bds.",
+   "voll": "beidseits",
+   "tr": "iki taraflı"
+  },
+  {
+   "abk": "reg.",
+   "voll": "regio (in der Region von)",
+   "tr": "… bölgesinde"
+  },
+  {
+   "abk": "TK",
+   "voll": "Teilkrone",
+   "tr": "parsiyel kron"
+  },
+  {
+   "abk": "VMK",
+   "voll": "Verblendmetallkeramik",
+   "tr": "metal destekli seramik"
+  },
+  {
+   "abk": "VK",
+   "voll": "Vollkeramik",
+   "tr": "tam seramik"
+  },
+  {
+   "abk": "NEM / EM",
+   "voll": "Nichtedelmetall / Edelmetall",
+   "tr": "soy olmayan metal / soy metal"
+  },
+  {
+   "abk": "MG",
+   "voll": "Modellgussprothese",
+   "tr": "iskelet (döküm) bölümlü protez"
+  },
+  {
+   "abk": "TP / VP",
+   "voll": "Teilprothese / Vollprothese (Totalprothese)",
+   "tr": "bölümlü protez / tam protez"
+  },
+  {
+   "abk": "f",
+   "voll": "fehlender Zahn (Befundschema)",
+   "tr": "eksik diş (bulgu şeması)"
+  },
+  {
+   "abk": "k",
+   "voll": "vorhandene Krone (Befundschema)",
+   "tr": "mevcut kron"
+  },
+  {
+   "abk": "b",
+   "voll": "Brückenglied (Befundschema)",
+   "tr": "köprü gövdesi"
+  },
+  {
+   "abk": "i",
+   "voll": "Implantat (Befundschema)",
+   "tr": "implant"
+  },
+  {
+   "abk": "x",
+   "voll": "nicht erhaltungswürdiger Zahn (Befundschema)",
+   "tr": "korunamayacak diş"
+  },
+  {
+   "abk": "c",
+   "voll": "kariös (Befundschema)",
+   "tr": "çürük"
+  },
+  {
+   "abk": "ww",
+   "voll": "erhaltungswürdiger Zahn mit weitgehender Zerstörung (Befundschema)",
+   "tr": "korunabilir ama büyük ölçüde harap diş"
+  },
+  {
+   "abk": "kw",
+   "voll": "erneuerungsbedürftige Krone (Befundschema)",
+   "tr": "yenilenmesi gereken kron"
+  },
+  {
+   "abk": "WSR",
+   "voll": "Wurzelspitzenresektion",
+   "tr": "apikal rezeksiyon"
+  },
+  {
+   "abk": "MAV",
+   "voll": "Mund-Antrum-Verbindung",
+   "tr": "ağız-sinüs bağlantısı (oroantral fistül)"
+  },
+  {
+   "abk": "ONJ",
+   "voll": "Osteonekrose des Kiefers (engl. osteonecrosis of the jaw)",
+   "tr": "çene osteonekrozu"
+  },
+  {
+   "abk": "MRONJ",
+   "voll": "medikamentenassoziierte Kiefernekrose",
+   "tr": "ilaca bağlı çene osteonekrozu"
+  },
+  {
+   "abk": "GBR",
+   "voll": "gesteuerte Knochenregeneration (Guided Bone Regeneration)",
+   "tr": "yönlendirilmiş kemik rejenerasyonu"
+  },
+  {
+   "abk": "GTR",
+   "voll": "gesteuerte Geweberegeneration (Guided Tissue Regeneration)",
+   "tr": "yönlendirilmiş doku rejenerasyonu"
+  },
+  {
+   "abk": "PE",
+   "voll": "Probeexzision",
+   "tr": "eksizyonel biyopsi (doku örneği)"
+  },
+  {
+   "abk": "PEC",
+   "voll": "Plattenepithelkarzinom",
+   "tr": "skuamöz hücreli karsinom"
+  },
+  {
+   "abk": "Tu",
+   "voll": "Tumor",
+   "tr": "tümör"
+  },
+  {
+   "abk": "LK",
+   "voll": "Lymphknoten",
+   "tr": "lenf düğümü"
+  },
+  {
+   "abk": "SH",
+   "voll": "Schleimhaut",
+   "tr": "mukoza"
+  },
+  {
+   "abk": "KH",
+   "voll": "Kieferhöhle (im zahnärztlichen Kontext; sonst auch Krankenhaus)",
+   "tr": "maksiller sinüs (bağlama göre: hastane)"
+  },
+  {
+   "abk": "NNH",
+   "voll": "Nasennebenhöhlen",
+   "tr": "paranazal sinüsler"
+  },
+  {
+   "abk": "LKG",
+   "voll": "Lippen-Kiefer-Gaumen-Spalte",
+   "tr": "dudak-damak yarığı"
+  },
+  {
+   "abk": "KHK",
+   "voll": "koronare Herzkrankheit",
+   "tr": "koroner arter hastalığı"
+  },
+  {
+   "abk": "HI",
+   "voll": "Herzinsuffizienz",
+   "tr": "kalp yetmezliği"
+  },
+  {
+   "abk": "NI",
+   "voll": "Niereninsuffizienz",
+   "tr": "böbrek yetmezliği"
+  },
+  {
+   "abk": "VHF",
+   "voll": "Vorhofflimmern",
+   "tr": "atriyal fibrilasyon"
+  },
+  {
+   "abk": "MI",
+   "voll": "Myokardinfarkt",
+   "tr": "miyokard enfarktüsü"
+  },
+  {
+   "abk": "TIA",
+   "voll": "transitorische ischämische Attacke",
+   "tr": "geçici iskemik atak"
+  },
+  {
+   "abk": "aHT",
+   "voll": "arterielle Hypertonie",
+   "tr": "arteriyel hipertansiyon"
+  },
+  {
+   "abk": "DM",
+   "voll": "Diabetes mellitus",
+   "tr": "diabetes mellitus"
+  },
+  {
+   "abk": "COPD",
+   "voll": "chronisch obstruktive Lungenerkrankung",
+   "tr": "kronik obstrüktif akciğer hastalığı (KOAH)"
+  },
+  {
+   "abk": "HIV",
+   "voll": "humanes Immundefizienz-Virus",
+   "tr": "insan bağışıklık yetmezliği virüsü"
+  },
+  {
+   "abk": "HBV / HCV",
+   "voll": "Hepatitis-B- / Hepatitis-C-Virus",
+   "tr": "hepatit B / C virüsü"
+  },
+  {
+   "abk": "MRSA",
+   "voll": "methicillinresistenter Staphylococcus aureus",
+   "tr": "metisiline dirençli S. aureus"
+  },
+  {
+   "abk": "EKG",
+   "voll": "Elektrokardiogramm",
+   "tr": "elektrokardiyogram"
+  },
+  {
+   "abk": "CT / MRT",
+   "voll": "Computertomographie / Magnetresonanztomographie",
+   "tr": "BT / MR"
+  },
+  {
+   "abk": "HNO",
+   "voll": "Hals-Nasen-Ohren(-Heilkunde)",
+   "tr": "kulak-burun-boğaz"
+  },
+  {
+   "abk": "HA",
+   "voll": "Hausarzt / Hausärztin",
+   "tr": "aile hekimi"
+  },
+  {
+   "abk": "FA",
+   "voll": "Facharzt / Fachärztin",
+   "tr": "uzman hekim"
+  },
+  {
+   "abk": "OA",
+   "voll": "Oberarzt / Oberärztin",
+   "tr": "kıdemli uzman (başasistan üstü)"
+  },
+  {
+   "abk": "ZA / ZÄ",
+   "voll": "Zahnarzt / Zahnärztin",
+   "tr": "diş hekimi"
+  },
+  {
+   "abk": "ZFA",
+   "voll": "Zahnmedizinische Fachangestellte",
+   "tr": "diş hekimi asistanı"
+  },
+  {
+   "abk": "OP",
+   "voll": "Operation / Operationssaal",
+   "tr": "ameliyat / ameliyathane"
+  },
+  {
+   "abk": "präop. / postop.",
+   "voll": "präoperativ / postoperativ",
+   "tr": "ameliyat öncesi / sonrası"
+  },
+  {
+   "abk": "i.v.",
+   "voll": "intravenös",
+   "tr": "damar içi"
+  },
+  {
+   "abk": "i.m.",
+   "voll": "intramuskulär",
+   "tr": "kas içi"
+  },
+  {
+   "abk": "s.c.",
+   "voll": "subkutan",
+   "tr": "deri altı"
+  },
+  {
+   "abk": "p.o.",
+   "voll": "per os (durch den Mund)",
+   "tr": "ağızdan"
+  },
+  {
+   "abk": "s.l.",
+   "voll": "sublingual",
+   "tr": "dil altı"
+  },
+  {
+   "abk": "tgl.",
+   "voll": "täglich",
+   "tr": "günlük"
+  },
+  {
+   "abk": "b.B.",
+   "voll": "bei Bedarf",
+   "tr": "gerektiğinde"
+  },
+  {
+   "abk": "Tbl. / Kps.",
+   "voll": "Tablette / Kapsel",
+   "tr": "tablet / kapsül"
+  },
+  {
+   "abk": "Rp.",
+   "voll": "Rezept (recipe)",
+   "tr": "reçete"
+  },
+  {
+   "abk": "KI",
+   "voll": "Kontraindikation",
+   "tr": "kontrendikasyon"
+  },
+  {
+   "abk": "NW / UAW",
+   "voll": "Nebenwirkung / unerwünschte Arzneimittelwirkung",
+   "tr": "yan etki / istenmeyen ilaç etkisi"
+  },
+  {
+   "abk": "AU",
+   "voll": "Arbeitsunfähigkeit(sbescheinigung)",
+   "tr": "iş göremezlik (rapor)"
+  },
+  {
+   "abk": "GKV / PKV",
+   "voll": "gesetzliche / private Krankenversicherung",
+   "tr": "yasal / özel sağlık sigortası"
+  },
+  {
+   "abk": "BEMA",
+   "voll": "Bewertungsmaßstab zahnärztlicher Leistungen (Kassenleistungen)",
+   "tr": "yasal sigorta diş tedavisi ücret listesi"
+  },
+  {
+   "abk": "GOZ",
+   "voll": "Gebührenordnung für Zahnärzte (Privatleistungen)",
+   "tr": "özel diş hekimliği ücret tarifesi"
+  },
+  {
+   "abk": "KZV",
+   "voll": "Kassenzahnärztliche Vereinigung",
+   "tr": "sözleşmeli diş hekimleri birliği (eyalet)"
+  },
+  {
+   "abk": "BZÄK",
+   "voll": "Bundeszahnärztekammer",
+   "tr": "Federal Diş Hekimleri Odası"
+  },
+  {
+   "abk": "LZK",
+   "voll": "Landeszahnärztekammer",
+   "tr": "eyalet diş hekimleri odası"
+  },
+  {
+   "abk": "FSP",
+   "voll": "Fachsprachprüfung",
+   "tr": "mesleki dil sınavı"
+  },
+  {
+   "abk": "Pat.",
+   "voll": "Patient / Patientin",
+   "tr": "hasta"
+  },
+  {
+   "abk": "J.",
+   "voll": "Jahre",
+   "tr": "yıl (yaş)"
+  },
+  {
+   "abk": "geb.",
+   "voll": "geboren",
+   "tr": "doğumlu"
+  },
+  {
+   "abk": "ggf.",
+   "voll": "gegebenenfalls",
+   "tr": "gerekirse"
+  },
+  {
+   "abk": "v.a.",
+   "voll": "vor allem (nicht verwechseln mit V.a.)",
+   "tr": "özellikle (V.a. ile karıştırma)"
+  },
+  {
+   "abk": "i.d.R.",
+   "voll": "in der Regel",
+   "tr": "genellikle"
+  },
+  {
+   "abk": "lt.",
+   "voll": "laut",
+   "tr": "…'e göre"
+  },
+  {
+   "abk": "MfkG",
+   "voll": "mit freundlichen kollegialen Grüßen",
+   "tr": "meslektaş selamlarıyla"
+  }
+ ],
+ "laborwerte": [
+  {
+   "name": "INR",
+   "norm": "ca. 0,9–1,2 (ohne Antikoagulation); therapeutisch unter VKA meist 2,0–3,0, bei mechanischer Herzklappe teils höher",
+   "einheit": "",
+   "bedeutung_tr": "Pıhtılaşma süresinin standartlaştırılmış oranı. Yüksek değer = kan geç pıhtılaşır.",
+   "zahnarzt_tr": "K vitamini antagonisti (ör. Marcumar) kullanan hastada işlemden kısa süre önce (mümkünse aynı gün) güncel değer iste. Basit çekim çoğu zaman terapötik aralıkta, lokal hemostazla (dikiş, hemostatik materyal, traneksamik asit) yapılabilir; ilacı hasta kendi başına kesmez, karar hekimle birlikte. Değer belirgin yüksekse (ör. >3,5) cerrahiyi ertele ve hekime danış.",
+   "hinweis": "Referenzbereiche variieren je nach Labor, Methode, Alter und Geschlecht; maßgeblich ist der Referenzbereich auf dem jeweiligen Laborbefund."
+  },
+  {
+   "name": "Quick-Wert (Thromboplastinzeit)",
+   "norm": "ca. 70–120 %",
+   "einheit": "%",
+   "bedeutung_tr": "INR'nin eski karşılığı; düşük Quick = yüksek INR = kanama eğilimi.",
+   "zahnarzt_tr": "Almanya'da eski raporlarda hâlâ görülür. Bugün antikoagülasyon takibinde INR esas alınır.",
+   "hinweis": "Referenzbereiche variieren je nach Labor, Methode, Alter und Geschlecht; maßgeblich ist der Referenzbereich auf dem jeweiligen Laborbefund."
+  },
+  {
+   "name": "aPTT",
+   "norm": "ca. 25–38",
+   "einheit": "s",
+   "bedeutung_tr": "İç pıhtılaşma yolunu gösterir; heparin tedavisi ve hemofilide uzar.",
+   "zahnarzt_tr": "Hemofili ya da von Willebrand şüphesinde hematolojiye danış; uzamış aPTT'de cerrahi öncesi açıklama gerekir.",
+   "hinweis": "Referenzbereiche variieren je nach Labor, Methode, Alter und Geschlecht; maßgeblich ist der Referenzbereich auf dem jeweiligen Laborbefund."
+  },
+  {
+   "name": "Thrombozyten",
+   "norm": "ca. 150.000–400.000",
+   "einheit": "/µl",
+   "bedeutung_tr": "Trombosit sayısı; birincil hemostazın temeli.",
+   "zahnarzt_tr": "Yaklaşık 50.000/µl altında kanama riski belirgin artar; cerrahi öncesi hekimle görüş. Trombosit agregasyon inhibitörleri (ASS, klopidogrel) sayıyı değil işlevi etkiler.",
+   "hinweis": "Referenzbereiche variieren je nach Labor, Methode, Alter und Geschlecht; maßgeblich ist der Referenzbereich auf dem jeweiligen Laborbefund."
+  },
+  {
+   "name": "Leukozyten",
+   "norm": "ca. 4.000–10.000",
+   "einheit": "/µl",
+   "bedeutung_tr": "Akyuvar sayısı; yükseklik enfeksiyon/iltihap, düşüklük bağışıklık zayıflığı.",
+   "zahnarzt_tr": "Lökopeni (ör. kemoterapi) enfeksiyon riskini artırır; cerrahi zamanlaması ve antibiyotik profilaksisi onkolojiyle konuşulur.",
+   "hinweis": "Referenzbereiche variieren je nach Labor, Methode, Alter und Geschlecht; maßgeblich ist der Referenzbereich auf dem jeweiligen Laborbefund."
+  },
+  {
+   "name": "Hämoglobin (Hb)",
+   "norm": "Frauen ca. 12–16, Männer ca. 13,5–17,5",
+   "einheit": "g/dl",
+   "bedeutung_tr": "Kandaki oksijen taşıyan protein; düşükse anemi.",
+   "zahnarzt_tr": "Anemi yara iyileşmesini bozabilir, mukoza solgunluğu ve glossit anemiyi düşündürebilir; aile hekimine yönlendir.",
+   "hinweis": "Referenzbereiche variieren je nach Labor, Methode, Alter und Geschlecht; maßgeblich ist der Referenzbereich auf dem jeweiligen Laborbefund."
+  },
+  {
+   "name": "HbA1c",
+   "norm": "normal < 5,7 %; Prädiabetes 5,7–6,4 %; Diabetes ≥ 6,5 %",
+   "einheit": "% (bzw. mmol/mol)",
+   "bedeutung_tr": "Son yaklaşık 2–3 ayın ortalama kan şekerini yansıtır.",
+   "zahnarzt_tr": "Kötü ayarlı diyabet periodontiti ağırlaştırır, iyileşmeyi geciktirir, enfeksiyon riskini artırır. Periodontit ile diyabet karşılıklı etkileşir; hastadan güncel HbA1c'yi sor, gerekirse hekimine yönlendir.",
+   "hinweis": "Referenzbereiche variieren je nach Labor, Methode, Alter und Geschlecht; maßgeblich ist der Referenzbereich auf dem jeweiligen Laborbefund."
+  },
+  {
+   "name": "Blutzucker nüchtern",
+   "norm": "ca. 70–99 mg/dl (3,9–5,5 mmol/l); ≥ 126 mg/dl spricht für Diabetes",
+   "einheit": "mg/dl",
+   "bedeutung_tr": "Açlık kan şekeri.",
+   "zahnarzt_tr": "Randevu öncesi insülin yapıp yemek yemeyen hastada hipoglisemi (< 70 mg/dl: terleme, titreme, bilinç bulanıklığı) riski var; muayenehanede glukoz hazır olsun, randevuyu sabah ve yemekten sonra planla.",
+   "hinweis": "Referenzbereiche variieren je nach Labor, Methode, Alter und Geschlecht; maßgeblich ist der Referenzbereich auf dem jeweiligen Laborbefund."
+  },
+  {
+   "name": "CRP",
+   "norm": "< 5",
+   "einheit": "mg/l",
+   "bedeutung_tr": "Akut faz proteini; iltihapta yükselir, nedeni göstermez.",
+   "zahnarzt_tr": "Odontojenik apse/selülitte yükselir; seyri takip etmeye yarar. Çok yüksek değer + ateş + yutma güçlüğü acil yatış (MKG kliniği) gerektirebilir.",
+   "hinweis": "Referenzbereiche variieren je nach Labor, Methode, Alter und Geschlecht; maßgeblich ist der Referenzbereich auf dem jeweiligen Laborbefund."
+  },
+  {
+   "name": "Kreatinin",
+   "norm": "Frauen ca. 0,5–1,0, Männer ca. 0,7–1,2",
+   "einheit": "mg/dl",
+   "bedeutung_tr": "Böbrek fonksiyonunun göstergesi; yüksekse böbrek yetmezliği.",
+   "zahnarzt_tr": "Böbrek yetmezliğinde NSAİİ'den kaçın, bazı antibiyotiklerin dozunu ayarla; diyaliz hastasında işlem diyaliz günü dışına planlanır.",
+   "hinweis": "Referenzbereiche variieren je nach Labor, Methode, Alter und Geschlecht; maßgeblich ist der Referenzbereich auf dem jeweiligen Laborbefund."
+  },
+  {
+   "name": "eGFR",
+   "norm": "> 90 normal; < 60 deutlich eingeschränkt",
+   "einheit": "ml/min/1,73 m²",
+   "bedeutung_tr": "Böbreklerin süzme kapasitesi.",
+   "zahnarzt_tr": "eGFR düştükçe ilaç dozlarını gözden geçir (ör. NSAİİ yok, amoksisilin aralığını uzat); DOAK'ların etkisi böbrek yetmezliğinde uzayabilir.",
+   "hinweis": "Referenzbereiche variieren je nach Labor, Methode, Alter und Geschlecht; maßgeblich ist der Referenzbereich auf dem jeweiligen Laborbefund."
+  },
+  {
+   "name": "Blutdruck (RR)",
+   "norm": "optimal < 120/80; Hypertonie ab ≥ 140/90 (Praxismessung)",
+   "einheit": "mmHg",
+   "bedeutung_tr": "Sistolik/diyastolik arter basıncı.",
+   "zahnarzt_tr": "Elektif işlem öncesi ölç. Çok yüksek değerlerde (yaklaşık ≥ 180/110) planlı tedaviyi ertele, hekime yönlendir. Adrenalinli anestezikte dozu sınırla; stres ve ağrı tansiyonu yükseltir.",
+   "hinweis": "Referenzbereiche variieren je nach Labor, Methode, Alter und Geschlecht; maßgeblich ist der Referenzbereich auf dem jeweiligen Laborbefund."
+  },
+  {
+   "name": "Puls (Herzfrequenz)",
+   "norm": "ca. 60–100",
+   "einheit": "/min",
+   "bedeutung_tr": "Dakikadaki kalp atımı; ritim de değerlendirilir.",
+   "zahnarzt_tr": "Düzensiz nabız atriyal fibrilasyonu düşündürebilir (→ antikoagülan sorgula). Taşikardi panik, ağrı, hipoglisemi ya da adrenalin etkisi olabilir.",
+   "hinweis": "Referenzbereiche variieren je nach Labor, Methode, Alter und Geschlecht; maßgeblich ist der Referenzbereich auf dem jeweiligen Laborbefund."
+  },
+  {
+   "name": "SpO2",
+   "norm": "ca. 95–100 % (bei COPD teils niedrigere Zielwerte)",
+   "einheit": "%",
+   "bedeutung_tr": "Kandaki oksijen doygunluğu (nabız oksimetresi).",
+   "zahnarzt_tr": "Sedasyon ve acil durumlarda izlenir. Belirgin düşüşte (ör. < 90 %) işlemi durdur, oksijen ver, acil algoritmasını uygula.",
+   "hinweis": "Referenzbereiche variieren je nach Labor, Methode, Alter und Geschlecht; maßgeblich ist der Referenzbereich auf dem jeweiligen Laborbefund."
+  },
+  {
+   "name": "Körpertemperatur",
+   "norm": "ca. 36,3–37,4; Fieber ab 38,0",
+   "einheit": "°C",
+   "bedeutung_tr": "Vücut ısısı.",
+   "zahnarzt_tr": "Ateş + yüz şişliği odontojenik enfeksiyonun yayıldığını gösterebilir; drenaj ve sistemik antibiyotik endikasyonu değerlendirilir.",
+   "hinweis": "Referenzbereiche variieren je nach Labor, Methode, Alter und Geschlecht; maßgeblich ist der Referenzbereich auf dem jeweiligen Laborbefund."
+  },
+  {
+   "name": "Atemfrequenz",
+   "norm": "ca. 12–20",
+   "einheit": "/min",
+   "bedeutung_tr": "Dakikadaki solunum sayısı.",
+   "zahnarzt_tr": "Hızlı solunum panik/hiperventilasyon ya da solunum sıkıntısı belirtisi olabilir; acil durumda değerlendirilir.",
+   "hinweis": "Referenzbereiche variieren je nach Labor, Methode, Alter und Geschlecht; maßgeblich ist der Referenzbereich auf dem jeweiligen Laborbefund."
+  },
+  {
+   "name": "TSH",
+   "norm": "ca. 0,4–4,0",
+   "einheit": "mU/l",
+   "bedeutung_tr": "Tiroid uyarıcı hormon; düşük TSH çoğunlukla hipertiroidi.",
+   "zahnarzt_tr": "Kontrolsüz hipertiroidide adrenalinli anestezik ve stres taşikardiyi tetikleyebilir; ayarlı olup olmadığını sor.",
+   "hinweis": "Referenzbereiche variieren je nach Labor, Methode, Alter und Geschlecht; maßgeblich ist der Referenzbereich auf dem jeweiligen Laborbefund."
+  },
+  {
+   "name": "GPT (ALT)",
+   "norm": "Frauen ca. < 35, Männer ca. < 50",
+   "einheit": "U/l",
+   "bedeutung_tr": "Karaciğer hücre hasarı enzimi.",
+   "zahnarzt_tr": "Karaciğer hastalığında parasetamol dozunu sınırla; pıhtılaşma faktörleri azalabileceği için kanama riski artar.",
+   "hinweis": "Referenzbereiche variieren je nach Labor, Methode, Alter und Geschlecht; maßgeblich ist der Referenzbereich auf dem jeweiligen Laborbefund."
+  }
+ ],
+ "schmerz": {
+  "skala_tr": "Numerik derecelendirme skalası (NRS): Hastaya 'Auf einer Skala von 0 bis 10 – 0 bedeutet keine Schmerzen, 10 die stärksten Schmerzen, die Sie sich vorstellen können – wie stark ist der Schmerz gerade?' diye sor. Kabaca 1–3 hafif, 4–6 orta, 7–10 şiddetli kabul edilir. Sadece şu anki değeri değil, en kötü anı ve ilaçtan sonraki değeri de sor (ör. 'Und nach der Tablette?'). Çocuklarda yüz ifadeli skala (Gesichter-Skala) kullanılabilir. Brief'te: 'Die Schmerzintensität wurde mit 7/10 (NRS) angegeben.' Arzt-Arzt-Gespräch'te: 'Auf der NRS gab der Patient eine 7 von 10 an.'",
+  "qualitaeten": [
+   {
+    "de": "pochend / pulsierend",
+    "tr": "zonklayan, nabız gibi atan",
+    "hinweis_tr": "İltihabi süreç, basınç artışı: irreversible Pulpitis, akut apikal periodontit, apse."
+   },
+   {
+    "de": "klopfend",
+    "tr": "vuran, tıklayan",
+    "hinweis_tr": "Pochend'e yakın; çoğunlukla apikal iltihap ya da apsede kullanılır."
+   },
+   {
+    "de": "stechend / scharf",
+    "tr": "batan, keskin",
+    "hinweis_tr": "Kısa ve uyarana bağlıysa dentin hassasiyeti, reversible Pulpitis ya da çatlak diş (Cracked-tooth) düşündürür."
+   },
+   {
+    "de": "ziehend",
+    "tr": "çeken, sızlayan",
+    "hinweis_tr": "Soğuk/sıcakla başlayıp süren ağrıda pulpit; birden çok dişe yayılıyorsa sinüzit de akla gelir."
+   },
+   {
+    "de": "dumpf / drückend",
+    "tr": "künt, bastıran",
+    "hinweis_tr": "Kronik apikal periodontit, periodontal apse, CMD/kas kaynaklı ağrı ya da sinüzit."
+   },
+   {
+    "de": "brennend",
+    "tr": "yanan",
+    "hinweis_tr": "Mukoza kaynaklı: aft, kandidiyazis, liken planus, yanan ağız sendromu, protez basısı."
+   },
+   {
+    "de": "ausstrahlend",
+    "tr": "yayılan (kulağa, şakağa, boyna)",
+    "hinweis_tr": "Pulpitis hastanın dişi tam gösterememesine yol açar; alt molar ağrısı kulağa yayılabilir. Sol kola/çeneye yayılan baskı ağrısında kalp kaynaklı ağrıyı (angina pectoris, infarktüs) dışla!"
+   },
+   {
+    "de": "bohrend",
+    "tr": "delici, oyan",
+    "hinweis_tr": "Şiddetli pulpit ya da kuru soket (Alveolitis sicca: çekimden 2–4 gün sonra artan ağrı)."
+   },
+   {
+    "de": "einschießend / elektrisierend",
+    "tr": "şimşek gibi, elektrik çarpar gibi",
+    "hinweis_tr": "Saniyeler süren, dokunma/çiğneme ile tetiklenen ataklar: trigeminus nevraljisi düşün; diş tedavisi gereksiz olabilir."
+   },
+   {
+    "de": "kurz, verschwindet nach Ende des Reizes",
+    "tr": "kısa, uyaran bitince geçen",
+    "hinweis_tr": "Dentin hassasiyeti ya da reversible Pulpitis: pulpa korunabilir."
+   },
+   {
+    "de": "lang anhaltend nach dem Reiz",
+    "tr": "uyarandan sonra uzun süren",
+    "hinweis_tr": "Irreversible Pulpitis: genellikle kanal tedavisi gerekir."
+   },
+   {
+    "de": "Aufbiss- / Kauschmerz",
+    "tr": "ısırma / çiğneme ağrısı",
+    "hinweis_tr": "Apikal periodontit (perküsyon pozitif), çatlak diş, yüksek dolgu (okluzal travma)."
+   },
+   {
+    "de": "spontan, nachts stärker",
+    "tr": "kendiliğinden, gece artan",
+    "hinweis_tr": "Irreversible Pulpitis için tipik; hasta uykudan uyanıyorsa önemli bilgi."
+   },
+   {
+    "de": "Kälte lindert, Wärme verstärkt",
+    "tr": "soğuk rahatlatır, sıcak artırır",
+    "hinweis_tr": "İleri, pürülan pulpit / başlayan nekroz düşündürür."
+   },
+   {
+    "de": "schlecht lokalisierbar, diffus",
+    "tr": "yeri tam belirsiz, yaygın",
+    "hinweis_tr": "Pulpa ağrısı (periodontal ligament henüz tutulmamış); perküsyon pozitifleşince lokalizasyon kolaylaşır."
+   },
+   {
+    "de": "Schmerz beim Mundöffnen / Kauen vor dem Ohr",
+    "tr": "ağız açarken / kulak önünde çiğneme ağrısı",
+    "hinweis_tr": "CMD, kas ağrısı, kiefergelenk sorunları; alt yirmi yaş dişinde perikoronit + trismus."
+   }
+  ],
+  "fragen": [
+   "Wo genau tut es weh? Können Sie mir die Stelle mit einem Finger zeigen? (Site)",
+   "Wann haben die Schmerzen angefangen? Kamen sie plötzlich oder allmählich? (Onset)",
+   "Gab es einen Auslöser, zum Beispiel einen Unfall, eine Behandlung oder einen harten Bissen?",
+   "Wie würden Sie den Schmerz beschreiben – eher pochend, stechend, ziehend, dumpf oder brennend? (Character)",
+   "Bleibt der Schmerz an einer Stelle oder zieht er irgendwohin, zum Beispiel ins Ohr, in die Schläfe oder in den Hals? (Radiation)",
+   "Haben Sie außer den Schmerzen noch etwas bemerkt, zum Beispiel eine Schwellung, Fieber, einen schlechten Geschmack oder Probleme beim Schlucken? (Associated symptoms)",
+   "Sind die Schmerzen dauerhaft da oder kommen sie in Anfällen? Wie lange dauert ein Anfall? (Time course)",
+   "Zu welcher Tageszeit sind die Schmerzen am stärksten? Wachen Sie nachts davon auf?",
+   "Was macht die Schmerzen schlimmer – Kälte, Wärme, Süßes, Kauen, Bücken oder Liegen? (Exacerbating)",
+   "Gibt es etwas, das die Schmerzen lindert, zum Beispiel Kühlen oder ein Schmerzmittel? (Relieving)",
+   "Wie stark sind die Schmerzen jetzt auf einer Skala von 0 bis 10 – und wie stark waren sie im schlimmsten Moment? (Severity)",
+   "Wie stark schränken die Schmerzen Sie im Alltag ein, zum Beispiel beim Essen, Schlafen oder bei der Arbeit?",
+   "Welches Schmerzmittel haben Sie genommen, in welcher Dosis, wie oft und wann zuletzt?",
+   "Hatten Sie solche Schmerzen schon einmal? Was wurde damals gemacht?"
+  ]
+ },
+ "untersuchung": [
+  {
+   "de": "Ich schaue mir jetzt zuerst Ihr Gesicht von außen an.",
+   "tr": "Şimdi önce yüzünüze dışarıdan bakıyorum.",
+   "bereich": "Inspektion"
+  },
+  {
+   "de": "Bitte öffnen Sie den Mund so weit, wie es angenehm ist.",
+   "tr": "Lütfen ağzınızı rahat edebildiğiniz kadar açın.",
+   "bereich": "Inspektion"
+  },
+  {
+   "de": "Ich schaue mir jetzt Ihre Zähne und das Zahnfleisch mit einem kleinen Spiegel an.",
+   "tr": "Şimdi küçük bir aynayla dişlerinize ve diş etinize bakıyorum.",
+   "bereich": "Inspektion"
+  },
+  {
+   "de": "Strecken Sie bitte die Zunge heraus und bewegen Sie sie nach rechts und nach links.",
+   "tr": "Lütfen dilinizi çıkarın ve sağa sola hareket ettirin.",
+   "bereich": "Inspektion"
+  },
+  {
+   "de": "Ich puste kurz etwas Luft auf den Zahn, damit ich ihn besser sehen kann.",
+   "tr": "Dişi daha iyi görmek için kısaca hava üflüyorum.",
+   "bereich": "Inspektion"
+  },
+  {
+   "de": "Ich ziehe jetzt Ihre Wange etwas zur Seite, das kann sich ein bisschen komisch anfühlen.",
+   "tr": "Şimdi yanağınızı biraz yana çekiyorum, biraz garip hissettirebilir.",
+   "bereich": "Inspektion"
+  },
+  {
+   "de": "Ich taste jetzt vorsichtig Ihre Wange von außen ab. Sagen Sie mir bitte, wenn es wehtut.",
+   "tr": "Şimdi yanağınızı dışarıdan dikkatlice yokluyorum. Ağrırsa lütfen söyleyin.",
+   "bereich": "Palpation"
+  },
+  {
+   "de": "Jetzt taste ich das Zahnfleisch über der Wurzelspitze ab.",
+   "tr": "Şimdi kök ucunun üstündeki diş etini yokluyorum.",
+   "bereich": "Palpation"
+  },
+  {
+   "de": "Ist das hier eher weich oder fühlt es sich hart an?",
+   "tr": "Burası daha çok yumuşak mı yoksa sert mi hissediliyor?",
+   "bereich": "Palpation"
+  },
+  {
+   "de": "Ich taste jetzt die Lymphknoten unter dem Kinn und am Hals ab.",
+   "tr": "Şimdi çene altındaki ve boyundaki lenf düğümlerini yokluyorum.",
+   "bereich": "Lymphknoten"
+  },
+  {
+   "de": "Neigen Sie den Kopf bitte leicht nach vorn, dann kann ich besser tasten.",
+   "tr": "Başınızı lütfen hafifçe öne eğin, böylece daha iyi yoklayabilirim.",
+   "bereich": "Lymphknoten"
+  },
+  {
+   "de": "Ich klopfe jetzt ganz leicht mit einem Instrument auf einige Zähne.",
+   "tr": "Şimdi bir aletle birkaç dişe çok hafifçe vuracağım.",
+   "bereich": "Perkussion"
+  },
+  {
+   "de": "Ist dieser Zahn anders als die anderen? Ist das unangenehm oder schmerzhaft?",
+   "tr": "Bu diş diğerlerinden farklı mı? Rahatsız edici mi yoksa ağrılı mı?",
+   "bereich": "Perkussion"
+  },
+  {
+   "de": "Ich klopfe jetzt einmal von oben und einmal von der Seite.",
+   "tr": "Şimdi bir kez üstten, bir kez yandan vuracağım.",
+   "bereich": "Perkussion"
+  },
+  {
+   "de": "Ich halte jetzt etwas sehr Kaltes an den Zahn. Das ist nur ein kurzer Test.",
+   "tr": "Şimdi dişe çok soğuk bir şey tutuyorum. Bu sadece kısa bir test.",
+   "bereich": "Vitalitätsprobe"
+  },
+  {
+   "de": "Sagen Sie bitte sofort Bescheid, wenn Sie die Kälte spüren.",
+   "tr": "Soğuğu hissettiğiniz anda lütfen hemen söyleyin.",
+   "bereich": "Vitalitätsprobe"
+  },
+  {
+   "de": "Spüren Sie die Kälte noch, oder ist das Gefühl schon weg?",
+   "tr": "Soğuğu hâlâ hissediyor musunuz, yoksa his geçti mi?",
+   "bereich": "Vitalitätsprobe"
+  },
+  {
+   "de": "Zum Vergleich teste ich jetzt einen gesunden Nachbarzahn.",
+   "tr": "Karşılaştırmak için şimdi sağlam komşu dişi test ediyorum.",
+   "bereich": "Vitalitätsprobe"
+  },
+  {
+   "de": "Ich messe jetzt mit einer feinen Sonde die Tiefe der Zahnfleischtaschen.",
+   "tr": "Şimdi ince bir sondayla diş eti ceplerinin derinliğini ölçüyorum.",
+   "bereich": "Sondierung"
+  },
+  {
+   "de": "Das kann ein bisschen pieksen und das Zahnfleisch kann leicht bluten.",
+   "tr": "Bu biraz batabilir ve diş eti hafifçe kanayabilir.",
+   "bereich": "Sondierung"
+  },
+  {
+   "de": "Ich sage gleich einige Zahlen, meine Assistentin schreibt sie auf.",
+   "tr": "Birazdan bazı sayılar söyleyeceğim, asistanım onları not edecek.",
+   "bereich": "Sondierung"
+  },
+  {
+   "de": "Ich prüfe jetzt, ob der Zahn wackelt. Ich bewege ihn dafür ganz vorsichtig.",
+   "tr": "Şimdi dişin sallanıp sallanmadığını kontrol ediyorum; çok dikkatlice hareket ettiriyorum.",
+   "bereich": "Lockerung"
+  },
+  {
+   "de": "Haben Sie selbst bemerkt, dass sich ein Zahn locker anfühlt?",
+   "tr": "Bir dişin sallandığını kendiniz fark ettiniz mi?",
+   "bereich": "Lockerung"
+  },
+  {
+   "de": "Beißen Sie bitte einmal ganz normal zusammen.",
+   "tr": "Lütfen dişlerinizi bir kez normal şekilde kapatın.",
+   "bereich": "Okklusion"
+  },
+  {
+   "de": "Ich lege ein dünnes Papier zwischen die Zähne. Bitte darauf beißen und mit den Zähnen hin und her reiben.",
+   "tr": "Dişlerin arasına ince bir kâğıt koyuyorum. Lütfen ısırın ve dişlerinizi ileri geri sürtün.",
+   "bereich": "Okklusion"
+  },
+  {
+   "de": "Fühlt sich der Biss jetzt gleichmäßig an, oder trifft ein Zahn zuerst?",
+   "tr": "Kapanış şimdi eşit mi hissediliyor, yoksa bir diş önce mi değiyor?",
+   "bereich": "Okklusion"
+  },
+  {
+   "de": "Bitte beißen Sie vorsichtig auf dieses kleine Instrument und lassen Sie dann los. Tut es beim Beißen oder beim Loslassen weh?",
+   "tr": "Lütfen bu küçük alete dikkatlice ısırın, sonra bırakın. Isırırken mi bırakırken mi ağrıyor?",
+   "bereich": "Aufbisstest"
+  },
+  {
+   "de": "Öffnen Sie den Mund bitte so weit wie möglich. Ich messe kurz den Abstand zwischen den Schneidezähnen.",
+   "tr": "Ağzınızı lütfen olabildiğince açın. Kesici dişler arasındaki mesafeyi kısaca ölçüyorum.",
+   "bereich": "Mundöffnung"
+  },
+  {
+   "de": "Können Sie drei Finger übereinander zwischen die Zähne legen?",
+   "tr": "Üç parmağınızı üst üste dişlerinizin arasına koyabiliyor musunuz?",
+   "bereich": "Mundöffnung"
+  },
+  {
+   "de": "Ich lege meine Finger jetzt vor Ihre Ohren. Bitte öffnen und schließen Sie den Mund langsam.",
+   "tr": "Şimdi parmaklarımı kulaklarınızın önüne koyuyorum. Lütfen ağzınızı yavaşça açıp kapatın.",
+   "bereich": "Kiefergelenk"
+  },
+  {
+   "de": "Hören oder spüren Sie dabei ein Knacken oder Reiben?",
+   "tr": "Bu sırada bir tıklama ya da sürtünme duyuyor veya hissediyor musunuz?",
+   "bereich": "Kiefergelenk"
+  },
+  {
+   "de": "Schieben Sie den Unterkiefer bitte nach vorn und dann nach rechts und links.",
+   "tr": "Lütfen alt çenenizi öne, sonra sağa ve sola kaydırın.",
+   "bereich": "Kiefergelenk"
+  },
+  {
+   "de": "Ich taste jetzt Ihre Kaumuskeln ab. Beißen Sie dafür bitte kurz fest zusammen.",
+   "tr": "Şimdi çiğneme kaslarınızı yokluyorum. Bunun için lütfen dişlerinizi kısa bir süre sıkın.",
+   "bereich": "Kaumuskulatur"
+  },
+  {
+   "de": "Ich schaue mir jetzt auch die Schleimhaut, den Mundboden und den Gaumen an. Das gehört zu jeder Untersuchung dazu.",
+   "tr": "Şimdi mukozaya, ağız tabanına ve damağa da bakıyorum. Bu her muayenenin parçası.",
+   "bereich": "Schleimhaut"
+  },
+  {
+   "de": "Seit wann haben Sie diese weiße Stelle? Lässt sie sich abwischen?",
+   "tr": "Bu beyaz bölge ne zamandan beri var? Silinince çıkıyor mu?",
+   "bereich": "Schleimhaut"
+  },
+  {
+   "de": "Ich berühre jetzt Ihre Unterlippe auf beiden Seiten. Fühlt es sich gleich an?",
+   "tr": "Şimdi alt dudağınıza iki taraftan dokunuyorum. Aynı mı hissediliyor?",
+   "bereich": "Sensibilität"
+  },
+  {
+   "de": "Um zu sehen, was unter dem Zahnfleisch und an der Wurzel los ist, möchte ich ein Röntgenbild machen.",
+   "tr": "Diş etinin altında ve kökte ne olduğunu görmek için bir röntgen çekmek istiyorum.",
+   "bereich": "Röntgen erklären"
+  },
+  {
+   "de": "Die Strahlenbelastung bei einem Zahnfilm ist sehr gering.",
+   "tr": "Periapikal filmde radyasyon dozu çok düşüktür.",
+   "bereich": "Röntgen erklären"
+  },
+  {
+   "de": "Besteht die Möglichkeit, dass Sie schwanger sind?",
+   "tr": "Hamile olma ihtimaliniz var mı?",
+   "bereich": "Röntgen erklären"
+  },
+  {
+   "de": "Ich lege Ihnen jetzt eine Schutzschürze bzw. einen Schilddrüsenschutz um.",
+   "tr": "Şimdi size koruyucu önlük ya da tiroid koruyucusu takıyorum.",
+   "bereich": "Röntgen erklären"
+  },
+  {
+   "de": "Bitte halten Sie den Halter mit dem Finger fest und bewegen Sie sich nicht.",
+   "tr": "Lütfen tutucuyu parmağınızla sabit tutun ve kıpırdamayın.",
+   "bereich": "Röntgen erklären"
+  },
+  {
+   "de": "Hier auf dem Bild sehen Sie den dunklen Bereich an der Wurzelspitze – das ist die Entzündung.",
+   "tr": "Burada görüntüde kök ucundaki koyu alanı görüyorsunuz – bu iltihaptır.",
+   "bereich": "Röntgen erklären"
+  },
+  {
+   "de": "Für eine dreidimensionale Darstellung empfehle ich zusätzlich ein DVT, weil die Wurzeln sehr nah am Nerv liegen.",
+   "tr": "Kökler sinire çok yakın olduğundan üç boyutlu görüntü için ek olarak DVT öneriyorum.",
+   "bereich": "Röntgen erklären"
+  },
+  {
+   "de": "So, die Untersuchung ist abgeschlossen. Sie können den Mund jetzt schließen.",
+   "tr": "Evet, muayene bitti. Artık ağzınızı kapatabilirsiniz.",
+   "bereich": "Abschluss"
+  },
+  {
+   "de": "Ich erkläre Ihnen jetzt, was ich gefunden habe.",
+   "tr": "Şimdi ne bulduğumu size anlatacağım.",
+   "bereich": "Abschluss"
+  }
+ ],
+ "schwierige_gespraeche": [
+  {
+   "situation_tr": "Angstpatient: Hasta dişçi korkusundan titriyor, ağzını açmak istemiyor.",
+   "strategie_tr": "Acele etme, korkuyu ciddiye al ve adlandır. Kontrolü hastaya ver (dur işareti), her adımı önceden anlat ('tell-show-do'), kısa adımlarla ilerle. Bugün sadece muayene ile yetinmeyi teklif et.",
+   "redemittel": [
+    "Ich merke, dass Sie sehr angespannt sind. Das ist völlig in Ordnung.",
+    "Wir machen heute nur, womit Sie einverstanden sind.",
+    "Wenn Sie eine Pause brauchen, heben Sie einfach die Hand.",
+    "Bevor ich etwas mache, zeige ich es Ihnen und erkläre es."
+   ]
+  },
+  {
+   "situation_tr": "Wütender Patient: Uzun süre beklediği ya da önceki tedavinin başarısız olduğu için öfkeli.",
+   "strategie_tr": "Sakin kal, ses tonunu düşür, savunmaya geçme. Öfkeyi kabul et, somut sorunu sor ve çözüm odaklı ilerle. Kişisel saldırı varsa sınır koy.",
+   "redemittel": [
+    "Ich verstehe, dass Sie verärgert sind, und das tut mir leid.",
+    "Erzählen Sie mir bitte genau, was passiert ist.",
+    "Lassen Sie uns gemeinsam schauen, wie wir das Problem jetzt lösen können.",
+    "Ich möchte Ihnen helfen, dafür brauche ich aber ein ruhiges Gespräch."
+   ]
+  },
+  {
+   "situation_tr": "Hasta hemen antibiyotik istiyor, ama endikasyon yok (ör. irreversible Pulpitis, şişlik/ateş yok).",
+   "strategie_tr": "Talebi geri çevirmeden önce dinle. Antibiyotiğin neden işe yaramayacağını sade dille anlat (sorun dişin içinde, ilaç oraya ulaşmaz; yan etki ve direnç). Gerçek çözümü (trepanasyon, ağrı kesici) öner.",
+   "redemittel": [
+    "Ich verstehe, dass Sie schnell schmerzfrei sein möchten.",
+    "Ein Antibiotikum hilft in Ihrem Fall leider nicht, weil die Entzündung im Inneren des Zahnes sitzt.",
+    "Antibiotika haben auch Nebenwirkungen und können Resistenzen fördern.",
+    "Was wirklich hilft, ist, den Zahn zu öffnen und den entzündeten Nerv zu entfernen."
+   ]
+  },
+  {
+   "situation_tr": "Hasta önerilen tedaviyi reddediyor.",
+   "strategie_tr": "Kararına saygı göster ama gerekçesini sor (korku, maliyet, zaman). Tedavi edilmezse olası sonuçları açıkça anlat, alternatifleri sun. Reddi ve bilgilendirmeyi belgele, imzalat.",
+   "redemittel": [
+    "Darf ich fragen, was Sie an der Behandlung beunruhigt?",
+    "Es ist Ihre Entscheidung, aber ich muss Sie über die möglichen Folgen informieren.",
+    "Wenn wir den Zahn nicht behandeln, kann sich ein Abszess entwickeln.",
+    "Ich halte Ihre Entscheidung schriftlich fest und bitte Sie, das zu unterschreiben."
+   ]
+  },
+  {
+   "situation_tr": "Maliyet sorusu: 'Was kostet das? Zahlt das meine Kasse?'",
+   "strategie_tr": "Tahmini rakam uydurma. Yasal sigortanın temel kapsamı (Regelversorgung) ve ek ücretli seçenekleri genel hatlarıyla açıkla; yazılı Heil- und Kostenplan / Kostenvoranschlag hazırlanacağını söyle.",
+   "redemittel": [
+    "Das hängt von der gewählten Versorgung ab.",
+    "Ich erstelle Ihnen einen Heil- und Kostenplan, den Sie bei Ihrer Krankenkasse einreichen können.",
+    "Die Grundversorgung übernimmt die Kasse größtenteils, für höherwertige Lösungen fällt ein Eigenanteil an.",
+    "Sie müssen sich heute nicht entscheiden."
+   ]
+  },
+  {
+   "situation_tr": "Hasta ikinci görüş (Zweitmeinung) istiyor.",
+   "strategie_tr": "Alınma; ikinci görüş hastanın hakkıdır. Destekle, gerekli belgeleri (röntgen, bulgu) vermeyi teklif et. Acil bir durum varsa beklemenin riskini belirt.",
+   "redemittel": [
+    "Selbstverständlich, das ist Ihr gutes Recht.",
+    "Ich gebe Ihnen gern eine Kopie der Röntgenbilder und meines Befundes mit.",
+    "Bitte warten Sie aber nicht zu lange, weil sich die Entzündung verschlimmern kann.",
+    "Wenn Sie danach Fragen haben, können Sie jederzeit wiederkommen."
+   ]
+  },
+  {
+   "situation_tr": "Kötü haber: Ağız mukozasında tümör şüphesi.",
+   "strategie_tr": "Sakin, özel bir ortamda, açık ama korkutmadan konuş. Önce ne bildiğini sor, uyarı cümlesiyle başla, kesin tanı değil şüphe olduğunu ve biyopsinin gerekli olduğunu söyle. Sessizliğe izin ver, duyguları karşıla, somut sonraki adımı ve süreyi ver.",
+   "redemittel": [
+    "Ich habe bei der Untersuchung etwas gefunden, das wir genauer abklären müssen.",
+    "Die Stelle sieht nicht aus wie eine normale Entzündung.",
+    "Um sicher zu sein, muss eine kleine Gewebeprobe untersucht werden.",
+    "Das ist noch keine Diagnose. Ich kümmere mich darum, dass Sie schnell einen Termin in der Klinik bekommen."
+   ]
+  },
+  {
+   "situation_tr": "Hasta (ya da sınavda simülasyon hastası) çok hızlı konuşuyor.",
+   "strategie_tr": "Kibarca yavaşlamasını iste, anladığını özetleyerek kontrol et. Anlamadığın kelimeyi tekrar ettir; tahmin etme.",
+   "redemittel": [
+    "Entschuldigung, könnten Sie bitte etwas langsamer sprechen?",
+    "Ich möchte sichergehen, dass ich Sie richtig verstanden habe.",
+    "Habe ich Sie richtig verstanden, dass die Schmerzen seit Montag bestehen?",
+    "Was meinen Sie mit „es zwickt“? Können Sie das genauer beschreiben?"
+   ]
+  },
+  {
+   "situation_tr": "Hasta açıklamayı anlamıyor.",
+   "strategie_tr": "Terim kullanma, kısa cümle kur, resim/model/röntgen göster. Anladığını hastanın kendi sözleriyle anlatmasıyla kontrol et (Teach-back).",
+   "redemittel": [
+    "Ich erkläre es noch einmal mit anderen Worten.",
+    "Schauen Sie, ich zeige es Ihnen hier auf dem Bild.",
+    "Können Sie mir kurz sagen, was Sie verstanden haben?",
+    "Fragen Sie bitte ruhig nach, wenn etwas unklar ist."
+   ]
+  },
+  {
+   "situation_tr": "Çocuk ve ebeveyn: Çocuk korkuyor, ebeveyn araya giriyor ya da korkutucu kelimeler kullanıyor.",
+   "strategie_tr": "Önce çocukla göz hizasında konuş, çocuk diline uygun kelimeler kullan ('Zahnwäsche', 'Zauberwasser' gibi), korkutucu kelimelerden (Spritze, Bohrer) kaçın. Ebeveyni nazikçe bilgi kaynağı olarak dahil et, onam ebeveynden alınır.",
+   "redemittel": [
+    "Hallo, ich bin die Zahnärztin. Darf ich mal deine Zähne zählen?",
+    "Schau mal, das ist ein kleiner Spiegel, damit kann ich in deinen Mund schauen.",
+    "Liebe Eltern, es hilft uns sehr, wenn Sie ruhig dabeibleiben und nicht von Schmerzen sprechen.",
+    "Für die Behandlung brauche ich Ihr Einverständnis als Erziehungsberechtigte."
+   ]
+  },
+  {
+   "situation_tr": "Dolmetscher / Angehörige: Hasta Almanca konuşmuyor, akrabası tercümanlık yapıyor.",
+   "strategie_tr": "Hastaya bakarak ve 'Sie' ile hastaya hitap et, tercümana değil. Kısa cümleler kur, aralarda çevirmesine izin ver. Hassas konularda (hamilelik, bağımlılık) aile tercümanının sınırlı olduğunu bil; gerekirse profesyonel tercüman. Önemli bilgileri geri sordur.",
+   "redemittel": [
+    "Ich spreche jetzt direkt mit Ihnen, Ihr Sohn übersetzt bitte Satz für Satz.",
+    "Bitte übersetzen Sie alles genau, auch wenn es unangenehm ist.",
+    "Für das Aufklärungsgespräch wäre ein professioneller Dolmetscher besser.",
+    "Darf ich Ihre Tochter kurz bitten, draußen zu warten? Ich habe eine persönliche Frage."
+   ]
+  },
+  {
+   "situation_tr": "Hasta sürekli sözünü kesiyor, konudan sapıyor.",
+   "strategie_tr": "Söylediğini kısaca onayla, sonra yapıyı geri kur: neyi ne zaman konuşacağınızı söyle. Gerekirse kapalı sorulara geç.",
+   "redemittel": [
+    "Das ist wichtig, darauf komme ich gleich zurück.",
+    "Darf ich meinen Gedanken kurz zu Ende führen?",
+    "Damit ich nichts vergesse, würde ich gern zuerst die Schmerzen besprechen.",
+    "Lassen Sie uns Schritt für Schritt vorgehen."
+   ]
+  },
+  {
+   "situation_tr": "Hasta internetten okuduğu bir yöntemi ısrarla istiyor.",
+   "strategie_tr": "Bilgi edinmesini takdir et, kaynağı sor, kanıta dayalı olanla olmayanı sade dille ayır. Kendi önerinin gerekçesini anlat.",
+   "redemittel": [
+    "Schön, dass Sie sich informiert haben.",
+    "Was genau haben Sie darüber gelesen?",
+    "Für diese Methode gibt es leider noch keine ausreichenden wissenschaftlichen Belege.",
+    "Ich empfehle Ihnen die Behandlung, die in den aktuellen Leitlinien empfohlen wird."
+   ]
+  },
+  {
+   "situation_tr": "Hasta yaşlı ve işitme güçlüğü var / dementes Verhalten.",
+   "strategie_tr": "Yüzünü göster, maskeyi gerekirse kısa süre indir, yavaş ve net konuş, bağırma. Bilgileri yazılı ver; bakıcı ya da yasal temsilciyi dahil et.",
+   "redemittel": [
+    "Ich setze mich zu Ihnen, damit Sie mich besser hören.",
+    "Ich schreibe Ihnen die wichtigsten Punkte auf.",
+    "Wer kümmert sich zu Hause um Ihre Medikamente?",
+    "Gibt es eine Betreuerin oder einen Bevollmächtigten, mit dem ich sprechen darf?"
+   ]
+  }
+ ],
+ "fehler_tipps": [
+  {
+   "tr": "Hasta ile konuşurken 'Sie' ile başlayıp bir süre sonra 'du' ya da 'Hast du …?' biçimine kayma; baştan sona Sie-Form ve doğru fiil eki (Haben Sie, Nehmen Sie)."
+  },
+  {
+   "tr": "'Ich habe Schmerzen seit drei Tagen' yerine Almanca dizilişe dikkat: 'Ich habe seit drei Tagen Schmerzen.' Zaman ifadesi genelde nesneden önce gelir."
+  },
+  {
+   "tr": "'seit' ve 'vor' karışıklığı: 'seit drei Tagen' hâlâ süren, 'vor drei Tagen' bitmiş olay. 'Die Schmerzen begannen vor drei Tagen' / 'Die Schmerzen bestehen seit drei Tagen.'"
+  },
+  {
+   "tr": "Brief'te dolaylı anlatım unutulur ya da 'er hat gesagt, dass er hat Schmerzen' gibi karışık kurulur. Doğrusu: 'Er gab an, er habe Schmerzen' ya da 'Er gab an, dass er Schmerzen habe.'"
+  },
+  {
+   "tr": "'dass' cümlesinde fiil sona gider; 'weil' sonrası fiili ikinci sıraya koymak (weil ich habe …) yazılı sınavda hata sayılır."
+  },
+  {
+   "tr": "Edilgen Perfekt'te 'geworden' yerine 'worden' kullanılır: 'Der Zahn ist extrahiert worden.'"
+  },
+  {
+   "tr": "Hastaya tıp terimi kullanma ('Sie haben eine irreversible Pulpitis'). Önce gündelik dil ('Der Zahnnerv ist entzündet'), gerekirse terimi parantezde açıkla."
+  },
+  {
+   "tr": "Teil 3'te tersi geçerli: Meslektaşa gündelik kelimelerle değil terimlerle konuş (Perkussion, Sensibilität, periapikal). Dili duruma göre değiştirebildiğini göster."
+  },
+  {
+   "tr": "Diş numarası FDI sistemiyle okunur: 36 = 'drei-sechs' ya da 'Zahn sechsunddreißig'; ikisini karıştırma, sınavda tutarlı ol. Brief'te 'regio 36' veya 'Zahn 36'."
+  },
+  {
+   "tr": "Artikel hataları puan kaybettirir. Sık terimleri artikeliyle öğren: die Karies, der Abszess, das Implantat, die Fistel, der Befund, das Röntgenbild, die Schiene."
+  },
+  {
+   "tr": "'Karies' tekil ve dişildir (die Karies), çoğul kullanma: 'kariöse Läsionen' de."
+  },
+  {
+   "tr": "Anamnezde iki soruyu tek cümlede sorma ('Haben Sie Allergien und nehmen Sie Medikamente?'). Hasta birini cevaplar, diğeri kaybolur."
+  },
+  {
+   "tr": "Kapalı sorularla başlama. Önce açık soru ('Was führt Sie zu uns?'), sonra ayrıntı için kapalı soru."
+  },
+  {
+   "tr": "Önemli sayıları geri sor ve özetle: doz, sıklık, son alım saati. 'Also 400 mg, dreimal täglich, zuletzt heute um 8 Uhr – richtig?'"
+  },
+  {
+   "tr": "İlaç adını anlamadıysan tahmin etme, harf harf söylettir: 'Könnten Sie mir den Namen bitte buchstabieren?' Bilmediğin ilacın grubunu sor: 'Wofür nehmen Sie das?'"
+  },
+  {
+   "tr": "Aufklärung'da yalnız tedaviyi değil; neden, nasıl, riskler, alternatifler, tedavi edilmezse ne olur ve sonrası davranış kurallarını (Verhaltenshinweise) da söyle."
+  },
+  {
+   "tr": "Aufklärung sonunda hastanın anlayıp anlamadığını kontrol etmeyi ve soru hakkı tanımayı unutma; bu iletişim puanıdır."
+  },
+  {
+   "tr": "Brief'i not dökümü gibi yazma; tam cümle kur ama gereksiz uzatma. Başlıkları (Anamnese, Befund, Diagnose, Therapie, Procedere) mutlaka ayır."
+  },
+  {
+   "tr": "Tanı yazarken kesin olmadığın yerde 'Verdacht auf' ya da 'Verdachtsdiagnose' kullan; ayırıcı tanı (DD) eklemek klinik düşünceni gösterir."
+  },
+  {
+   "tr": "Brief'te zaman karışıklığı: anamnez ve yapılanlar Präteritum, plan Präsens ('ist geplant'). Aynı paragrafta Perfekt/Präteritum gidip gelme."
+  },
+  {
+   "tr": "Kısaltmaları kontrollü kullan: brief'te yaygın olanlar (V.a., Z.n., OK/UK, o.B.) kabul edilir; kendi uydurduğun kısaltma kullanma."
+  },
+  {
+   "tr": "'Der Patient hat Schmerzen bei Kälte' doğru; 'mit Kälte' yanlış. Uyarandan sonra ağrı: 'bei Kälte, beim Kauen, bei Berührung'."
+  },
+  {
+   "tr": "'Ich muss Ihnen eine Spritze geben' gibi korkutucu kelimeler yerine 'Ich betäube den Bereich, damit Sie nichts spüren' gibi yumuşak ifadeler tercih et."
+  },
+  {
+   "tr": "Teil 3'te 'Ich weiß nicht' deyip susma. 'Da bin ich mir nicht sicher, aber ich würde vermuten, dass …' ya da 'Das würde ich in der Leitlinie nachschlagen' de."
+  },
+  {
+   "tr": "Muayene bulgularını hastaya yorumsuz okuma ('Perkussion positiv'); ne anlama geldiğini söyle: 'Der Zahn reagiert empfindlich auf Klopfen, das spricht für eine Entzündung an der Wurzelspitze.'"
+  },
+  {
+   "tr": "Ses tonunu ve hızı kontrol et: sınav heyecanında çok hızlı konuşulur. Kısa cümleler ve net vurgu, karmaşık ama hatalı cümlelerden daha çok puan getirir."
+  },
+  {
+   "tr": "Sınav pratiğinde kendini kaydet: kayıtta en sık tekrar eden hatanı (artikel, fiil sırası, zaman) seç ve bir hafta sadece ona odaklan."
+  },
+  {
+   "tr": "Hastanın adını ve doğru hitabı kullan (Frau Yılmaz, Herr Weber); vaka boyunca aynı ismi kullan, brief'te doğum tarihini ve başvuru tarihini yazmayı unutma."
+  },
+  {
+   "tr": "Ağrı kesici önerirken doz, aralık ve maksimum günlük dozu söyle; kontrendikasyonu (ör. antikoagülan + NSAİİ, böbrek yetmezliği, hamilelik) sorduğunu göster."
+  },
+  {
+   "tr": "Röntgen öncesi doğurganlık çağındaki kadına hamileliği sor ve koruma (önlük/tiroid koruyucu) gerekçesini kısaca açıkla."
+  }
+ ],
+ "quellen": [
+  {
+   "titel": "Deutsche Gesellschaft für Zahn-, Mund- und Kieferheilkunde (DGZMK) – Leitlinien und wissenschaftliche Mitteilungen",
+   "url": "https://www.dgzmk.de"
+  },
+  {
+   "titel": "AWMF – Arbeitsgemeinschaft der Wissenschaftlichen Medizinischen Fachgesellschaften, Leitlinienregister",
+   "url": "https://www.awmf.org"
+  },
+  {
+   "titel": "S3-Leitlinie Zahnärztliche Chirurgie unter oraler Antikoagulation/Thrombozytenaggregationshemmung (DGZMK/DGMKG, AWMF)",
+   "url": ""
+  },
+  {
+   "titel": "S3-Leitlinie Die Behandlung von Parodontitis Stadium I bis III (DG PARO/DGZMK, AWMF)",
+   "url": ""
+  },
+  {
+   "titel": "S3-Leitlinie Antibiotikaprophylaxe / Antiinfektive Therapie in der Zahnmedizin (AWMF; jeweils aktuelle Fassung prüfen)",
+   "url": ""
+  },
+  {
+   "titel": "Bundeszahnärztekammer (BZÄK) – Patienteninformationen und Berufsausübung",
+   "url": "https://www.bzaek.de"
+  },
+  {
+   "titel": "Kassenzahnärztliche Bundesvereinigung (KZBV) – BEMA und Versorgungsinformationen",
+   "url": "https://www.kzbv.de"
+  },
+  {
+   "titel": "Landeszahnärztekammern – Informationen zur Fachsprachprüfung (je nach Bundesland)",
+   "url": ""
+  },
+  {
+   "titel": "Deutsche Diabetes Gesellschaft (DDG) – Praxisempfehlungen (HbA1c-Grenzwerte)",
+   "url": "https://www.ddg.info"
+  },
+  {
+   "titel": "ESC/ESH-Leitlinien zur arteriellen Hypertonie (Blutdruckklassifikation)",
+   "url": ""
+  },
+  {
+   "titel": "Bürgerliches Gesetzbuch § 630e – Aufklärungspflichten (Patientenrechtegesetz)",
+   "url": "https://www.gesetze-im-internet.de/bgb/__630e.html"
+  },
+  {
+   "titel": "Duden – Rechtschreibung und Grammatik",
+   "url": "https://www.duden.de"
+  },
+  {
+   "titel": "Allgemeine Lehrbücher der Zahnerhaltung, Parodontologie und zahnärztlichen Chirurgie (Thieme-Reihe „Zahnmedizin“) – allgemeines Fachwissen",
+   "url": ""
+  }
+ ]
+}

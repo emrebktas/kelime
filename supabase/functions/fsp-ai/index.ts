@@ -5,8 +5,9 @@
 // Model GEMINI_MODEL gizli değişkeniyle değiştirilebilir.
 //
 // İstek: POST { action, ... }
-//   patient   { case, history }                 → { reply }           Teil 1: simüle hasta
-//   oberarzt  { case, history }                 → { reply, done }     Teil 3: simüle Oberarzt
+//   patient   { case, history, level }          → { reply }           Teil 1: simüle hasta
+//   oberarzt  { case, history, level }          → { reply, done }     Teil 3: simüle Oberarzt
+//             level: 'anfaenger' | 'mittel' (varsayılan) | 'fortgeschritten' | 'pruefung'
 //   evaluate  { part, case, history | brief, konjunktiv } → { report } değerlendirme
 //   case      { fachgebiet, hint }              → { case }            yeni (uydurma) vaka
 //   answer    { question, model, answer, kind } → { check }           soru bankası: tek cevabın kontrolü
@@ -44,6 +45,11 @@ const list = (v: unknown, max: number, each = 300) =>
   (Array.isArray(v) ? v : []).map((x) => str(x, each)).filter(Boolean).slice(0, max);
 
 type Turn = { role: 'user' | 'model'; text: string };
+
+// Zorluk seviyesi: istemciden gelen değer yalnızca bu listeden biri olabilir, değilse 'mittel'
+const LEVELS = ['anfaenger', 'mittel', 'fortgeschritten', 'pruefung'] as const;
+type Level = typeof LEVELS[number];
+const readLevel = (v: unknown): Level => ((LEVELS as readonly string[]).includes(String(v)) ? String(v) as Level : 'mittel');
 type Case = Record<string, unknown>;
 
 /** İstemciden gelen vakayı sınırlar içinde okur (gizli bilgiler dahil; vaka uygulamanın kendi verisidir). */
@@ -104,7 +110,49 @@ Risiken/Aufklärungspunkte: ${(e.risks as string[]).join('; ')}`;
 
 /* ------------------------------------------------------------------ istemler */
 
-const patientPrompt = (c: Case) => {
+// Seviyeye göre hastanın davranışı (Mittelstufe = temel kurallar, ek yok)
+const PATIENT_LEVEL: Record<Level, string> = {
+  anfaenger: `Schwierigkeitsstufe: Anfänger.
+- Sprich langsam, in sehr kurzen, klaren und einfachen Sätzen (Hauptsätze, Standarddeutsch, kein Dialekt).
+- Hörst du einen Fachbegriff, bitte freundlich und geduldig um eine Erklärung ("Entschuldigung, was bedeutet das genau?").
+- Hilf der Zahnärztin mit kleinen Hinweisen weiter, wenn sie stockt oder etwas Wichtiges vergisst (z. B. "Wollen Sie auch wissen, welche Tabletten ich nehme?"), aber höchstens etwa in jeder dritten Antwort.
+- Wiederhole deine Antwort gern mit anderen Worten, wenn die Zahnärztin nachfragt.`,
+  mittel: '',
+  fortgeschritten: `Schwierigkeitsstufe: Fortgeschritten.
+- Sprich natürliche, lockere Umgangssprache mit typischen Füllwörtern ("na ja", "also", "irgendwie", "halt"), auch mal einen längeren Satz.
+- Antworte oft indirekt oder ungenau ("so seit ein paar Tagen, glaub ich", "geht eigentlich"). Konkrete Angaben (Zahl, Dosis, Zeitpunkt, Name) gibst du erst, wenn genau danach gefragt wird.
+- Gib nie mehr preis als gefragt. Sammelfragen beantwortest du nur teilweise.
+- Stelle zwischendurch eigene Fragen ("Muss der Zahn raus?", "Tut das weh?", "Wie lange dauert das?").
+- Gib keine Hinweise, was noch gefragt werden sollte.`,
+  pruefung: `Schwierigkeitsstufe: Prüfungssimulation (wie in der echten Prüfung).
+- Gib keinerlei Hinweise oder Hilfen, was noch gefragt werden sollte.
+- Sprich manchmal etwas schnell, ausschweifend oder unklar, mit Umgangssprache, Füllwörtern und ungenauen Angaben ("so 'ne Blutverdünnung", "irgendwas mit dem Herzen"). Konkrete Angaben nur auf präzise Nachfrage.
+- Du bist besorgt oder etwas ungeduldig. Stelle von dir aus auch kritische oder fordernde Fragen ("Ist das gefährlich?", "Warum muss das sein?", "Was passiert, wenn ich nichts mache?", "Zahlt das die Kasse?", "Können Sie mir das garantieren?").
+- Unterbrich gelegentlich mit einer eigenen Sorge.
+- Bleibe realistisch und höflich; erfinde keine neuen medizinischen Fakten.`,
+};
+
+// Seviyeye göre Oberarzt davranışı
+const OBERARZT_LEVEL: Record<Level, string> = {
+  anfaenger: `Schwierigkeitsstufe: Anfänger.
+- Sprich langsam und in kurzen, klaren Sätzen. Stelle einfache, direkte Fragen.
+- Stockt der Kandidat, gib einen kleinen Hinweis ("Denken Sie auch an die Allgemeinanamnese.") oder formuliere die Frage einfacher.
+- Insgesamt eher 5–7 Fragen.`,
+  mittel: '',
+  fortgeschritten: `Schwierigkeitsstufe: Fortgeschritten.
+- Sprich natürliches, zügiges Klinikdeutsch. Bei ungenauen Antworten hakst du einmal nach ("Was genau meinen Sie damit?").
+- Keine Hinweise oder Hilfen.`,
+  pruefung: `Schwierigkeitsstufe: Prüfungssimulation (wie in der echten Prüfung).
+- Keine Hinweise und keine Hilfen. Zügiges, natürliches Klinikdeutsch.
+- Stelle kritische Nachfragen: Begründung der Verdachtsdiagnose, Abgrenzung der Differentialdiagnosen, Kontraindikationen, Wechselwirkungen, Vorgehen bei Komplikationen, Alternativen und deren Nachteile.
+- Ist eine Antwort ungenau, falsch oder unvollständig, hake nach oder konfrontiere freundlich-kritisch ("Sind Sie sicher?", "Und wenn der Patient Marcumar nimmt?"), ohne die richtige Lösung zu verraten.
+- Insgesamt etwa 8–10 Fragen.`,
+};
+
+const levelRules = (rules: string) =>
+  rules ? `\n\n${rules}\nDiese Stufenregeln gehen den allgemeinen Regeln vor, wo sie sich widersprechen.` : '';
+
+const patientPrompt = (c: Case, level: Level) => {
   const p = c.patient as Record<string, unknown>;
   return `Du spielst in einer Übung zur Fachsprachprüfung Zahnmedizin einen Patienten in einer deutschen Zahnarztpraxis.
 Der Nutzer ist die Zahnärztin / der Zahnarzt und führt mit dir das Anamnese- und Aufklärungsgespräch.
@@ -124,10 +172,10 @@ Regeln:
 - Medikamente kennst du oft nur ungefähr ("so eine Tablette für den Blutdruck, ich glaube Ramipril").
 - Wenn die Zahnärztin erklärt, was sie vorhat, stellst du passend zu deiner Sorge ein bis zwei Rückfragen.
 - Du bist nie die Ärztin, stellst keine Diagnose und gibst keine Tipps zur Prüfung.
-- Verabschiedet sich die Zahnärztin, verabschiedest du dich auch.`;
+- Verabschiedet sich die Zahnärztin, verabschiedest du dich auch.${levelRules(PATIENT_LEVEL[level])}`;
 };
 
-const oberarztPrompt = (c: Case) => `Du bist Oberärztin/Oberarzt in einer deutschen Zahnklinik und Prüfer/in im Teil 3 der Fachsprachprüfung (Arzt-Arzt-Gespräch).
+const oberarztPrompt = (c: Case, level: Level) => `Du bist Oberärztin/Oberarzt in einer deutschen Zahnklinik und Prüfer/in im Teil 3 der Fachsprachprüfung (Arzt-Arzt-Gespräch).
 Der Nutzer hat den folgenden Patienten gesehen und stellt ihn dir jetzt vor.
 
 ${caseSheet(c)}
@@ -142,7 +190,7 @@ Ablauf und Regeln:
 - Bitte ein- bis zweimal darum, einen Fachbegriff so zu erklären, wie man ihn dem Patienten in einfachen Worten sagen würde.
 - Gib keine Bewertung und keine Lösungen, korrigiere nicht. Kurze Reaktionen wie "Gut." oder "Verstehe." sind erlaubt.
 - Insgesamt etwa 6–9 Fragen. Wenn alles besprochen ist, bedanke dich, beende das Gespräch und schreibe am Ende genau: [ENDE]
-- Kein Markdown.`;
+- Kein Markdown.${levelRules(OBERARZT_LEVEL[level])}`;
 
 const REPORT_SHAPE = `{
  "gesamt": 0-100,
@@ -153,7 +201,8 @@ const REPORT_SHAPE = `{
  "korrekturen": [{"original": "wörtlich aus dem Text", "korrigiert": "korrekte deutsche Fassung", "typ": "Grammatik|Wortwahl|Fachsprache|Register|Konjunktiv|Rechtschreibung", "erklaerung": "kurz auf Türkisch"}],
  "besser": [{"statt": "...", "besser": "...", "warum": "kurz auf Türkisch"}],
  "staerken": ["Türkisch"],
- "vokabeln": [{"de": "nützlicher Fachbegriff oder Redemittel mit Artikel", "tr": "Türkisch"}]
+ "vokabeln": [{"de": "nützlicher Fachbegriff oder Redemittel mit Artikel", "tr": "Türkisch"}],
+ "uebung": [{"fokus": "Fehlertyp, z. B. Konjunktiv I|Artikel|Wortstellung|Präpositionen|Fachsprache|Register", "aufgabe": "kurze Übungsaufgabe auf Deutsch (Lücke, Umformung oder Satzbildung)", "loesung": "Lösung auf Deutsch", "erklaerung_tr": "kurze Erklärung auf Türkisch"}]
 }`;
 
 function evaluatePrompt(part: number, c: Case, konjunktiv: boolean) {
@@ -168,12 +217,14 @@ ${REPORT_SHAPE}
 - "korrekturen": bis zu 20 echte Fehler, wörtlich zitiert; keine erfundenen Fehler. Bei fehlerfreiem Text weniger Einträge.
 - "besser": 3–6 Vorschläge für natürlichere oder präzisere Formulierungen.
 - "vokabeln": 5–10 Begriffe/Redemittel, die in diesem Fall nützlich gewesen wären.
-- "ergebnis": ab 70 bestanden, 60–69 knapp, darunter nicht bestanden.`;
+- "ergebnis": ab 70 bestanden, 60–69 knapp, darunter nicht bestanden.
+- "kategorien": jede Kategorie mit eigenem, begründetem Wert; nicht alle gleich bewerten.
+- "uebung": genau 3 kurze Übungen zum häufigsten Fehlertyp des Kandidaten (bei wenigen Fehlern zu einem typischen sprachlichen Prüfungsthema dieses Falls). Neue Sätze verwenden, nicht nur die Korrekturen wiederholen.`;
   if (part === 1) {
     return `${common}
 
 Teil 1: Anamnese- und Aufklärungsgespräch mit dem Patienten (simuliert). Bewerte die Äußerungen der Zahnärztin/des Zahnarztes.
-"kategorien" genau: Sprache (Grammatik, Wortwahl) · Anamnese (Vollständigkeit) · Aufklärung (Verdacht, Diagnostik, Therapie, Risiken in einfachen Worten) · Kommunikation (Empathie, Sie-Form, Umgangssprache statt Fachbegriffen, Nachfragen) · Gesprächsstruktur (Begrüßung, Ablauf, Zusammenfassung, Abschluss).
+"kategorien" genau diese 10, in dieser Reihenfolge: Grammatik · Wortschatz · Medizinische Fachsprache (hier: Fachbegriffe vermeiden bzw. patientengerecht erklären) · Flüssigkeit · Verständlichkeit · Gesprächsführung (offene/geschlossene Fragen, Nachfragen, Zusammenfassen) · Vollständigkeit der Anamnese · Struktur (Begrüßung, Ablauf, Abschluss) · Medizinische Plausibilität (Verdacht, Diagnostik, Therapie, Risiken richtig und einfach erklärt) · Professionelle Kommunikation (Empathie, Sie-Form, Umgang mit Sorgen).
 "fehlend": alle Pflichtpunkte der Anamnese und Aufklärung, die nicht oder nur ungenau erfragt/erklärt wurden.
 "besser": vor allem Fragen, die präziser oder patientengerechter gestellt werden könnten.`;
   }
@@ -185,14 +236,14 @@ ${konjunktiv
     ? 'Die Anamneseabschnitte sollen in indirekter Rede (Konjunktiv I, ersatzweise Konjunktiv II) stehen ("Der Patient berichtete, er habe seit drei Tagen Schmerzen."). Fehler in der indirekten Rede sind als Typ "Konjunktiv" zu korrigieren.'
     : 'Indirekte Rede ist nicht gefordert; Indikativ ist erlaubt.'}
 Fachsprache, Passiv/Nominalstil und vollständige Sätze werden erwartet.
-"kategorien" genau: Aktuelle Anamnese · Allgemeinanamnese · Röntgenbefund · Therapieplan · Sprache (Grammatik, Rechtschreibung)${konjunktiv ? ' · Indirekte Rede' : ''} · Fachsprache und Stil.
+"kategorien" genau: Aktuelle Anamnese · Allgemeinanamnese · Röntgenbefund · Therapieplan · Grammatik (inkl. Rechtschreibung) · Wortschatz · Medizinische Fachsprache (Nominalstil, Passiv) · Struktur${konjunktiv ? ' · Indirekte Rede' : ''}.
 "fehlend": wichtige Inhalte, die im Brief fehlen.
 Zusätzlich das Feld "abschnitte": [{"name": "Aktuelle Anamnese|Allgemeinanamnese|Röntgenbefund|Therapieplan", "verbessert": "vollständig korrigierte, stilistisch gute Fassung des Abschnitts des Kandidaten (Deutsch)"}].`;
   }
   return `${common}
 
 Teil 3: Arzt-Arzt-Gespräch. Der Kandidat stellt den Fall einer Oberärztin/einem Oberarzt vor und beantwortet Rückfragen. Bewerte nur die Äußerungen des Kandidaten.
-"kategorien" genau: Fallvorstellung (Struktur, Vollständigkeit) · Fachsprache · Diagnose und Differentialdiagnosen · Therapie und Diagnostik · Rückfragen beantworten (Präzision, Flüssigkeit) · Sprache (Grammatik).
+"kategorien" genau diese 9, in dieser Reihenfolge: Grammatik · Wortschatz · Medizinische Fachsprache · Flüssigkeit · Verständlichkeit · Gesprächsführung (Rückfragen präzise beantworten, nachfragen) · Struktur (strukturierte, vollständige Fallvorstellung) · Medizinische Plausibilität (Diagnose, Differentialdiagnosen, Diagnostik, Therapie) · Professionelle Kommunikation (kollegialer Ton, Register).
 "fehlend": Inhalte, die in der Vorstellung oder den Antworten fehlten oder falsch waren.`;
 }
 
@@ -290,7 +341,7 @@ function cleanReport(r: Record<string, unknown>, part: number) {
     gesamt,
     ergebnis,
     fazit: str(r.fazit, 1500),
-    kategorien: objs(r.kategorien, 10).map((k) => ({ name: str(k.name, 80), punkte: num(k.punkte), kommentar: str(k.kommentar, 600) })).filter((k) => k.name),
+    kategorien: objs(r.kategorien, 12).map((k) => ({ name: str(k.name, 80), punkte: num(k.punkte), kommentar: str(k.kommentar, 600) })).filter((k) => k.name),
     fehlend: list(r.fehlend, 30, 300),
     korrekturen: objs(r.korrekturen, 25).map((k) => ({
       original: str(k.original, 500), korrigiert: str(k.korrigiert, 500), typ: str(k.typ, 40), erklaerung: str(k.erklaerung, 500),
@@ -299,6 +350,10 @@ function cleanReport(r: Record<string, unknown>, part: number) {
     staerken: list(r.staerken, 8, 400),
     vokabeln: objs(r.vokabeln, 14).map((k) => ({ de: str(k.de, 120), tr: str(k.tr, 160) })).filter((k) => k.de),
     abschnitte: objs(r.abschnitte, 4).map((k) => ({ name: str(k.name, 60), verbessert: str(k.verbessert, 4000) })).filter((k) => k.verbessert),
+    // En sık hata türüne göre kısa alıştırmalar (eski raporlarda yok; istemci yokluğunu tolere eder)
+    uebung: objs(r.uebung, 5).map((k) => ({
+      fokus: str(k.fokus, 80), aufgabe: str(k.aufgabe, 600), loesung: str(k.loesung, 600), erklaerung_tr: str(k.erklaerung_tr, 500),
+    })).filter((k) => k.aufgabe && k.loesung),
   };
 }
 
@@ -353,6 +408,7 @@ Deno.serve(async (req) => {
     const c = readCase(body.case);
     if (!c) return reply({ error: 'Vaka bilgisi eksik.' }, 400);
     const history = readHistory(body.history);
+    const level = readLevel(body.level);
     if (action === 'patient' && !history.length) return reply({ reply: c.greeting || 'Guten Tag.' });
     const quota = await useQuota(COST.turn);
     if (quota) return quota;
@@ -360,8 +416,9 @@ Deno.serve(async (req) => {
     const turns = history[0]?.role === 'model' ? [{ role: 'user', text: '(Gespräch beginnt)' } as Turn, ...history] : history;
     if (!turns.length) turns.push({ role: 'user', text: '(Der Kandidat ist bereit.)' });
     const r = await callGemini(apiKey, {
-      system: action === 'patient' ? patientPrompt(c) : oberarztPrompt(c),
-      turns, maxTokens: 600, temperature: action === 'patient' ? 0.7 : 0.5, timeoutMs: 45_000, think: 'low',
+      system: action === 'patient' ? patientPrompt(c, level) : oberarztPrompt(c, level),
+      turns, maxTokens: 600,
+      temperature: action === 'patient' ? (level === 'anfaenger' ? 0.5 : level === 'mittel' ? 0.7 : 0.85) : 0.5, timeoutMs: 45_000, think: 'low',
     });
     if (!r.text) return fail(r);
     const done = /\[ENDE\]/.test(r.text);
@@ -391,7 +448,7 @@ Deno.serve(async (req) => {
     const r = await callGemini(apiKey, {
       system: evaluatePrompt(part, c, body.konjunktiv !== false),
       turns: [{ role: 'user', text: material }],
-      json: true, maxTokens: 8000, temperature: 0.2, timeoutMs: 140_000, think: 'medium',
+      json: true, maxTokens: 10000, temperature: 0.2, timeoutMs: 140_000, think: 'medium',
     });
     if (!r.text) return fail(r);
     const raw = parseJson(r.text);

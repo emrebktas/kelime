@@ -1,0 +1,137 @@
+/* FSP alıştırma modülü (fsp-train.js): Vokabeltrainer, Grammatik, Fehlerheft.
+   Sadece ds.css tokenları kullanılır; açık/koyu tema otomatik uyar. */
+
+.ftr { display: flex; flex-direction: column; gap: var(--sp-4); }
+.ftr h3 { margin: 0 0 var(--sp-2); }
+.ftr .chips { margin: 0; }
+.ftr-actions { display: flex; flex-wrap: wrap; gap: var(--sp-2); align-items: center; justify-content: flex-end; margin-top: var(--sp-3); }
+.ftr-actions > .muted:first-child { margin-right: auto; }
+.ftr-sec-head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); flex-wrap: wrap; margin-bottom: var(--sp-2); }
+.ftr-sec-head h3 { margin: 0; }
+.ftr-say { width: 30px; height: 30px; padding: 0; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; margin-left: 4px; color: var(--muted); }
+.ftr-say svg { width: 16px; height: 16px; }
+
+/* ---------- kurulum ---------- */
+.ftr-setup p { margin: 0 0 var(--sp-4); }
+.ftr-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: var(--sp-4); }
+.ftr-lbl { font-size: 11px; line-height: 16px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.ftr-weak { display: flex; flex-wrap: wrap; gap: 6px; }
+.ftr-weak-i { display: inline-flex; align-items: center; gap: 6px; padding: 3px 4px 3px 10px; border: 1px solid var(--border); border-radius: var(--r-full); background: var(--raised); font-size: 13px; }
+
+/* ---------- soru ---------- */
+.ftr-top { display: flex; align-items: center; gap: var(--sp-3); margin-bottom: var(--sp-4); }
+.ftr-top .muted { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ftr-progress { flex: 1; height: 6px; border-radius: var(--r-full); background: var(--hover); overflow: hidden; }
+.ftr-progress span { display: block; height: 100%; background: var(--accent); border-radius: inherit; transition: width .25s; }
+.ftr-q-lbl { font-size: 13px; margin-bottom: var(--sp-2); display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.ftr-kurs { background: var(--accent-soft); color: var(--accent); }
+.ftr-prompt { font-family: var(--font-display); font-size: 28px; line-height: 1.3; font-weight: 600; margin: var(--sp-2) 0 var(--sp-4); display: flex; align-items: center; flex-wrap: wrap; gap: 4px; overflow-wrap: anywhere; }
+.ftr-prompt-s { font-family: var(--font-ui); font-size: 17px; font-weight: 500; line-height: 1.5; }
+.ftr-cloze { font-family: var(--font-ui); font-size: 18px; font-weight: 500; line-height: 1.6; }
+.ftr-gap { display: inline-block; min-width: 4ch; padding: 0 6px; margin: 0 2px; border-bottom: 2px solid var(--accent); color: var(--accent); font-weight: 650; }
+.ftr-hint { margin: 0 0 var(--sp-3); }
+.ftr-ans { display: flex; gap: var(--sp-2); flex-wrap: wrap; }
+.ftr-ans input { flex: 1 1 220px; min-width: 0; font-size: 16px; }
+.ftr textarea { width: 100%; box-sizing: border-box; font-size: 15px; resize: vertical; }
+
+.ftr-opts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-2); }
+.ftr-opt { text-align: left; padding: 12px 14px; font-size: 15px; font-weight: 500; background: var(--raised); border: 1px solid var(--border); border-radius: var(--r-md); color: var(--text); overflow-wrap: anywhere; }
+.ftr-opt:hover:not(:disabled) { border-color: var(--border-strong); background: var(--hover); }
+.ftr-opt:disabled { cursor: default; opacity: 1; }
+.ftr-opt.right { border-color: var(--good); background: color-mix(in srgb, var(--good) 16%, var(--raised)); color: var(--text); }
+.ftr-opt.wrong { border-color: var(--danger); background: color-mix(in srgb, var(--danger) 14%, var(--raised)); color: var(--text); }
+.ftr-arts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.ftr-arts .ftr-opt { text-align: center; font-size: 18px; font-weight: 650; }
+.ftr-art-der { box-shadow: inset 0 -3px 0 var(--slate); }
+.ftr-art-die { box-shadow: inset 0 -3px 0 var(--again); }
+.ftr-art-das { box-shadow: inset 0 -3px 0 var(--sage); }
+
+/* ---------- geri bildirim ---------- */
+.ftr-fb { margin-top: var(--sp-4); padding: var(--sp-4); border-radius: var(--r-md); border: 1px solid var(--border); border-left-width: 4px; background: var(--raised); display: flex; flex-direction: column; gap: var(--sp-2); }
+.ftr-fb.ok { border-left-color: var(--good); }
+.ftr-fb.no { border-left-color: var(--danger); }
+.ftr-fb.ok .ftr-fb-h b { color: var(--good); }
+.ftr-fb.no .ftr-fb-h b { color: var(--danger); }
+.ftr-fb .ftr-actions { margin-top: var(--sp-1); }
+.ftr-right { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+.ftr-info { display: flex; flex-direction: column; gap: 2px; font-size: 13.5px; }
+.ftr-example { font-size: 14px; display: flex; align-items: center; flex-wrap: wrap; gap: 4px; margin-top: var(--sp-2); }
+.ftr-ai { padding: var(--sp-3); border-radius: var(--r-md); background: var(--panel); border: 1px solid var(--border); font-size: 14px; }
+.ftr-ai > .sc { margin-right: 6px; }
+.ftr-fix { margin-top: 6px; display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+.ftr-expl-s { margin: 0; font-size: 13.5px; color: var(--muted); }
+
+/* ---------- sonuç ---------- */
+.ftr-result { display: flex; align-items: center; gap: var(--sp-5); }
+.ftr-result h3 { margin: 0 0 4px; }
+.ftr-result p { margin: 0; }
+.ftr-score { flex: none; width: 92px; height: 92px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 4px solid var(--border); }
+.ftr-score b { font-size: 30px; line-height: 1; font-variant-numeric: tabular-nums; }
+.ftr-score span { font-size: 12px; color: var(--muted); }
+.ftr-score.good { border-color: var(--good); }
+.ftr-score.mid { border-color: var(--hard); }
+.ftr-score.bad { border-color: var(--danger); }
+.ftr-list { display: flex; flex-direction: column; }
+.ftr-row { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; padding: 6px 0; border-bottom: 1px solid var(--border); }
+.ftr-row:last-child { border-bottom: none; }
+.ftr-given { font-size: 12.5px; color: var(--danger); margin-left: auto; }
+
+/* ---------- gramer ---------- */
+.ftr-topics { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--sp-3); }
+.ftr-topic { display: flex; flex-direction: column; align-items: stretch; gap: 4px; text-align: left; border: 1px solid var(--border); background: var(--panel); color: var(--text); cursor: pointer; }
+.ftr-topic:hover { border-color: var(--border-strong); background: var(--panel); transform: translateY(-1px); }
+.ftr-topic-h { display: flex; justify-content: space-between; align-items: center; gap: var(--sp-2); font-size: 15px; }
+.ftr-topic-n { font-size: 12px; }
+.ftr-gram h2 { margin: var(--sp-2) 0 2px; }
+.ftr-gram > .muted { margin: 0 0 var(--sp-3); }
+.ftr-expl { line-height: 1.65; margin: var(--sp-3) 0; }
+.ftr-ex { margin: 0; padding-left: 18px; }
+.ftr-ex li { margin: 2px 0; }
+
+/* ---------- Fehlerheft ---------- */
+.ftr-top3 { margin: 0 0 var(--sp-3); }
+.ftr-bars { display: flex; flex-direction: column; gap: 4px; }
+.ftr-bar-row { display: grid; grid-template-columns: 140px 1fr 32px; align-items: center; gap: var(--sp-3); padding: 4px 8px; border: 1px solid transparent; background: transparent; border-radius: var(--r-md); text-align: left; font-weight: 500; color: var(--text); }
+.ftr-bar-row:hover:not(:disabled) { background: var(--hover); }
+.ftr-bar-row:disabled { opacity: .5; cursor: default; }
+.ftr-bar-row.on { border-color: var(--accent); background: var(--accent-soft); }
+.ftr-bar-row b { text-align: right; font-variant-numeric: tabular-nums; }
+.ftr-bar-l { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ftr-bar { height: 8px; border-radius: var(--r-full); background: var(--hover); overflow: hidden; }
+.ftr-bar i { display: block; height: 100%; background: var(--accent); border-radius: inherit; }
+.ftr-filter { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); flex-wrap: wrap; }
+.ftr-filter .radio { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.ftr-errs { display: flex; flex-direction: column; gap: var(--sp-3); }
+.ftr-err { display: flex; flex-direction: column; gap: 6px; }
+.ftr-err.fixed { opacity: .62; }
+.ftr-err .ftr-actions { margin-top: var(--sp-1); }
+.ftr-err-meta { font-size: 12.5px; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.ftr-err-l { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; }
+.ftr-err-l del { color: var(--danger); text-decoration-thickness: 1px; }
+.ftr-err-l ins { color: var(--good); text-decoration: none; font-weight: 550; }
+.ftr-err-x { margin: 0 0 0 2px; font-size: 13.5px; color: var(--muted); }
+.ftr-tag { flex: none; font-size: 10.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: 1px 7px; border-radius: var(--r-full); background: color-mix(in srgb, var(--danger) 16%, transparent); color: var(--danger); }
+.ftr-tag.ok { background: color-mix(in srgb, var(--good) 18%, transparent); color: var(--good); }
+.ftr-tag.alt { background: var(--slate-soft); color: var(--slate); }
+.ftr-note p { margin: 4px 0 0; }
+.ftr-learned { color: var(--good); }
+.ftr-prac { margin-top: var(--sp-2); padding: var(--sp-3); border-radius: var(--r-md); border: 1px dashed var(--border-strong); background: var(--raised); display: flex; flex-direction: column; gap: var(--sp-2); }
+.ftr-prac p { margin: 0; }
+.ftr-prac-src { padding: 6px 10px; border-left: 3px solid var(--danger); background: var(--panel); border-radius: var(--r-sm); }
+.ftr-miss { margin: 0; padding-left: 18px; columns: 2; column-gap: var(--sp-6); }
+.ftr-miss li { break-inside: avoid; margin: 3px 0; }
+
+/* ---------- mobil ---------- */
+@media (max-width: 760px) {
+  .ftr .panel { padding: var(--sp-4); }
+  .ftr-prompt { font-size: 23px; }
+  .ftr-prompt-s, .ftr-cloze { font-size: 16px; }
+  .ftr-opts { grid-template-columns: 1fr; }
+  .ftr-arts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ftr-actions { justify-content: stretch; }
+  .ftr-actions > button { flex: 1 1 auto; }
+  .ftr-result { flex-direction: column; text-align: center; gap: var(--sp-3); }
+  .ftr-bar-row { grid-template-columns: 108px 1fr 28px; gap: var(--sp-2); }
+  .ftr-miss { columns: 1; }
+  .ftr-given { margin-left: 0; width: 100%; }
+}
