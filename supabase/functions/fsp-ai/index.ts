@@ -2,7 +2,7 @@
 //
 // Gemini anahtarı sadece burada, Supabase'in gizli değişkenlerinde (GEMINI_API_KEY) durur;
 // uygulamaya, depoya ya da APK'ya hiç inmez. Sadece giriş yapmış kullanıcılar çağırabilir.
-// Model GEMINI_MODEL gizli değişkeniyle değiştirilebilir.
+// Model GEMINI_MODEL, yedek model GEMINI_FALLBACK_MODEL gizli değişkeniyle değiştirilebilir.
 //
 // İstek: POST { action, ... }
 //   patient   { case, history, level }          → { reply }           Teil 1: simüle hasta
@@ -16,6 +16,8 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const MODEL = Deno.env.get('GEMINI_MODEL') ?? 'gemini-3.8-flash';
+// Ana model yoğun/yavaşken kullanılan yedek; boş bırakılırsa ('') yedek kapalı
+const FALLBACK_MODEL = Deno.env.get('GEMINI_FALLBACK_MODEL') ?? 'gemini-3.5-flash-lite';
 // GEMINI_BASE_URL sadece yerel testte sahte sunucuya yönlendirmek için
 const GEMINI_BASE = Deno.env.get('GEMINI_BASE_URL') ?? 'https://generativelanguage.googleapis.com';
 const GEMINI_URL = (model: string) => `${GEMINI_BASE}/v1beta/models/${model}:generateContent`;
@@ -269,8 +271,17 @@ const CASE_SHAPE = `{
 
 type GeminiOpts = { system: string; turns: Turn[]; json?: boolean; maxTokens: number; temperature: number; timeoutMs: number; think?: string };
 
-async function callGemini(apiKey: string, o: GeminiOpts): Promise<{ text?: string; error?: string; status?: number }> {
-  const send = async (withThinking: boolean) => {
+// Geçici hatalarda (aşırı yük, sunucu hatası) aynı modeli bir kez daha dener
+const RETRY_SAME = new Set([500, 503]);
+// Bu durumlarda yedek modele geçilir (yedeğin kotası ve yükü ayrı)
+const TRY_FALLBACK = new Set([404, 403, 429, 500, 503]);
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+type GeminiResult = { text?: string; error?: string; status?: number; model?: string };
+
+// Tek modele tek istek; düşünme ayarını tanımayan modelde ayarsız tekrar dener
+async function sendGemini(apiKey: string, model: string, o: GeminiOpts, timeoutMs: number): Promise<Response> {
+  const send = (withThinking: boolean) => {
     const body = {
       systemInstruction: { parts: [{ text: o.system }] },
       contents: o.turns.map((t) => ({ role: t.role, parts: [{ text: t.text }] })),
@@ -281,43 +292,71 @@ async function callGemini(apiKey: string, o: GeminiOpts): Promise<{ text?: strin
         ...(withThinking && o.think ? { thinkingConfig: { thinkingLevel: o.think } } : {}),
       },
     };
-    return await fetch(GEMINI_URL(MODEL), {
+    return fetch(GEMINI_URL(model), {
       method: 'POST',
       headers: { 'x-goog-api-key': apiKey, 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
-      signal: AbortSignal.timeout(o.timeoutMs),
+      signal: AbortSignal.timeout(timeoutMs),
     });
   };
-  let res: Response;
-  try {
-    res = await send(true);
-    // Model düşünme ayarını tanımıyorsa ayarsız tekrar dene
-    if (res.status === 400 && o.think) {
-      const t = await res.clone().text();
-      if (/thinking/i.test(t)) res = await send(false);
+  let res = await send(true);
+  if (res.status === 400 && o.think) {
+    const t = await res.clone().text();
+    if (/thinking/i.test(t)) res = await send(false);
+  }
+  return res;
+}
+
+// Ana modeli dener; yoğunluk/zaman aşımı/kota durumunda yedek modele geçer.
+// Toplam süre o.timeoutMs'i aşmaz (Edge Function süre sınırı).
+async function callGemini(apiKey: string, o: GeminiOpts): Promise<GeminiResult> {
+  const deadline = Date.now() + o.timeoutMs;
+  const models = FALLBACK_MODEL && FALLBACK_MODEL !== MODEL ? [MODEL, FALLBACK_MODEL] : [MODEL];
+  let last: GeminiResult = { error: 'Yapay zekâ servisine ulaşılamadı.', status: 502 };
+
+  for (let i = 0; i < models.length; i++) {
+    const model = models[i];
+    const hasNext = i < models.length - 1;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const left = deadline - Date.now();
+      if (left < 3000) return last;
+      // Yedek varsa ana modele sürenin en fazla %60'ı verilir, yedeğe de zaman kalsın
+      const budget = hasNext ? Math.min(left, Math.round(o.timeoutMs * 0.6)) : left;
+      let res: Response;
+      try {
+        res = await sendGemini(apiKey, model, o, budget);
+      } catch {
+        console.error('Gemini zaman aşımı', model, budget);
+        last = { error: 'Yapay zekâ zamanında cevap vermedi. Tekrar dene.', status: 504 };
+        break; // aynı modeli tekrar beklemek yerine yedeğe geç
+      }
+      if (!res.ok) {
+        const detail = await res.text();
+        console.error('Gemini hata', model, res.status, detail.slice(0, 800));
+        if (res.status === 400 && /api key/i.test(detail)) return { error: 'Gemini API anahtarı geçersiz (GEMINI_API_KEY).', status: 502 };
+        if (res.status === 429) last = { error: 'Gemini kotası doldu ya da servis yoğun. Biraz sonra tekrar dene.', status: 429 };
+        else if (res.status === 503) last = { error: 'Gemini şu an çok yoğun. Biraz sonra tekrar dene.', status: 503 };
+        else if (res.status === 404) last = { error: `Gemini modeli bulunamadı (${model}). GEMINI_MODEL ayarını kontrol et.`, status: 502 };
+        else if (res.status === 403) last = { error: 'Gemini API anahtarının bu modele erişimi yok.', status: 502 };
+        else last = { error: 'Yapay zekâ servisine ulaşılamadı.', status: 502 };
+        if (RETRY_SAME.has(res.status) && attempt === 0) { await sleep(1200); continue; }
+        if (TRY_FALLBACK.has(res.status)) break;
+        return last;
+      }
+      const data = await res.json();
+      const cand = data.candidates?.[0];
+      const text = (cand?.content?.parts ?? [])
+        .filter((p: Record<string, unknown>) => !p.thought && typeof p.text === 'string')
+        .map((p: Record<string, unknown>) => p.text).join('').trim();
+      if (!text) {
+        const why = cand?.finishReason || data.promptFeedback?.blockReason || 'boş cevap';
+        return { error: `Yapay zekâ cevap üretmedi (${why}). Tekrar dene.`, status: 502 };
+      }
+      if (model !== MODEL) console.log('Gemini yedek model kullanıldı', model);
+      return { text, model };
     }
-  } catch {
-    return { error: 'Yapay zekâ zamanında cevap vermedi. Tekrar dene.', status: 504 };
   }
-  if (!res.ok) {
-    const detail = await res.text();
-    console.error('Gemini hata', MODEL, res.status, detail.slice(0, 800));
-    if (res.status === 429) return { error: 'Gemini kotası doldu ya da servis yoğun. Biraz sonra tekrar dene.', status: 429 };
-    if (res.status === 404) return { error: `Gemini modeli bulunamadı (${MODEL}). GEMINI_MODEL ayarını kontrol et.`, status: 502 };
-    if (res.status === 400 && /api key/i.test(detail)) return { error: 'Gemini API anahtarı geçersiz (GEMINI_API_KEY).', status: 502 };
-    if (res.status === 403) return { error: 'Gemini API anahtarının bu modele erişimi yok.', status: 502 };
-    return { error: 'Yapay zekâ servisine ulaşılamadı.', status: 502 };
-  }
-  const data = await res.json();
-  const cand = data.candidates?.[0];
-  const text = (cand?.content?.parts ?? [])
-    .filter((p: Record<string, unknown>) => !p.thought && typeof p.text === 'string')
-    .map((p: Record<string, unknown>) => p.text).join('').trim();
-  if (!text) {
-    const why = cand?.finishReason || data.promptFeedback?.blockReason || 'boş cevap';
-    return { error: `Yapay zekâ cevap üretmedi (${why}). Tekrar dene.`, status: 502 };
-  }
-  return { text };
+  return last;
 }
 
 function parseJson(text: string): Record<string, unknown> | null {
@@ -453,7 +492,7 @@ Deno.serve(async (req) => {
     if (!r.text) return fail(r);
     const raw = parseJson(r.text);
     if (!raw) return reply({ error: 'Yapay zekâ geçerli bir değerlendirme döndürmedi. Tekrar dene.' }, 502);
-    return reply({ report: { ...cleanReport(raw, part), model: MODEL, at: Math.floor(Date.now() / 1000) } });
+    return reply({ report: { ...cleanReport(raw, part), model: r.model ?? MODEL, at: Math.floor(Date.now() / 1000) } });
   }
 
   if (action === 'case') {
