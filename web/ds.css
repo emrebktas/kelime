@@ -102,7 +102,7 @@ button.accent:hover,
 button.ghost { background: transparent; border-color: transparent; }
 button.ghost:hover { background: var(--hover); }
 button.big { padding: 11px 22px; font-size: 15px; font-weight: 600; border-radius: var(--r-md); }
-button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--accent-soft), 0 0 0 1px var(--accent); }
+input:focus-visible, select:focus-visible, textarea:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--accent-soft), 0 0 0 1px var(--accent); }
 .icon-btn { border-radius: var(--r-md); }
 .icon-btn:hover { color: var(--text); background: var(--hover); }
 .head-btn { border-radius: var(--r-md); background: var(--panel); box-shadow: var(--e1); }
@@ -680,3 +680,131 @@ label.btn.primary { background: var(--primary); border-color: var(--primary); co
   .kurs-body { padding: 16px; }
   .kurs-ch-head h2 { font-size: 21px; }
 }
+
+/* =====================================================================
+   Tasarım sistemi v4 · bileşen temeli
+   Kimlik aynı (kum/kil, Inter + Fraunces); erişilebilirlik ve etkileşim kuralları:
+   kontrast ≥ 4.5:1 metin / ≥ 3:1 kontrol sınırı, dokunmatikte ≥ 44px hedef,
+   görünür odak, ortak hareket süreleri, azaltılmış hareket desteği, emoji yerine SVG.
+   ===================================================================== */
+
+/* ---------- v4 tokenları: açık tema ---------- */
+:root {
+  /* vurgu bir ton koyulaştı: düz vurgu butonunda açık yazı 4.5:1'i geçer */
+  --accent: #984C2A; --accent-hover: #833F21;
+  --learn: #805310; --hard: #805310;            /* sarı-kahve, panel üstünde metin olarak okunur */
+  --again: #9C3A26; --danger: #9C3A26;
+  --good: #4A6B4E; --easy: #3F5E75;             /* puan renkleri metin olarak da ≥ 4.5:1 */
+  --control-border: #8F8070;                    /* alan/anahtar sınırı: ≥ 3:1 */
+  --ring: var(--accent);
+  --ring-soft: color-mix(in srgb, var(--accent) 28%, transparent);
+  --success: var(--sage); --success-soft: var(--sage-soft);
+  --info: var(--slate); --info-soft: var(--slate-soft);
+  --warning: var(--learn); --warning-soft: color-mix(in srgb, var(--learn) 16%, var(--panel));
+  --danger-soft: color-mix(in srgb, var(--danger) 14%, var(--panel));
+
+  /* simge boyutları */
+  --ic-sm: 16px; --ic-md: 20px; --ic-lg: 24px;
+  /* dokunma hedefi */
+  --tap: 44px;
+  /* hareket: kısa geri bildirim, orta geçiş, çıkış girişten hızlı */
+  --dur-fast: 110ms; --dur: 180ms; --dur-slow: 260ms;
+  --ease-out: cubic-bezier(.2, .8, .2, 1);
+  --ease-in: cubic-bezier(.4, 0, 1, 1);
+  /* yazı ölçeği (body 14 masaüstü, dokunmatikte 16) */
+  --fs-xs: 12px; --fs-sm: 13px; --fs-md: 14px; --fs-lg: 16px; --fs-xl: 20px; --fs-2xl: 28px;
+  /* bölüm aralıkları */
+  --gap-section: var(--sp-8);
+}
+
+/* ---------- v4 tokenları: koyu tema ---------- */
+:root[data-theme="dark"] {
+  --on-accent: #1F1E1D;                         /* açık turuncu üstünde koyu yazı (≈ 6:1) */
+  --muted: #ABA9A1;                             /* açılır pencere (raised) üstünde de ≥ 4.5:1 */
+  --control-border: #6E6B64;
+  --accent: #E2876A; --accent-hover: #EA9A80;
+  --learn: #D9A04A; --hard: #D9A04A; --again: #EC806A; --danger: #EC806A;
+  --warning-soft: color-mix(in srgb, var(--learn) 18%, var(--panel));
+  --danger-soft: color-mix(in srgb, var(--danger) 18%, var(--panel));
+}
+
+/* ---------- satır içi simge (js/icons.js → ic()) ---------- */
+.ic { display: inline-flex; align-items: center; justify-content: center; width: 1.15em; height: 1.15em; flex: none; vertical-align: -0.2em; line-height: 1; }
+.ic svg { width: 100%; height: 100%; }
+.ic.sm { width: var(--ic-sm); height: var(--ic-sm); }
+.ic.md { width: var(--ic-md); height: var(--ic-md); }
+.ic.lg { width: var(--ic-lg); height: var(--ic-lg); }
+button .ic { margin-inline-end: .3em; }
+/* yalnız simgeli butonlar (metin düğümü :only-child'ı bozar; bu yüzden sınıfla seçilir) */
+.icon-btn .ic, .side-tools .ic, button.icon-only .ic { margin: 0; }
+.ic-ok { color: var(--good); } .ic-bad { color: var(--again); } .ic-warn { color: var(--learn); } .ic-star { color: var(--learn); }
+
+/* ---------- butonlar: durumlar ---------- */
+button {
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out),
+              color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+button:active:not(:disabled) { transform: scale(.98); }
+button:disabled, button[aria-disabled="true"] { opacity: .45; cursor: not-allowed; box-shadow: none; transform: none; }
+button.danger { background: var(--danger); border-color: var(--danger); color: var(--on-accent); }
+button.danger:hover { background: color-mix(in srgb, var(--danger) 88%, #000); }
+:root[data-theme="dark"] button.danger { color: #1F1E1D; }
+button.subtle { background: transparent; border-color: var(--border); }
+button.subtle:hover { background: var(--hover); border-color: var(--border-strong); }
+
+/* ---------- odak: her etkileşimli öğede aynı halka ---------- */
+:where(button, a, [tabindex], summary, [data-act]):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; box-shadow: none; }
+:where(input, select, textarea):focus-visible { outline: none; border-color: var(--ring); box-shadow: 0 0 0 3px var(--ring-soft); }
+
+/* ---------- alanlar: görünür sınır, tutarlı yükseklik ---------- */
+/* :where → özgüllük 0; bileşen kuralları (.es-title, .rd-gap…) kendi boyutlarını korur */
+:where(input:not([type=checkbox]):not([type=radio]):not([type=range]):not(.rd-gap), select) { min-height: 38px; }
+:where(input, select, textarea) { border-color: var(--control-border); }
+input::placeholder, textarea::placeholder { color: var(--muted); opacity: .8; }
+label { cursor: pointer; }
+input[aria-invalid="true"], textarea[aria-invalid="true"] { border-color: var(--danger); box-shadow: 0 0 0 3px var(--danger-soft); }
+.field-error { color: var(--danger); font-size: var(--fs-sm); margin-top: var(--sp-1); }
+
+/* ---------- yüzey geçişleri ---------- */
+.tile, .essay-item, .nav-btn, .deck-item, .menu-pop button {
+  transition: background-color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out),
+              box-shadow var(--dur) var(--ease-out), transform var(--dur) var(--ease-out);
+}
+[data-act] { cursor: pointer; }
+
+/* ---------- açılır pencere ve bildirim girişi ---------- */
+@keyframes ds-pop { from { opacity: 0; transform: translateY(6px) scale(.985); } to { opacity: 1; transform: none; } }
+@keyframes ds-fade { from { opacity: 0; } to { opacity: 1; } }
+.modal { animation: ds-pop var(--dur-slow) var(--ease-out); }
+.backdrop { animation: ds-fade var(--dur) var(--ease-out); background: rgba(20, 14, 8, .48); }
+.menu-pop { animation: ds-pop var(--dur) var(--ease-out); }
+.toast { animation: ds-pop var(--dur) var(--ease-out); }
+
+/* ---------- dokunmatik: ≥ 44px hedef, 16px yazı (iOS yakınlaştırma yapmaz) ---------- */
+@media (pointer: coarse) {
+  /* satır içi küçük metin butonları ve yuvarlak işaret düğmeleri hariç (onlar ::after ile genişler) */
+  :where(button:not(.linkish):not(.lx-check):not(.phr-en):not(.phr-ex):not(.vc-from):not(.lt-ctx)),
+  :where(.nav-btn, .deck-item, .menu-pop button) { min-height: var(--tap); }
+  :where(.rp-evidence, .rd-pop, .fd-bar) button { min-height: 0; }
+  .icon-btn { min-width: var(--tap); min-height: var(--tap); }
+  :where(input:not([type=checkbox]):not([type=radio]):not([type=range]):not(.rd-gap), select, textarea) { font-size: 16px; min-height: var(--tap); }
+  :where(input[type=checkbox], input[type=radio]) { width: 20px; height: 20px; }
+  .table-wrap input[type=checkbox] { width: 22px; min-width: 22px; height: 22px; }   /* kart tablosu seçimi */
+  #sidebar .side-tools button { height: var(--tap); }
+}
+
+/* ---------- azaltılmış hareket ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; scroll-behavior: auto !important; }
+  button:active:not(:disabled), .tile:hover, .essay-item:hover { transform: none; }
+}
+
+/* ayar satırı: simge + sola yaslı etiket + sağda ok (simge eklenince etiket ortaya kayıyordu) */
+.settings-link { justify-content: flex-start; gap: var(--sp-3); }
+.settings-link > span:last-child { margin-left: auto; }
+.settings-link > .ic { color: var(--muted); }
+
+/* ızgara öğeleri içerikten geniş olmasın: uzun üst çubuk başlığı (ör. yazı metni) sayfayı yatay kaydırıyordu */
+#topbar, #main { min-width: 0; }
+#topbar-title { overflow: hidden; text-overflow: ellipsis; }

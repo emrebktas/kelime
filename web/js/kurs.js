@@ -2,6 +2,8 @@
 // seslendirme, seçilen kelimeyi desteye ekleme, paylaşım kodu.
 // İçerik telifli kurs materyali olabilir: sadece sahibi ve kodla katılanlar görür; depoya girmez.
 
+import { ic } from './icons.js';
+
 let C = null;
 const K = {
   libs: null, libId: null, lib: null, ch: 0, q: '', urls: {}, urlAt: 0, blobs: {}, busy: false, sel: null, tocOpen: false,
@@ -85,7 +87,7 @@ function renderEmpty() {
       <h3>Kurs notların burada</h3>
       <p>Kurs scriptini bir kez içe aktarırsın: bölüm bölüm okursun, arar, paragrafları seslendirir ve seçtiğin kelimeleri desteye eklersin. İçerik sadece sana ve paylaşım kodu verdiğin kişilere görünür.</p>
       <div class="kurs-empty-actions">
-        <label class="btn primary kurs-file">＋ Kurs paketini içe aktar (.zip)<input type="file" accept=".zip,application/zip" data-k="import" hidden></label>
+        <label class="btn primary kurs-file">${ic('upload')}Kurs paketini içe aktar (.zip)<input type="file" accept=".zip,application/zip" data-k="import" hidden></label>
         <button data-k="join">Paylaşım koduyla katıl</button>
       </div>
     </section>`;
@@ -120,9 +122,9 @@ function render() {
     <div class="kurs-bar">
       ${K.libs.length > 1 ? `<select data-k="lib">${K.libs.map((l) => `<option value="${l.id}" ${l.id === K.libId ? 'selected' : ''}>${esc(l.title)}</option>`).join('')}</select>` : `<b class="kurs-title">${esc(K.lib.title)}</b>`}
       <span class="spacer"></span>
-      <button class="ghost kurs-toc-btn" data-k="toc">☰ Bölümler</button>
+      <button class="ghost kurs-toc-btn" data-k="toc">${ic('menu')}Bölümler</button>
       ${isOwner() ? `<button data-k="share">${meta.share_code ? 'Paylaşım kodu' : 'Paylaş'}</button>
-        <label class="btn kurs-file" title="Paketi yeniden yükle (aynı başlık güncellenir)">↻ Güncelle<input type="file" accept=".zip,application/zip" data-k="import" hidden></label>
+        <label class="btn kurs-file" title="Paketi yeniden yükle (aynı başlık güncellenir)">${ic('refresh')}Güncelle<input type="file" accept=".zip,application/zip" data-k="import" hidden></label>
         <button class="ghost danger-ghost" data-k="delete">Sil</button>`
       : '<button class="ghost" data-k="leave">Kurstan ayrıl</button>'}
       <button class="ghost" data-k="join">Kodla katıl</button>
@@ -142,7 +144,7 @@ function render() {
 
 function tocHtml() {
   return `<ol class="kurs-chs">${K.lib.content.chapters.map((c, i) => `
-    <li><button class="${i === K.ch && K.q.trim().length < 2 ? 'on' : ''}" data-k="ch" data-i="${i}">
+    <li><button class="${i === K.ch && K.q.trim().length < 2 ? 'on' : ''}"${i === K.ch && K.q.trim().length < 2 ? ' aria-current="true"' : ''} data-k="ch" data-i="${i}">
       <span lang="de">${esc(c.title)}</span><small>${esc(c.tr || '')}</small></button></li>`).join('')}</ol>`;
 }
 
@@ -160,7 +162,7 @@ function chapterHtml(ch) {
     <header class="kurs-ch-head"><span class="muted">Bölüm ${K.ch + 1} / ${n}</span><h2 lang="de">${esc(ch.title)}</h2>${ch.tr ? `<p class="muted">${esc(ch.tr)}</p>` : ''}</header>
     <div class="kurs-blocks" data-ch="${K.ch}">${ch.blocks.map(blockHtml).join('')}</div>
     <nav class="kurs-nav">
-      ${K.ch > 0 ? `<button data-k="ch" data-i="${K.ch - 1}">← ${esc(K.lib.content.chapters[K.ch - 1].title)}</button>` : '<span></span>'}
+      ${K.ch > 0 ? `<button data-k="ch" data-i="${K.ch - 1}">${ic('back')}${esc(K.lib.content.chapters[K.ch - 1].title)}</button>` : '<span></span>'}
       ${K.ch < n - 1 ? `<button class="primary" data-k="ch" data-i="${K.ch + 1}">${esc(K.lib.content.chapters[K.ch + 1].title)} →</button>` : ''}
     </nav>`;
 }
@@ -219,7 +221,9 @@ function onSelection() {
   K.sel = text.replace(/^[^\p{L}]+|[^\p{L}]+$/gu, '');
   if (!K.sel) { pop.classList.add('hidden'); return; }
   const r = sel.getRangeAt(0).getBoundingClientRect();
-  pop.querySelector('button').textContent = `＋ “${K.sel}” desteye ekle`;
+  const popBtn = pop.querySelector('button');
+  popBtn.textContent = `“${K.sel}” desteye ekle`; // seçili metin düz metin olarak kalır
+  popBtn.insertAdjacentHTML('afterbegin', ic('plus'));
   pop.style.left = `${Math.max(8, Math.min(window.innerWidth - 240, r.left))}px`;
   pop.style.top = `${r.bottom + 8}px`;
   pop.classList.remove('hidden');

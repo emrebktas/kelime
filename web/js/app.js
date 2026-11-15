@@ -2,6 +2,7 @@ import * as store from './store.js';
 import * as sync from './sync.js';
 import { nowSec } from './srs.js';
 import { initFsp, showFsp, fspBack, fspRemote, flushFsp } from './fsp.js';
+import { svg, ICON, ic } from './icons.js';
 
 // Android uygulaması (Capacitor) içinde mi çalışıyoruz? Orada bazı işler yerel eklentilerle yapılır.
 const Cap = window.Capacitor;
@@ -43,47 +44,7 @@ const langName = (code) => langInfo(code)[1];
 const DIRECTIONS = { front: 'Kelime → Türkçe', back: 'Türkçe → Kelime', mixed: 'Karışık' };
 const ROLES = { owner: 'Sahip', editor: 'Düzenleyebilir', viewer: 'Görüntüleyebilir' };
 
-const svg = (body, extra = '') => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${extra}>${body}</svg>`;
-const ICON = {
-  speaker: svg('<path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/>'),
-  undo: svg('<path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/>'),
-  edit: svg('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>'),
-  // Gezinme ve araç simgeleri (çizgi stili, 24×24)
-  layers: svg('<path d="m12 2.5 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 16.5 9 5 9-5"/>'),
-  pen: svg('<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/><path d="M14 20h6"/>'),
-  book: svg('<path d="M2 4.5h6a4 4 0 0 1 4 4V21a3 3 0 0 0-3-3H2Z"/><path d="M22 4.5h-6a4 4 0 0 0-4 4V21a3 3 0 0 1 3-3h7Z"/>'),
-  tooth: svg('<path d="M7.5 3C5 3 3.5 5 3.5 7.4c0 2 .7 3.3 1.4 4.8.8 1.9 1 4 1.3 6.2.2 1.7.9 2.6 1.9 2.6s1.5-.8 1.8-2.2l.6-2.8c.2-1 .7-1.5 1.5-1.5s1.3.5 1.5 1.5l.6 2.8c.3 1.4.8 2.2 1.8 2.2s1.7-.9 1.9-2.6c.3-2.2.5-4.3 1.3-6.2.7-1.5 1.4-2.8 1.4-4.8C20.5 5 19 3 16.5 3c-1.9 0-2.6 1-4.5 1S9.4 3 7.5 3Z"/>'),
-  chat: svg('<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'),
-  timer: svg('<circle cx="12" cy="13.5" r="7.5"/><path d="M12 10v3.5l2.2 1.6"/><path d="M9.5 2.5h5"/><path d="m18.5 6 1.5-1.5"/>'),
-  pause: svg('<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>'),
-  sun: svg('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'),
-  moon: svg('<path d="M20.5 13.2A8.5 8.5 0 1 1 10.8 3.5a6.6 6.6 0 0 0 9.7 9.7Z"/>'),
-  monitor: svg('<rect x="2.5" y="3.5" width="19" height="13" rx="2"/><path d="M8 20.5h8M12 16.5v4"/>'),
-  volume1: svg('<path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/>'),
-  volumeX: svg('<path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="m22 9-6 6M16 9l6 6"/>'),
-  panel: svg('<rect x="3" y="3.5" width="18" height="17" rx="2.5"/><path d="M9 3.5v17"/><path d="m15.5 10-2 2 2 2"/>'),
-  panelOpen: svg('<rect x="3" y="3.5" width="18" height="17" rx="2.5"/><path d="M9 3.5v17"/><path d="m13.5 10 2 2-2 2"/>'),
-  mic: svg('<rect x="9" y="2.5" width="6" height="11.5" rx="3"/><path d="M5 10.5a7 7 0 0 0 14 0M12 17.5v4"/>'),
-  talk: svg('<path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.6 8.6 0 0 1-3.8-.9L3 21l1.9-5.3A8.4 8.4 0 1 1 21 11.5Z"/>'),
-  doc: svg('<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>'),
-  steth: svg('<path d="M5 3v5.5a5 5 0 0 0 10 0V3"/><path d="M10 13.5V16a5 5 0 0 0 10 0v-2"/><circle cx="20" cy="12" r="2"/>'),
-  chart: svg('<path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/>'),
-  pin: svg('<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>'),
-  compass: svg('<circle cx="12" cy="12" r="9.5"/><path d="m15.5 8.5-2 5-5 2 2-5Z"/>'),
-  flame: svg('<path d="M12 22c4 0 7-2.7 7-6.7 0-3.6-2.4-5.6-3.6-7.8-.5 1.7-1.5 2.8-2.6 3.3.3-3-1-6.3-4.3-8.3.2 3.2-1.4 5.3-2.9 7.1C4.4 11.1 5 12.7 5 15.3 5 19.3 8 22 12 22Z"/>'),
-  back: svg('<path d="m15 18-6-6 6-6"/>', 'width="16" height="16" style="vertical-align:-3px"'),
-  users: svg('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>', 'class="shared-ic"'),
-  usersMenu: svg('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>'),
-  home: svg('<path d="m3 10 9-7 9 7"/><path d="M5 9v11h5v-6h4v6h5V9"/>'),
-  gear: svg('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>'),
-  sliders: svg('<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>'),
-  history: svg('<path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/>'),
-  upload: svg('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/>'),
-  download: svg('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/>'),
-  trash: svg('<path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/>'),
-  leave: svg('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>'),
-  send: svg('<path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4Z"/>'),
-};
+// Simgeler ortak modülde (js/icons.js): app.js ve FSP ekranları aynı seti kullanır.
 
 const prefs = (() => {
   try { return JSON.parse(localStorage.getItem('kelime.prefs')) || {}; } catch { return {}; }
@@ -133,11 +94,13 @@ function applyTheme() {
   document.documentElement.dataset.theme = dark ? 'dark' : 'light';
   $('meta[name=theme-color]').content = dark ? '#1F1E1D' : '#D8CFBE';
   const [tIc, tLb] = { system: [ICON.monitor, 'Sistem'], light: [ICON.sun, 'Açık'], dark: [ICON.moon, 'Koyu'] }[mode];
-  $('#btn-theme').innerHTML = `<span class="ic">${tIc}</span><span class="lb">${tLb}</span>`;
+  $('#btn-theme').innerHTML = `<span class="ic" aria-hidden="true">${tIc}</span><span class="lb">${tLb}</span>`;
   $('#btn-theme').title = `Tema: ${tLb}`;
+  $('#btn-theme').setAttribute('aria-label', `Tema: ${tLb}`);
   const vol = Math.round((prefs.volume ?? 1) * 100);
-  $('#btn-autospeak').innerHTML = `<span class="ic">${vol === 0 ? ICON.volumeX : prefs.autoSpeak ? ICON.speaker : ICON.volume1}</span><span class="lb">Ses %${vol}</span>`;
+  $('#btn-autospeak').innerHTML = `<span class="ic" aria-hidden="true">${vol === 0 ? ICON.volumeX : prefs.autoSpeak ? ICON.speaker : ICON.volume1}</span><span class="lb">Ses %${vol}</span>`;
   $('#btn-autospeak').title = `Seslendirme ayarları · otomatik seslendirme ${prefs.autoSpeak ? 'açık' : 'kapalı'}`;
+  $('#btn-autospeak').setAttribute('aria-label', `Seslendirme ayarları, ses %${vol}`);
 }
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
 
@@ -147,8 +110,9 @@ function applyRail() {
   document.body.classList.toggle('rail-hidden', hidden);
   const b = $('#btn-rail');
   if (!b) return;
-  b.innerHTML = `<span class="ic">${hidden ? ICON.panelOpen : ICON.panel}</span><span class="lb">${hidden ? 'Sabitle' : 'Gizle'}</span>`;
+  b.innerHTML = `<span class="ic" aria-hidden="true">${hidden ? ICON.panelOpen : ICON.panel}</span><span class="lb">${hidden ? 'Sabitle' : 'Gizle'}</span>`;
   b.title = hidden ? 'Çubuğu sabitle (hep görünsün)' : 'Çubuğu gizle (sol kenara gelince açılır)';
+  b.setAttribute('aria-label', hidden ? 'Kenar çubuğunu sabitle' : 'Kenar çubuğunu gizle');
 }
 
 // Android'in uygulama içi tarayıcısında web seslendirmesi olmayabilir; orada yerel eklenti kullanılır
@@ -296,7 +260,7 @@ function speechSettingsModal() {
       <select name="voice"><option value="">Yükleniyor…</option></select></label>`}
     <p class="muted" style="font-size:12.5px">Bu ses seviyesi cihazın genel sesinden bağımsızdır. Bazı tarayıcılar (özellikle iPhone/iPad'de Safari) ses seviyesi ayarını desteklemez; orada cihazın kendi ses tuşlarını kullan.</p>
     <div class="modal-actions">
-      <button type="button" data-try>▶ Dene</button>
+      <button type="button" data-try>${ic('play')} Dene</button>
       <span class="spacer"></span>
       <button type="submit" class="primary">Tamam</button>
     </div>`, { onSubmit: () => {} });
@@ -649,17 +613,15 @@ function homeHtml() {
     <div class="page">
       <div class="hero">
         <div>
-          <h1>Merhaba${state.profileName ? `, ${esc(state.profileName)}` : ''} 👋</h1>
+          <h1>Merhaba${state.profileName ? `, ${esc(state.profileName)}` : ''}</h1>
           <div class="muted">${state.decks.length
             ? (due ? `Bugün toplam <b>${due}</b> kart seni bekliyor.` : 'Bugünlük her şey tamam. Harika iş!')
-            : 'Başlamak için bir deste oluştur ya da JSON dosyası içe aktar.'}</div>
+            : 'Başlamak için bir deste oluştur.'}</div>
         </div>
         <div class="head-actions">
           ${sync.enabled && !sync.user() ? '<button data-act="account">Giriş yap / Kayıt ol</button>' : ''}
           ${sync.enabled ? '<button data-act="join">Kodla katıl</button>' : ''}
-          <button data-act="import">JSON içe aktar</button>
           <button class="primary" data-act="new-deck">+ Yeni deste</button>
-          <button class="ghost json-help-btn" data-act="json-help" title="JSON dosya formatı">{ } JSON formatı</button>
         </div>
       </div>
       ${studyTimePanel()}
@@ -667,12 +629,12 @@ function homeHtml() {
         <section class="home-decks">
           <div class="sec-head"><h3>Destelerin</h3>${state.decks.length > 6 ? `<button class="ghost" data-act="decks">Tümü (${state.decks.length}) →</button>` : ''}</div>
           ${state.decks.length ? `<div class="tiles">${state.decks.slice(0, 6).map(deckTileHtml).join('')}</div>`
-            : '<div class="panel empty">Henüz deste yok. “+ Yeni deste” ile oluştur ya da bir JSON dosyası içe aktar.</div>'}
+            : '<div class="panel empty">Henüz deste yok. “+ Yeni deste” ile oluştur.</div>'}
         </section>
         ${sync.enabled && sync.user() ? '<section class="panel board" id="board"><div class="muted">Pano yükleniyor…</div></section>' : ''}
       </div>
       ${sync.enabled && sync.user() ? `<section class="panel activity" id="activity">
-        <div class="act-head"><h3>📰 Destedekilerin son etkinlikleri</h3><span class="muted">son 7 gün</span></div>
+        <div class="act-head"><h3>${ic('news')} Destedekilerin son etkinlikleri</h3><span class="muted">son 7 gün</span></div>
         <div class="muted">Yükleniyor…</div>
       </section>` : ''}
     </div>`;
@@ -759,7 +721,7 @@ function renderDeck() {
       <section>
         <div class="cards-toolbar">
           <input id="card-search" type="search" placeholder="Kartlarda ara…" value="${esc(state.search)}">
-          ${editable && sync.enabled ? '<button class="ai-btn" data-act="ai-bulk" title="Kelime listesinden yapay zekâyla kart oluştur">✨ Listeden ekle</button>' : ''}
+          ${editable && sync.enabled ? `<button class="ai-btn" data-act="ai-bulk" title="Kelime listesinden yapay zekâyla kart oluştur">${ic('sparkles')} Listeden ekle</button>` : ''}
           ${editable ? '<button class="primary" data-act="add-card">+ Kart ekle <kbd>N</kbd></button>' : ''}
         </div>
         <div id="bulk"></div>
@@ -798,14 +760,14 @@ function loadCards() {
       <div class="table-wrap">
         <table class="cards">
           <thead><tr>
-            <th class="chk"><input type="checkbox" id="chk-all" title="Tümünü seç"></th>
+            <th class="chk"><input type="checkbox" id="chk-all" title="Tümünü seç" aria-label="Tümünü seç"></th>
             <th>Kelime</th><th>Türkçesi</th><th class="c-syn">Eş anlamlılar</th><th class="c-state">Durum</th>
           </tr></thead>
           <tbody>${res.cards.map((c) => `
             <tr data-card="${c.id}" class="${state.selected.has(c.id) ? 'sel' : ''}">
-              <td class="chk"><input type="checkbox" data-chk="${c.id}" ${state.selected.has(c.id) ? 'checked' : ''}></td>
+              <td class="chk"><input type="checkbox" data-chk="${c.id}" aria-label="Seç: ${esc(c.word)}" ${state.selected.has(c.id) ? 'checked' : ''}></td>
               <td class="w" title="${esc(c.word)}">${esc(c.word)}</td>
-              <td title="${esc(c.translation)}">${!c.translation && aiPending.has(c.id) ? '<span class="ai-pending">✨ hazırlanıyor…</span>' : esc(c.translation)}</td>
+              <td title="${esc(c.translation)}">${!c.translation && aiPending.has(c.id) ? `<span class="ai-pending">${ic('sparkles')} hazırlanıyor…</span>` : esc(c.translation)}</td>
               <td class="muted c-syn">${esc(c.synonyms.join(', '))}</td>
               <td class="c-state">${stateBadge(c)}</td>
             </tr>`).join('')}
@@ -920,7 +882,7 @@ function cardForm(card, deckId, after) {
       <label>Türkçesi<input name="translation" value="${esc(c.translation)}" ${dis}></label>
     </div>
     ${!readOnly && sync.enabled ? `<div class="ai-row">
-      <button type="button" class="ai-btn" data-ai>✨ Yapay zekâ ile doldur</button>
+      <button type="button" class="ai-btn" data-ai>${ic('sparkles')} Yapay zekâ ile doldur</button>
       <span class="muted">${card ? 'Boş alanları doldurur; hepsi doluysa yeniden üretir.' : 'Kelimeyi yaz, Tab’a bas: gerisi kendiliğinden dolar.'}</span>
     </div>` : ''}
     <label>Örnek cümle<textarea name="sentence" rows="2" ${dis}>${esc(c.sentence)}</textarea></label>
@@ -994,9 +956,9 @@ async function aiFillForm(form, deckId, isNew, auto) {
   if (!word) { if (!auto) toast('Önce kelimeyi yaz.', 'info'); return; }
   if (!sync.user()) { toast('Yapay zekâ ile doldurmak için giriş yapman gerekiyor.', 'info'); return; }
   if (btn.disabled) return;
-  const label = btn.textContent;
+  const label = btn.innerHTML;
   btn.disabled = true;
-  btn.textContent = '✨ Hazırlanıyor…';
+  btn.innerHTML = `${ic('sparkles')} Hazırlanıyor…`;
   form.classList.add('ai-busy');
   try {
     const [c] = await sync.aiCards([word], deckById(deckId)?.language || 'en');
@@ -1018,7 +980,7 @@ async function aiFillForm(form, deckId, isNew, auto) {
     toast(e.message, 'error', 6000);
   } finally {
     btn.disabled = false;
-    btn.textContent = label;
+    btn.innerHTML = label;
     form.classList.remove('ai-busy');
   }
 }
@@ -1049,7 +1011,7 @@ function aiBulkModal(deck) {
   }
   const MAX = 100;
   const form = openModal(`
-    <h2>✨ Kelime listesinden kart oluştur</h2>
+    <h2>${ic('sparkles')} Kelime listesinden kart oluştur</h2>
     <p class="muted" style="font-size:13px">Kelimeleri alt alta ya da virgülle ayırarak yaz. Kelimeler hemen desteye eklenir;
       yapay zekâ Türkçe anlam, ${esc(langName(deck.language))} örnek cümle ve eş anlamlıları arkada hazırlayıp kartlara yazar.
       Beklemene gerek yok.</p>
@@ -1167,8 +1129,8 @@ async function shareModal(deck) {
     $('#members', form).innerHTML = list.map((m) => {
       const name = m.profiles?.display_name || 'Kullanıcı';
       const role = isOwner && m.role !== 'owner'
-        ? `<select data-role="${m.user_id}">${['editor', 'viewer'].map((r) => `<option value="${r}" ${r === m.role ? 'selected' : ''}>${ROLES[r]}</option>`).join('')}</select>
-           <button type="button" class="icon-btn small" data-remove="${m.user_id}" title="Desteden çıkar">✕</button>`
+        ? `<select data-role="${m.user_id}" aria-label="${esc(name)} rolü">${['editor', 'viewer'].map((r) => `<option value="${r}" ${r === m.role ? 'selected' : ''}>${ROLES[r]}</option>`).join('')}</select>
+           <button type="button" class="icon-btn small" data-remove="${m.user_id}" title="Desteden çıkar" aria-label="${esc(name)} kişisini desteden çıkar">${ic('x')}</button>`
         : `<span class="muted" style="font-size:13px">${ROLES[m.role]}</span>`;
       return `<li><span class="avatar">${esc(name.charAt(0).toLocaleUpperCase('tr'))}</span>
         <span class="m-name">${esc(name)}${m.user_id === me ? ' <span class="muted">(sen)</span>' : ''}</span>${role}</li>`;
@@ -1518,7 +1480,7 @@ function extraToText(extra) {
 }
 
 function renderFaces(card, reverse, flipped) {
-  const speakBtn = (act, small) => `<button type="button" class="icon-btn ${small ? 'small' : ''}" data-act="${act}" title="Seslendir${act === 'speak' ? ' (R)' : ''}">${ICON.speaker}</button>`;
+  const speakBtn = (act, small) => `<button type="button" class="icon-btn ${small ? 'small' : ''}" data-act="${act}" title="Seslendir${act === 'speak' ? ' (R)' : ''}" aria-label="Seslendir">${ICON.speaker}</button>`;
   const word = `<div class="word">${esc(card.word)}${speakBtn('speak')}</div>`;
   const sentence = card.sentence
     ? `<div class="sentence">${markWord(card.sentence, card.word, (m) => `<mark>${m}</mark>`).html} ${speakBtn('speak-sentence', true)}</div>` : '';
@@ -1581,7 +1543,7 @@ function renderStudy() {
     const left = res.next_due ? res.next_due - nowSec() : 0;
     body = `
       <div class="done">
-        <div class="big-emoji">🎉</div>
+        <div class="big-emoji ic-star">${ic('trophy')}</div>
         <h2>Bu deste için bugünlük bu kadar!</h2>
         <p class="muted">${res.next_due
           ? `Sıradaki öğrenme kartı yaklaşık ${Math.max(1, Math.round(left / 60))} dakika sonra hazır olacak; bu ekran açık kalırsa kendiliğinden gelir.`
@@ -1615,8 +1577,8 @@ function renderStudy() {
           <span class="n-review ${cur === 'review' ? 'cur' : ''}" title="Tekrar">${c.review}</span>
         </div>
         <span class="spacer"></span>
-        <button class="icon-btn" data-act="undo" title="Son cevabı geri al (Ctrl+Z)">${ICON.undo}</button>
-        ${card ? `<button class="icon-btn" data-act="edit-current" title="Kartı düzenle (E)">${ICON.edit}</button>` : ''}
+        <button class="icon-btn" data-act="undo" title="Son cevabı geri al (Ctrl+Z)" aria-label="Son cevabı geri al">${ICON.undo}</button>
+        ${card ? `<button class="icon-btn" data-act="edit-current" title="Kartı düzenle (E)" aria-label="Kartı düzenle">${ICON.edit}</button>` : ''}
       </div>
       ${body}
       ${bar}
@@ -1826,7 +1788,7 @@ function timerFinish(completed) {
     }
     if (!modalOpen() || $('#tm-display')) {
       openModal(`
-        <div style="text-align:center;font-size:44px">🎉</div>
+        <div class="ic-star" style="text-align:center;font-size:44px">${ic('trophy')}</div>
         <h2 style="text-align:center">Süre doldu!</h2>
         <p class="muted" style="text-align:center">${esc(msg)}</p>
         <div class="modal-actions">
@@ -1924,7 +1886,7 @@ function renderTimer() {
   widget.classList.toggle('paused', timer.status === 'paused');
   widget.innerHTML = idle
     ? `<span class="tw-icon">${ICON.timer}</span><span class="tw-main">Çalışma sayacı</span>
-       <span class="tw-sub">Bugün <b>${fmtDur(stats.today)}</b>${stats.streak > 1 ? ` · 🔥 ${stats.streak} gün` : ''}</span>`
+       <span class="tw-sub">Bugün <b>${fmtDur(stats.today)}</b>${stats.streak > 1 ? ` · ${ic('flame')} ${stats.streak} gün` : ''}</span>`
     : `<span class="tw-icon">${timer.status === 'paused' ? ICON.pause : ICON.timer}</span><span class="tw-main tw-clock">${left}</span>
        <span class="tw-sub">${timer.status === 'paused' ? 'Duraklatıldı' : isStopwatch() ? 'Kronometre' : `${timer.planned} dk oturum`} · Bugün <b>${fmtDur(stats.today)}</b></span>
        ${isStopwatch() ? '' : `<span class="tw-bar"><span style="width:${pct}%"></span></span>`}`;
@@ -1941,13 +1903,13 @@ function renderTimer() {
 
 function timerModal() {
   const form = openModal(`
-    <h2>⏱ Çalışma sayacı</h2>
+    <h2>${ic('timer')} Çalışma sayacı</h2>
     <div class="tm-display" id="tm-display"></div>
     <div class="tm-progress"><span id="tm-bar"></span></div>
     <div id="tm-setup">
       <div class="seg tm-mode" role="tablist">
-        <button type="button" data-tm-mode="countdown">⏳ Geri sayım</button>
-        <button type="button" data-tm-mode="stopwatch">⏱ Kronometre</button>
+        <button type="button" role="tab" data-tm-mode="countdown">${ic('timer')} Geri sayım</button>
+        <button type="button" role="tab" data-tm-mode="stopwatch">${ic('history')} Kronometre</button>
       </div>
       <p class="muted tm-sw-note">Sıfırdan başlar, sen bitirene kadar çalıştığın süreyi sayar.</p>
       <div class="tm-cd">
@@ -2015,17 +1977,20 @@ function renderTimerModal(full) {
   $('#tm-bar').style.width = `${timerPct()}%`;
   const st = store.studyStats(liveSec());
   $('#tm-summary').innerHTML = `<span>Bugün <b>${fmtDur(st.today)}</b></span><span>Bu hafta <b>${fmtDur(st.weekTotal)}</b></span>
-    <span>🔥 Seri <b>${st.streak} gün</b></span>`;
+    <span>${ic('flame')} Seri <b>${st.streak} gün</b></span>`;
   if (!full) return;
   $('#tm-setup').classList.toggle('hidden', !idle);
   $('#tm-setup').classList.toggle('stopwatch', isStopwatch());
-  $$('[data-tm-mode]').forEach((b) => b.classList.toggle('active', b.dataset.tmMode === timer.mode));
+  $$('[data-tm-mode]').forEach((b) => {
+    b.classList.toggle('active', b.dataset.tmMode === timer.mode);
+    b.setAttribute('aria-selected', String(b.dataset.tmMode === timer.mode));
+  });
   $('#tm-actions').innerHTML = idle
-    ? '<button type="button" class="primary big" data-tm="start">▶ Başlat</button>'
+    ? `<button type="button" class="primary big" data-tm="start">${ic('play')} Başlat</button>`
     : `${timer.status === 'running'
-      ? '<button type="button" class="big" data-tm="pause">⏸ Duraklat</button>'
-      : '<button type="button" class="primary big" data-tm="resume">▶ Devam et</button>'}
-       <button type="button" class="big" data-tm="finish" title="Şu ana kadarki süreyi kaydet">✓ Bitir ve kaydet</button>
+      ? `<button type="button" class="big" data-tm="pause">${ic('pause')} Duraklat</button>`
+      : `<button type="button" class="primary big" data-tm="resume">${ic('play')} Devam et</button>`}
+       <button type="button" class="big" data-tm="finish" title="Şu ana kadarki süreyi kaydet">${ic('check')} Bitir ve kaydet</button>
        <button type="button" class="danger-ghost" data-tm="cancel">İptal</button>`;
   renderTimerHistory();
 }
@@ -2053,7 +2018,7 @@ function renderTimerHistory() {
         <span>${time(s.started_at)} – ${time(s.ended_at)}</span>
         <span><b>${fmtDur(s.actual_sec)}</b>${s.actual_sec < s.planned_min * 60 - 30 ? ` <span class="muted">/ ${s.planned_min} dk</span>` : ''}</span>
         <span class="muted tm-dev">${esc(s.device || '')}</span>
-        <button type="button" class="icon-btn small" data-tm-del="${s.id}" title="Sil">✕</button>
+        <button type="button" class="icon-btn small" data-tm-del="${s.id}" title="Sil" aria-label="Oturumu sil">${ic('x')}</button>
       </div>`).join('')}`;
   }).join('');
 }
@@ -2095,15 +2060,15 @@ async function loadBoard() {
   const others = list.filter((r) => !r.is_me).length;
   box.innerHTML = `
     <div class="board-head">
-      <h3>👥 Bugün</h3>
+      <h3>${ic('users')} Bugün</h3>
       ${onlineOthers ? `<span class="board-online" title="Çevrimiçi">${onlineOthers}<i class="presence on"></i></span>` : ''}
     </div>
     <div class="board-list">${list.slice(0, 4).map((r) => `
-      <div class="board-row tappable ${r.is_me ? 'me' : ''}" data-act="user-stats" data-peer="${r.user_id}" data-name="${esc(r.is_me ? 'Sen' : r.display_name || '')}" data-me="${r.is_me ? 1 : ''}" title="İstatistikleri gör · "${esc(r.display_name || '')}: bugün ${r.words_today} kelime, ${fmtDur(r.seconds)}${r.studying ? ' · şu an çalışıyor' : ''}">
+      <div class="board-row tappable ${r.is_me ? 'me' : ''}" data-act="user-stats" data-peer="${r.user_id}" data-name="${esc(r.is_me ? 'Sen' : r.display_name || '')}" data-me="${r.is_me ? 1 : ''}" title="İstatistikleri gör · ${esc(r.display_name || '')}: bugün ${r.words_today} kelime, ${fmtDur(r.seconds)}${r.studying ? ' · şu an çalışıyor' : ''}">
         <span class="avatar sm">${esc((r.display_name || '?').charAt(0).toLocaleUpperCase('tr'))}<i class="presence ${r.online ? 'on' : ''}"></i></span>
         <span class="board-info">
           <span class="board-name">${esc(r.is_me ? 'Sen' : r.display_name || 'Kullanıcı')}</span>
-          <span class="board-stats">📝 ${r.words_today} · <span class="${r.studying ? 'board-live' : ''}">⏱ ${fmtDur(r.seconds)}</span></span>
+          <span class="board-stats">${ic('note', 'Bugünkü kelime')} ${r.words_today} · <span class="${r.studying ? 'board-live' : ''}">${ic('timer', 'Çalışma süresi')} ${fmtDur(r.seconds)}</span></span>
         </span>
       </div>`).join('')}
     </div>
@@ -2124,7 +2089,7 @@ async function loadActivity() {
   clearTimeout(activity.timer);
   let rows;
   try { rows = await sync.fetchActivity(7); } catch (e) {
-    if (!activity.groups.length) box.innerHTML = `<div class="act-head"><h3>📰 Destedekilerin son etkinlikleri</h3></div><div class="muted">Etkinlikler yüklenemedi: ${esc(e.message)}</div>`;
+    if (!activity.groups.length) box.innerHTML = `<div class="act-head"><h3>${ic('news')} Destedekilerin son etkinlikleri</h3></div><div class="muted">Etkinlikler yüklenemedi: ${esc(e.message)}</div>`;
     return;
   }
   if (!$('#activity')) return;
@@ -2159,7 +2124,7 @@ function renderActivity() {
       const words = g.kind === 'card' ? g.words.join(', ') : '';
       // Sütunlar bütün satırlarda hizalı: simge | baş harf | ad | deste | ne yaptı | zaman
       return `<div class="act-row act-${g.kind}" title="${esc(g.kind === 'card' ? `${g.name} · ${g.deck}: ${words}` : `${g.name}: ${fmtDur(g.seconds)} çalıştı`)}">
-        <span class="act-ic">${g.kind === 'card' ? '📝' : '⏱'}</span>
+        <span class="act-ic">${g.kind === 'card' ? ic('note', 'Kelime ekleme') : ic('timer', 'Çalışma')}</span>
         <span class="avatar sm">${initial}</span>
         <button type="button" class="link-btn act-name" data-act="user-stats" data-peer="${g.user_id}" data-name="${esc(g.name || '')}" title="İstatistikleri gör">${esc(g.name || 'Biri')}</button>
         <span class="act-deckcol">${g.kind === 'card' ? `<button type="button" class="link-btn act-deck" data-deck="${g.deck_id}">${esc(g.deck)}</button>` : ''}</span>
@@ -2170,8 +2135,8 @@ function renderActivity() {
       </div>`;
     }).join('')}</div>
     ${activity.groups.length > list.length ? '<button type="button" class="link-btn act-more" data-act="activity-more">Daha fazla göster</button>' : ''}`
-    : '<p class="muted act-empty">Son 7 günde ortak destelerinde etkinlik yok. Bir desteni paylaş (deste › ⚙ › Paylaş); katılanların eklediği kelimeler ve çalışmaları burada görünür.</p>';
-  box.innerHTML = `<div class="act-head"><h3>📰 Destedekilerin son etkinlikleri</h3><span class="muted">son 7 gün</span></div>${body}`;
+    : `<p class="muted act-empty">Son 7 günde ortak destelerinde etkinlik yok. Bir desteni paylaş (deste › ${ic('gear', 'Ayarlar')} › Paylaş); katılanların eklediği kelimeler ve çalışmaları burada görünür.</p>`;
+  box.innerHTML = `<div class="act-head"><h3>${ic('news')} Destedekilerin son etkinlikleri</h3><span class="muted">son 7 gün</span></div>${body}`;
 }
 
 /* ---- kişinin geçmiş performansı (panoda / akışta kişiye tıklayınca) */
@@ -2179,7 +2144,7 @@ function renderActivity() {
 async function userStatsModal(userId, name, isMe = false) {
   const form = openModal(`<div class="us-box"><div class="muted">Yükleniyor…</div></div>
     <div class="modal-actions">
-      ${!isMe && !chat.missing ? `<button type="button" data-act="chat-open" data-peer="${esc(userId)}" data-name="${esc(name)}" data-close>💬 Mesaj gönder</button>` : ''}
+      ${!isMe && !chat.missing ? `<button type="button" data-act="chat-open" data-peer="${esc(userId)}" data-name="${esc(name)}" data-close>${ic('chat')} Mesaj gönder</button>` : ''}
       <span class="spacer"></span><button type="button" class="primary" data-close>Kapat</button>
     </div>`, { wide: true });
   const box = $('.us-box', form);
@@ -2210,7 +2175,7 @@ async function userStatsModal(userId, name, isMe = false) {
     <div class="us-tiles">
       <div class="us-tile"><span class="muted">Son 7 gün</span><b>${fmtDur(sum(week, 'sec'))}</b><small>${sum(week, 'words')} kelime eklendi</small></div>
       <div class="us-tile"><span class="muted">Son 4 hafta</span><b>${fmtDur(sum(list, 'sec'))}</b><small>${sum(list, 'words')} kelime · ${activeDays} gün çalıştı</small></div>
-      <div class="us-tile"><span class="muted">Seri</span><b>${streak ? `🔥 ${streak} gün` : '—'}</b><small>arka arkaya çalışılan gün</small></div>
+      <div class="us-tile"><span class="muted">Seri</span><b>${streak ? `${ic('flame')} ${streak} gün` : '—'}</b><small>arka arkaya çalışılan gün</small></div>
       <div class="us-tile"><span class="muted">En iyi gün</span><b>${best.sec >= 60 ? fmtDur(best.sec) : '—'}</b><small>${best.sec >= 60 ? esc(dayName(best.date, { weekday: 'long', day: 'numeric', month: 'short' })) : 'henüz yok'}</small></div>
     </div>
     <h4 class="us-h">Son 7 gün</h4>
@@ -2219,7 +2184,7 @@ async function userStatsModal(userId, name, isMe = false) {
         <span class="st-val">${d.sec >= 60 ? Math.round(d.sec / 60) : ''}</span>
         <span class="st-bar"><span style="height:${Math.max(d.sec ? 6 : 0, (d.sec / maxWeek) * 100)}%"></span></span>
         <span class="st-lbl">${esc(dayName(d.date, { weekday: 'short' }))}</span>
-        <span class="us-words">${d.words ? `📝 ${d.words}` : ''}</span>
+        <span class="us-words">${d.words ? `${ic('note', 'Eklenen kelime')} ${d.words}` : ''}</span>
       </div>`).join('')}
     </div>
     <h4 class="us-h">Son 4 hafta <small class="muted">her kare bir gün · koyu = daha çok çalışma</small></h4>
@@ -2245,7 +2210,7 @@ function studyTimePanel() {
         <span class="stat-label">Bekleyen kartlar</span>
         <b class="stat-big">${dueTotal}</b>
         <span class="due-pills">${num(due.n, 'n-new')} yeni · ${num(due.l, 'n-learn')} öğreniliyor · ${num(due.r, 'n-review')} tekrar</span>
-        ${dueTotal ? '<button class="primary" data-act="study-next">Çalışmaya başla</button>' : '<span class="muted st-meta">Bugünlük her şey tamam 🎉</span>'}
+        ${dueTotal ? '<button class="primary" data-act="study-next">Çalışmaya başla</button>' : '<span class="muted st-meta">Bugünlük her şey tamam</span>'}
       </div>
       <div class="stat-card stat-streak">
         <span class="stat-label">Seri · son 7 gün</span>
@@ -2320,11 +2285,11 @@ function settingsModal() {
     <h2>Ayarlar</h2>
     <div class="settings-list">
       <div class="settings-row"><span>Tema</span>
-        <div class="seg tabs">${[['system', '◐ Sistem'], ['light', '☀ Açık'], ['dark', '☾ Koyu']].map(([k, l]) => `<button type="button" data-theme-set="${k}" class="${mode === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+        <div class="seg tabs" role="group" aria-label="Tema">${[['system', 'monitor', 'Sistem'], ['light', 'sun', 'Açık'], ['dark', 'moon', 'Koyu']].map(([k, i, l]) => `<button type="button" data-theme-set="${k}" class="${mode === k ? 'on' : ''}" aria-pressed="${mode === k}">${ic(i)} ${l}</button>`).join('')}</div>
       </div>
-      <button type="button" class="settings-link" data-act="speech-settings">🔈 Seslendirme ve bildirim sesi <span>›</span></button>
-      <button type="button" class="settings-link" data-act="account">👤 ${sync.user() ? 'Hesap ve eşitleme' : 'Giriş yap / Kayıt ol'} <span>›</span></button>
-      <button type="button" class="settings-link" data-act="timer">⏱ Çalışma sayacı ve geçmişi <span>›</span></button>
+      <button type="button" class="settings-link" data-act="speech-settings">${ic('speaker')} Seslendirme ve bildirim sesi <span aria-hidden="true">›</span></button>
+      <button type="button" class="settings-link" data-act="account">${ic('user')} ${sync.user() ? 'Hesap ve eşitleme' : 'Giriş yap / Kayıt ol'} <span aria-hidden="true">›</span></button>
+      <button type="button" class="settings-link" data-act="timer">${ic('timer')} Çalışma sayacı ve geçmişi <span aria-hidden="true">›</span></button>
     </div>
     <div class="modal-actions"><button type="button" class="primary" data-close>Tamam</button></div>`);
   form.addEventListener('click', (e) => {
@@ -2333,7 +2298,10 @@ function settingsModal() {
     prefs.theme = k;
     savePrefs();
     applyTheme();
-    $$('[data-theme-set]', form).forEach((b) => b.classList.toggle('on', b.dataset.themeSet === k));
+    $$('[data-theme-set]', form).forEach((b) => {
+      b.classList.toggle('on', b.dataset.themeSet === k);
+      b.setAttribute('aria-pressed', String(b.dataset.themeSet === k));
+    });
   });
 }
 
@@ -2502,11 +2470,11 @@ function openEssay(id) {
         </div>
       </header>
       <div class="es-toolbar">
-        <select id="es-task">${Object.entries(ESSAY_TASKS).map(([k, t]) => `<option value="${k}" ${k === e.task ? 'selected' : ''}>${esc(t.label)}</option>`).join('')}</select>
+        <select id="es-task" aria-label="Görev türü">${Object.entries(ESSAY_TASKS).map(([k, t]) => `<option value="${k}" ${k === e.task ? 'selected' : ''}>${esc(t.label)}</option>`).join('')}</select>
         <button type="button" data-act="essay-timer" id="es-timer-btn"></button>
-        <select id="es-deck" title="Önerilerde kullanılacak kelime destesi">${essayDeckOptions()}</select>
+        <select id="es-deck" title="Önerilerde kullanılacak kelime destesi" aria-label="Önerilerde kullanılacak kelime destesi">${essayDeckOptions()}</select>
         <span class="spacer"></span>
-        <button type="button" class="ai-btn" data-act="essay-report" id="es-report-btn">🎓 IELTS analizi</button>
+        <button type="button" class="ai-btn" data-act="essay-report" id="es-report-btn">${ic('grad')} IELTS analizi</button>
       </div>
       <div class="es-toggles" role="group" aria-label="Yazarken gösterilecekler">
         <label class="es-toggle" title="Üstteki canlı kelime sayacı ve hedef çubuğu"><input type="checkbox" id="es-counter-on" ${prefs.essayCounter !== false ? 'checked' : ''}><span>Kelime sayacı</span></label>
@@ -2520,8 +2488,8 @@ function openEssay(id) {
           <button type="button" class="es-prompt-title" data-pa="collapse" title="Gizle / göster"><span class="chev">▾</span> Soru / görev metni</button>
           <small class="muted">isteğe bağlı · sorudan kopyalanan kısımlar sayılmaz</small>
           <span class="spacer"></span>
-          <button type="button" class="es-prompt-btn pa-img" data-pa="image" title="Grafik, tablo ya da diyagram görseli ekle (yapıştırmak için Ctrl+V)">🖼 Görsel ekle</button>
-          <button type="button" class="es-prompt-btn pa-img" data-pa="image-paste" title="Kopyaladığın görseli yapıştır (bilgisayarda Ctrl+V de olur)">📋 Yapıştır</button>
+          <button type="button" class="es-prompt-btn pa-img" data-pa="image" title="Grafik, tablo ya da diyagram görseli ekle (yapıştırmak için Ctrl+V)">${ic('image')} Görsel ekle</button>
+          <button type="button" class="es-prompt-btn pa-img" data-pa="image-paste" title="Kopyaladığın görseli yapıştır (bilgisayarda Ctrl+V de olur)">${ic('clipboard')} Yapıştır</button>
           <button type="button" class="es-prompt-btn pa-edit" data-pa="edit">Düzenle</button>
           <button type="button" class="primary es-prompt-btn pa-done" data-pa="done">Bitti</button>
         </div>
@@ -2685,10 +2653,10 @@ function renderEssayImage(id, force = false) {
   box.dataset.src = sig;
   box.innerHTML = data
     ? `<div class="es-fig-away">
-         <span>🖼 Görsel ${figMode() === 'side' ? 'sağdaki panelde' : 'yüzen pencerede'}</span>
+         <span>${ic('image')} Görsel ${figMode() === 'side' ? 'sağdaki panelde' : 'yüzen pencerede'}</span>
          <button type="button" class="ghost" data-pa="fig-show">Göster</button>
          <button type="button" class="ghost" data-pa="image">Değiştir</button>
-         <button type="button" class="ghost" data-pa="image-paste" title="Kopyaladığın görselle değiştir (Ctrl+V)">📋 Yapıştır</button>
+         <button type="button" class="ghost" data-pa="image-paste" title="Kopyaladığın görselle değiştir (Ctrl+V)">${ic('clipboard')} Yapıştır</button>
          <button type="button" class="ghost danger-ghost" data-pa="image-remove">Kaldır</button>
        </div>`
     : '';
@@ -2723,10 +2691,10 @@ function renderFigDock() {
   const prompt = store.getEssay(id)?.prompt?.trim() || '';
   dock.className = `fig-dock ${mode}${hidden ? ' closed' : ''}`;
   dock.innerHTML = hidden
-    ? '<button type="button" class="fd-tab" data-fd="show" title="Görseli göster">🖼 Görsel</button>'
+    ? `<button type="button" class="fd-tab" data-fd="show" title="Görseli göster">${ic('image')} Görsel</button>`
     : `<div class="fd-bar" data-fd="drag">
-        <span class="fd-title">🖼 Görev görseli</span>
-        <button type="button" data-fd="hide" title="Gizle">${mode === 'side' ? '⇥' : '–'}</button>
+        <span class="fd-title">${ic('image')} Görev görseli</span>
+        <button type="button" data-fd="hide" title="Gizle" aria-label="Görseli gizle">${mode === 'side' ? '⇥' : '–'}</button>
       </div>
       <div class="fd-body">
         <img src="${data}" alt="Görev görseli" draggable="false">
@@ -2901,7 +2869,7 @@ function renderEssayTimerBtn() {
   if (!btn) return;
   const t = ESSAY_TASKS[$('#es-task').value];
   btn.classList.toggle('hidden', !t.minutes);
-  btn.textContent = timer.status === 'idle' ? `⏱ ${t.minutes} dk sınav süresi başlat` : `⏱ Sayaç: ${fmtClock(timerRemaining())}`;
+  btn.innerHTML = timer.status === 'idle' ? `${ic('timer')} ${t.minutes} dk sınav süresi başlat` : `${ic('timer')} Sayaç: ${fmtClock(timerRemaining())}`;
 }
 
 function renderEssayStatus(a, taskKey, saved) {
@@ -2909,12 +2877,12 @@ function renderEssayStatus(a, taskKey, saved) {
   const n = a.net;
   const pct = t.min ? Math.min(100, (n / t.min) * 100) : 0;
   const level = !t.min ? 'free' : n < t.min ? 'short' : t.max && n > t.max + 60 ? 'long' : 'ok';
-  const hint = !t.min ? '' : level === 'short' ? `${t.min - n} kelime daha` : level === 'long' ? 'Uzun: zaman ve hata riski' : 'Hedefe ulaştın ✓';
+  const hint = !t.min ? '' : level === 'short' ? `${t.min - n} kelime daha` : level === 'long' ? 'Uzun: zaman ve hata riski' : `Hedefe ulaştın ${ic('check')}`;
   const showCounter = prefs.essayCounter !== false;
   $('#es-status').classList.toggle('es-status-min', !showCounter);
   $('#es-status').innerHTML = !showCounter ? `
     <div class="es-meta"><span class="muted">Kelime sayacı gizli</span><span id="es-grammar-state"></span>
-      <span class="muted">${saved ? '✓ Kaydedildi' : 'Kaydediliyor…'}</span></div>` : `
+      <span class="muted">${saved ? `${ic('check')} Kaydedildi` : 'Kaydediliyor…'}</span></div>` : `
     <div class="es-count es-${level}">
       <b>${n}</b><span>${t.min ? ` / ${t.min}` : ''} kelime</span>
       ${a.copied.count ? `<small title="Sorudan kopyalanmış görünen kelimeler sayılmaz">(${a.words} − ${a.copied.count} kopya)</small>` : ''}
@@ -2924,7 +2892,7 @@ function renderEssayStatus(a, taskKey, saved) {
       ${hint ? `<span class="es-hint es-${level}">${hint}</span>` : ''}
       <span>${a.paragraphs} paragraf · ${a.sentences} cümle</span>
       <span id="es-grammar-state"></span>
-      <span class="muted">${saved ? '✓ Kaydedildi' : 'Kaydediliyor…'}</span>
+      <span class="muted">${saved ? `${ic('check')} Kaydedildi` : 'Kaydediliyor…'}</span>
     </div>`;
   const tips = [];
   if (a.copied.count) {
@@ -3004,9 +2972,9 @@ function setGrammarState(st) {
   if (!el) return;
   const n = liveMatches().length;
   el.className = `es-gstate ${st === 'ok' && n ? 'has' : ''}`;
-  el.textContent = !grammarOn() ? '' : {
+  el.innerHTML = !grammarOn() ? '' : {
     checking: 'Dilbilgisi denetleniyor…',
-    ok: n ? `${n} dilbilgisi uyarısı` : 'Dilbilgisi ✓',
+    ok: n ? `${n} dilbilgisi uyarısı` : `Dilbilgisi ${ic('check', 'tamam')}`,
     offline: 'Dilbilgisi: çevrimdışı',
     limit: 'Dilbilgisi: kısa bir mola (sınır)',
     error: 'Dilbilgisi denetlenemedi',
@@ -3094,9 +3062,9 @@ const essayDeckSel = () => {
 function essayDeckOptions() {
   const sel = essayDeckSel();
   const en = state.decks.filter((d) => d.language === 'en');
-  return `<option value="" ${sel === '' ? 'selected' : ''}>📚 Deste seçilmedi</option>
-    ${en.length > 1 ? `<option value="all" ${sel === 'all' ? 'selected' : ''}>📚 Tüm İngilizce desteler</option>` : ''}
-    ${state.decks.map((d) => `<option value="${d.id}" ${sel === d.id ? 'selected' : ''}>📚 ${esc(d.name)}</option>`).join('')}`;
+  return `<option value="" ${sel === '' ? 'selected' : ''}>Deste seçilmedi</option>
+    ${en.length > 1 ? `<option value="all" ${sel === 'all' ? 'selected' : ''}>Tüm İngilizce desteler</option>` : ''}
+    ${state.decks.map((d) => `<option value="${d.id}" ${sel === d.id ? 'selected' : ''}>${esc(d.name)}</option>`).join('')}`;
 }
 
 let vocabCache = { key: '', entries: [] };
@@ -3159,8 +3127,8 @@ function renderVocabHints() {
   const deckName = sel === 'all' ? 'İngilizce destelerin' : deckById(sel)?.name || '';
   box.innerHTML = `
     <div class="es-tip vocab">
-      <b>📚 Destendeki kelimeler</b> <span class="muted">· ${esc(deckName)}</span>
-      ${v.used.length ? `<div class="vc-used">Bu yazıda kullandıkların: ${v.used.slice(0, 12).map((e) => `<span class="chip vc-ok">✓ ${esc(e.word)}</span>`).join(' ')}</div>` : ''}
+      <b>${ic('book')} Destendeki kelimeler</b> <span class="muted">· ${esc(deckName)}</span>
+      ${v.used.length ? `<div class="vc-used">Bu yazıda kullandıkların: ${v.used.slice(0, 12).map((e) => `<span class="chip vc-ok">${ic('check')} ${esc(e.word)}</span>`).join(' ')}</div>` : ''}
       ${v.swaps.length ? `<div class="vc-head muted">Şu kelimelerin yerine çalıştığın kelimeyi kullanabilirsin:</div>
         <div class="vc-list">${v.swaps.map((sw) => `
           <div class="vc-item">
@@ -3170,7 +3138,7 @@ function renderVocabHints() {
             ${sw.translation ? `<span class="muted vc-tr">${esc(sw.translation)}</span>` : ''}
             ${sw.learning ? '<span class="vc-tag">öğreniyorsun</span>' : ''}
           </div>`).join('')}</div>`
-        : `<div class="muted vc-head">${v.used.length ? 'Harika! ' : ''}Yazdıkça, destendeki kelimelerin eş anlamlılarını kullandığın yerlerde burada öneri çıkar. Daha fazlası için 🎓 IELTS analizi.</div>`}
+        : `<div class="muted vc-head">${v.used.length ? 'Harika! ' : ''}Yazdıkça, destendeki kelimelerin eş anlamlılarını kullandığın yerlerde burada öneri çıkar. Daha fazlası için ${ic('grad')} IELTS analizi.</div>`}
     </div>`;
 }
 
@@ -3192,14 +3160,14 @@ const CRITERIA = (taskName) => [
 const ERR_TYPES = { grammar: 'Dilbilgisi', vocabulary: 'Kelime', spelling: 'Yazım', punctuation: 'Noktalama', style: 'Üslup' };
 
 let reportBusy = false;
-let reportPhase = '🎓 Analiz ediliyor…';
+let reportPhase = `${ic('grad')} Analiz ediliyor…`;
 
 /** Görseli okutur; aynı görsel daha önce okunduysa saklanan sonucu kullanır. Hata olursa analiz görselsiz sürer. */
 async function readEssayFigure(id, img) {
   const sig = `${img.length}:${img.slice(-48)}`;
   const cache = prefs.figNotes?.[id];
   if (cache?.sig === sig && cache.notes) return cache;
-  reportPhase = '🖼 Görsel okunuyor…';
+  reportPhase = `${ic('image')} Görsel okunuyor…`;
   let res;
   try {
     const image = await imageForAi(img);
@@ -3207,7 +3175,7 @@ async function readEssayFigure(id, img) {
   } catch (err) {
     res = { notes: '', error: err.message };
   }
-  reportPhase = '🎓 Analiz ediliyor…';
+  reportPhase = `${ic('grad')} Analiz ediliyor…`;
   if (res.notes) {
     prefs.figNotes = Object.fromEntries(Object.entries({ ...(prefs.figNotes || {}), [id]: { sig, notes: res.notes, model: res.model } }).slice(-20));
     savePrefs();
@@ -3235,13 +3203,13 @@ async function runEssayReport() {
   const started = Date.now();
   const tick = setInterval(() => {
     const btn = $('#es-report-btn');
-    if (btn) btn.textContent = `${reportPhase} ${Math.round((Date.now() - started) / 1000)} sn`;
+    if (btn) btn.innerHTML = `${reportPhase} ${Math.round((Date.now() - started) / 1000)} sn`;
   }, 1000);
-  reportPhase = '🎓 Analiz ediliyor…';
+  reportPhase = `${ic('grad')} Analiz ediliyor…`;
   const btn = $('#es-report-btn');
-  if (btn) { btn.disabled = true; btn.textContent = '🎓 Analiz ediliyor…'; }
+  if (btn) { btn.disabled = true; btn.innerHTML = reportPhase; }
   const box = $('#es-report');
-  if (box) box.innerHTML = '<div class="panel es-report-wait">🎓 Yazın IELTS ölçütlerine göre değerlendiriliyor. Bu genelde 20-60 saniye sürer; bu sırada yazmaya devam edebilirsin.</div>';
+  if (box) box.innerHTML = `<div class="panel es-report-wait">${ic('grad')} Yazın IELTS ölçütlerine göre değerlendiriliyor. Bu genelde 20-60 saniye sürer; bu sırada yazmaya devam edebilirsin.</div>`;
   try {
     // Academic Task 1: önce görsel ayrı istekte okunur (aynı görsel için sonuç saklanır), sonra analiz
     const img = e.task === 'task1' ? store.getEssayImage(e.id) : '';
@@ -3262,7 +3230,7 @@ async function runEssayReport() {
     clearInterval(tick);
     reportBusy = false;
     const b = $('#es-report-btn');
-    if (b) { b.disabled = false; b.textContent = '🎓 IELTS analizi'; }
+    if (b) { b.disabled = false; b.innerHTML = `${ic('grad')} IELTS analizi`; }
   }
 }
 
@@ -3276,7 +3244,7 @@ export function notifyReport(essayId, detail, ok, alreadyHere) {
   el.id = 'report-banner';
   el.className = `update-banner report-banner ${ok ? '' : 'failed'}`;
   el.innerHTML = `
-    <div class="ub-text"><b>${ok ? '🎓 IELTS analizi bitti' : '🎓 IELTS analizi tamamlanamadı'}</b>
+    <div class="ub-text"><b>${ic('grad')} ${ok ? 'IELTS analizi bitti' : 'IELTS analizi tamamlanamadı'}</b>
       <div class="muted">${esc(detail)}</div></div>
     <div class="ub-actions">
       <button class="ghost" data-rb="close">Kapat</button>
@@ -3296,7 +3264,7 @@ export function notifyReport(essayId, detail, ok, alreadyHere) {
   if (alreadyHere) setTimeout(() => el.remove(), 9000);
 
   if (!document.hidden) return;
-  const title = ok ? '🎓 IELTS analizi bitti' : 'IELTS analizi tamamlanamadı';
+  const title = ok ? 'IELTS analizi bitti' : 'IELTS analizi tamamlanamadı';
   if (NativeNotif) {
     NativeNotif.schedule({ notifications: [{ id: 4243, title, body: detail, schedule: { at: new Date(Date.now() + 500) } }] }).catch(() => {});
   } else if ('Notification' in window && Notification.permission === 'granted') {
@@ -3338,26 +3306,26 @@ function renderEssayReport() {
         </div>` : '';
       }).join('')}</div>
       ${r.summary ? `<p class="rp-summary">${esc(r.summary)}</p>` : ''}
-      ${r.figure_status === 'used' && r.figure_notes ? `<details class="rp-block rp-figure"><summary>🖼 Yapay zekânın görselden okudukları <small class="muted">(rakamlar buna göre kontrol edildi${r.figure_model ? ` · ${esc(r.figure_model.split('/').pop())}` : ''})</small></summary>
+      ${r.figure_status === 'used' && r.figure_notes ? `<details class="rp-block rp-figure"><summary>${ic('image')} Yapay zekânın görselden okudukları <small class="muted">(rakamlar buna göre kontrol edildi${r.figure_model ? ` · ${esc(r.figure_model.split('/').pop())}` : ''})</small></summary>
         <p>${esc(r.figure_notes)}</p></details>` : ''}
-      ${r.figure_status === 'failed' ? `<p class="rp-stale rp-fig-fail">🖼 Görsel bu analizde okunamadı; değerlendirme sadece soru metnine göre yapıldı. Tekrar analiz etmeyi deneyebilirsin.${r.figure_error ? `<br><small>Neden: ${esc(r.figure_error)}</small>` : ''}</p>` : ''}
-      <div class="rp-cols">${list('✅ Güçlü yanlar', r.strengths, 'good')}${list('🔧 Geliştirilecekler', r.improvements, 'warn')}</div>
-      ${r.errors?.length ? `<div class="rp-block"><h4>✏️ Hatalar ve doğruları <small class="muted">(metinde göstermek için tıkla)</small></h4>
+      ${r.figure_status === 'failed' ? `<p class="rp-stale rp-fig-fail">${ic('image')} Görsel bu analizde okunamadı; değerlendirme sadece soru metnine göre yapıldı. Tekrar analiz etmeyi deneyebilirsin.${r.figure_error ? `<br><small>Neden: ${esc(r.figure_error)}</small>` : ''}</p>` : ''}
+      <div class="rp-cols">${list(`${ic('checkCircle')} Güçlü yanlar`, r.strengths, 'good')}${list(`${ic('wrench')} Geliştirilecekler`, r.improvements, 'warn')}</div>
+      ${r.errors?.length ? `<div class="rp-block"><h4>${ic('edit')} Hatalar ve doğruları <small class="muted">(metinde göstermek için tıkla)</small></h4>
         <div class="rp-errors">${r.errors.map((x) => `
           <button type="button" class="rp-err" data-act="rp-goto" data-text="${esc(x.original)}">
             <span class="rp-etype">${esc(ERR_TYPES[x.type] || x.type)}</span>
             <span><del>${esc(x.original)}</del> → <ins>${esc(x.correction)}</ins></span>
             ${x.explanation ? `<small>${esc(x.explanation)}</small>` : ''}
           </button>`).join('')}</div></div>` : ''}
-      ${r.vocab_suggestions?.length ? `<div class="rp-block"><h4>📚 Destendeki kelimelerle yazabileceklerin <small class="muted">(metinde göstermek için tıkla)</small></h4>
+      ${r.vocab_suggestions?.length ? `<div class="rp-block"><h4>${ic('book')} Destendeki kelimelerle yazabileceklerin <small class="muted">(metinde göstermek için tıkla)</small></h4>
         <div class="rp-errors">${r.vocab_suggestions.map((x) => `
           <button type="button" class="rp-err rp-vocab" data-act="rp-goto" data-text="${esc(x.original)}">
             <span class="rp-etype">${esc(x.word)}</span>
             <span><del>${esc(x.original)}</del><br><ins>${esc(x.suggestion)}</ins></span>
             ${x.why ? `<small>${esc(x.why)}</small>` : ''}
           </button>`).join('')}</div></div>` : ''}
-      ${list('🚀 Daha yüksek band için', r.band9_tips)}
-      ${r.improved_sentence ? `<div class="rp-block"><h4>✨ Örnek: cümleni yükselt</h4>
+      ${list(`${ic('rocket')} Daha yüksek band için`, r.band9_tips)}
+      ${r.improved_sentence ? `<div class="rp-block"><h4>${ic('sparkles')} Örnek: cümleni yükselt</h4>
         <div class="rp-example"><del>${esc(r.improved_sentence.original)}</del><ins>${esc(r.improved_sentence.improved)}</ins></div></div>` : ''}
     </section>`;
 }
@@ -3559,7 +3527,7 @@ function renderContacts() {
         <span class="cc-side">${c.last_at ? `<span class="cc-time">${shortTime(c.last_at)}</span>` : ''}${unread ? `<span class="count-badge">${unread}</span>` : ''}</span>
       </button>`;
     }).join('')
-    : '<div class="muted chat-note">Henüz kimseyle ortak desten yok. Bir desteni paylaş (deste › ⚙ › Paylaş); katılan kişilerle buradan yazışabilirsin.</div>';
+    : `<div class="muted chat-note">Henüz kimseyle ortak desten yok. Bir desteni paylaş (deste › ${ic('gear', 'Ayarlar')} › Paylaş); katılan kişilerle buradan yazışabilirsin.</div>`;
   if (html !== chat.listHtml) { box.innerHTML = html; chat.listHtml = html; }
 }
 
@@ -3603,7 +3571,7 @@ function closeThread() {
   Object.assign(chat, { msgs: [], hasMore: false, msgsHtml: '' });
   $('#chat')?.classList.remove('has-peer');
   const thread = $('#chat-thread');
-  if (thread) thread.innerHTML = '<div class="chat-placeholder muted"><span>💬</span>Yazışmak için listeden birini seç.</div>';
+  if (thread) thread.innerHTML = `<div class="chat-placeholder muted"><span>${ic('chat')}</span>Yazışmak için listeden birini seç.</div>`;
   renderContacts();
 }
 
@@ -3682,7 +3650,7 @@ function renderMessages(toBottom) {
     html += `<div class="msg ${mine ? 'mine' : ''} ${m.pending ? 'pending' : ''}">
       <div class="bubble">${esc(m.body)}</div><span class="msg-time">${time}${status}</span></div>`;
   }
-  if (!chat.msgs.length) html += '<div class="muted chat-note chat-first">Henüz mesaj yok. İlk mesajı sen gönder 👋</div>';
+  if (!chat.msgs.length) html += '<div class="muted chat-note chat-first">Henüz mesaj yok. İlk mesajı sen gönder.</div>';
   if (html === chat.msgsHtml) return;
   box.innerHTML = html;
   chat.msgsHtml = html;
@@ -3826,12 +3794,12 @@ function phrTabHtml(d, tab) {
           ${n.rule ? `<div class="phr-rule">${esc(n.rule)}</div>` : ''}
           ${n.note_tr ? `<div class="muted">${esc(n.note_tr)}</div>` : ''}
           ${(n.examples || []).map((x) => `<div class="phr-pair"><span>${esc(x.en)}</span><span class="muted">${esc(x.tr)}</span></div>`).join('')}
-          ${n.incorrect ? `<div class="phr-wrong">✗ ${esc(n.incorrect)}</div>` : ''}
-          ${(n.correct || []).map((x) => `<div class="phr-right">✓ ${esc(x)}</div>`).join('')}
+          ${n.incorrect ? `<div class="phr-wrong">${ic('x', 'Yanlış')} ${esc(n.incorrect)}</div>` : ''}
+          ${(n.correct || []).map((x) => `<div class="phr-right">${ic('check', 'Doğru')} ${esc(x)}</div>`).join('')}
         </div>`).join('')}
       </section>
       <section class="phr-group"><h4>Sık yapılan hatalar</h4>
-        ${(d.common_mistakes || []).map((m) => `<div class="phr-note"><div class="phr-wrong">✗ ${esc(m.incorrect)}</div><div class="phr-right">✓ ${esc(m.correct)}</div></div>`).join('')}
+        ${(d.common_mistakes || []).map((m) => `<div class="phr-note"><div class="phr-wrong">${ic('x', 'Yanlış')} ${esc(m.incorrect)}</div><div class="phr-right">${ic('check', 'Doğru')} ${esc(m.correct)}</div></div>`).join('')}
       </section>
       <section class="phr-group phr-wide"><h4>Cümleni yükselt</h4>
         ${(d.sentence_upgrades || []).map((u) => `<div class="phr-upgrade">
@@ -3852,7 +3820,7 @@ function phrTabHtml(d, tab) {
     </section>
     <section class="phr-group"><h4>Neye odaklanmalı?</h4>
       ${Object.entries(d.study_strategy || {}).map(([k, v]) => `<div class="phr-note"><b>${esc(k.replace(/_/g, ' / '))}</b><div class="muted">${esc(v)}</div></div>`).join('')}
-      ${(d.additional_notes_tr || []).map((n) => `<div class="phr-note">💡 ${esc(n)}</div>`).join('')}
+      ${(d.additional_notes_tr || []).map((n) => `<div class="phr-note">${ic('bulb')} ${esc(n)}</div>`).join('')}
     </section>
   </div>`;
 }
@@ -3871,9 +3839,9 @@ function phrSearchHtml(d, q) {
 /** Yazılarım bölümünün sekmeleri: yazılar ve Task 1 ifadeleri. */
 function essaysTabs(active) {
   return `<div class="seg essays-tabs" role="tablist">
-    <button type="button" role="tab" data-act="essays" class="${active === 'essays' ? 'on' : ''}">✍️ Yazılarım</button>
-    <button type="button" role="tab" data-act="phrases" class="${active === 'phrases' ? 'on' : ''}">📚 Task 1 ifadeleri</button>
-    <button type="button" role="tab" data-act="criteria" class="${active === 'criteria' ? 'on' : ''}">📋 Değerlendirme</button>
+    <button type="button" role="tab" data-act="essays" class="${active === 'essays' ? 'on' : ''}" aria-selected="${active === 'essays'}">${ic('pen')} Yazılarım</button>
+    <button type="button" role="tab" data-act="phrases" class="${active === 'phrases' ? 'on' : ''}" aria-selected="${active === 'phrases'}">${ic('book')} Task 1 ifadeleri</button>
+    <button type="button" role="tab" data-act="criteria" class="${active === 'criteria' ? 'on' : ''}" aria-selected="${active === 'criteria'}">${ic('clipboard')} Değerlendirme</button>
   </div>`;
 }
 
@@ -4086,7 +4054,7 @@ function showReadings() {
         const done = Object.values(t.answers || {}).filter((v) => (Array.isArray(v) ? v.length : String(v).trim())).length;
         return `<button class="essay-item" data-reading="${t.id}">
           <span class="ei-title">${esc(t.title)}</span>
-          <span class="ei-meta"><span class="badge">${t.content.kind === 'listening' ? '🎧 Listening · ' : ''}${(t.content.parts || []).length} part · ${total} soru</span>
+          <span class="ei-meta"><span class="badge">${t.content.kind === 'listening' ? `${ic('headphones')} Listening · ` : ''}${(t.content.parts || []).length} part · ${total} soru</span>
             ${t.result ? `<span class="ei-ok">${t.result.score}/${t.result.total} doğru${t.result.band ? ` · Band ${t.result.band.toFixed(1)}` : ''}</span>`
               : done ? `<span class="muted">${done} soru cevaplandı</span>` : '<span class="muted">başlanmadı</span>'}
             <span class="muted">${new Date(t.edited_at * 1000).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}</span></span>
@@ -4150,7 +4118,7 @@ function pdfImportModal() {
   let pdf = null;
   let fileName = '';
   const form = openModal(`
-    <h2>📄 PDF'den test oluştur</h2>
+    <h2>${ic('doc')} PDF'den test oluştur</h2>
     <p class="muted" style="font-size:13px">Kendi PDF'indeki bir okuma testini seç. Seçtiğin sayfalar hesabındaki yapay zekâyla okunur ve test
       sadece senin hesabına eklenir. Birkaç dakika sürer; işlem arkada çalışır, uygulamayı kullanmaya devam edebilirsin (uygulama açık kalmalı).</p>
     <label>PDF dosyası<input type="file" name="pdf" accept="application/pdf,.pdf"></label>
@@ -4190,7 +4158,7 @@ function pdfImportModal() {
       if (!box || !pdf) return;
       let list = [];
       try { list = [...parsePages(form.pages.value, pdf.numPages).map((n) => [n, '']), ...parsePages(form.key.value, pdf.numPages).map((n) => [n, 'key'])]; } catch { box.innerHTML = ''; return; }
-      box.innerHTML = list.slice(0, 24).map(([n, k]) => `<figure class="${k}"><canvas data-pn="${n}"></canvas><figcaption>${k ? '🔑 ' : ''}s. ${n}</figcaption></figure>`).join('');
+      box.innerHTML = list.slice(0, 24).map(([n, k]) => `<figure class="${k}"><canvas data-pn="${n}"></canvas><figcaption>${k ? `${ic('key', 'Cevap anahtarı')} ` : ''}s. ${n}</figcaption></figure>`).join('');
       for (const cv of $$('canvas[data-pn]', box)) {
         const src = await pdfPageCanvas(pdf, Number(cv.dataset.pn), 110).catch(() => null);
         if (!src || !cv.isConnected) continue;
@@ -4229,7 +4197,7 @@ function renderReadingJobs() {
   const box = $('#rd-jobs');
   if (!box) return;
   box.innerHTML = readingJobs.map((j, i) => `<div class="panel rd-job ${j.error ? 'error' : ''}">
-    <div><b>📄 ${esc(j.title)}</b> <span class="muted">${esc(j.status)}</span></div>
+    <div><b>${ic('doc')} ${esc(j.title)}</b> <span class="muted">${esc(j.status)}</span></div>
     ${j.error ? `<div class="rd-job-err">${esc(j.error)}</div>` : `<div class="rd-job-bar"><span style="width:${Math.round((j.done / Math.max(1, j.total)) * 100)}%"></span></div>`}
     ${j.error || j.finished ? `<button type="button" class="ghost" data-job-close="${i}">Kapat</button>` : ''}
   </div>`).join('');
@@ -4304,10 +4272,10 @@ function readingImportModal() {
     <p class="muted" style="font-size:13px">Testler sadece senin hesabında saklanır ve cihazların arasında eşitlenir.
       PDF'teki bir testi uygulamanın okuma biçimine (JSON) çevirip buradan ekleyebilirsin.</p>
     <div class="rd-import">
-      <button type="button" class="primary" data-ri="pdf">📄 PDF'den oluştur</button>
+      <button type="button" class="primary" data-ri="pdf">${ic('doc')} PDF'den oluştur</button>
       <button type="button" data-ri="file">JSON dosyası seç</button>
-      <button type="button" data-ri="sample">🧪 Örnek testi ekle</button>
-      <button type="button" data-ri="prompt" title="PDF'i JSON'a çevirmesi için bir yapay zekâya verilecek komut">📋 PDF → JSON komutunu kopyala</button>
+      <button type="button" data-ri="sample">${ic('flask')} Örnek testi ekle</button>
+      <button type="button" data-ri="prompt" title="PDF'i JSON'a çevirmesi için bir yapay zekâya verilecek komut">${ic('clipboard')} PDF → JSON komutunu kopyala</button>
     </div>
     <label>ya da JSON'u buraya yapıştır<textarea name="json" rows="5" placeholder='{"format": "kelime-reading", "title": "...", "parts": [ ... ]}'></textarea></label>
     <input type="file" accept=".json,application/json" hidden id="ri-file">
@@ -4411,8 +4379,8 @@ function openReading(id) {
         </div>
       </header>
       <div class="seg rd-panes ${c.kind === 'listening' ? 'hidden' : ''}" role="tablist">
-        <button type="button" data-rd-pane="text">📄 Metin</button>
-        <button type="button" data-rd-pane="questions">❓ Sorular</button>
+        <button type="button" data-rd-pane="text">${ic('doc')} Metin</button>
+        <button type="button" data-rd-pane="questions">${ic('note')} Sorular</button>
       </div>
       <div class="rd-split ${c.kind === 'listening' ? 'no-passage' : ''}" id="rd-split">
         <section class="rd-passage" id="rd-passage" lang="en">${c.parts.map((p, i) => `
@@ -4547,7 +4515,7 @@ function renderReadingBar() {
   $('#rd-progress').textContent = reading.checked && t.result
     ? `${t.result.score}/${t.result.total} doğru${t.result.band ? ` · Band ${t.result.band.toFixed(1)}` : ''}`
     : `${answered}/${total} cevaplandı`;
-  $('#rd-check').textContent = reading.checked ? '↺ Tekrar çöz' : '✓ Kontrol et';
+  $('#rd-check').innerHTML = reading.checked ? `${ic('refresh')} Tekrar çöz` : `${ic('check')} Kontrol et`;
   renderReadingTimerBtn();
 }
 
@@ -4555,7 +4523,7 @@ function renderReadingTimerBtn() {
   const btn = $('#rd-timer-btn');
   if (!btn) return;
   const t = store.getReading(reading.id);
-  btn.textContent = timer.status === 'idle' ? `⏱ ${t?.content.minutes || 60} dk` : `⏱ ${fmtClock(timerShown())}`;
+  btn.innerHTML = timer.status === 'idle' ? `${ic('timer')} ${t?.content.minutes || 60} dk` : `${ic('timer')} ${fmtClock(timerShown())}`;
   btn.title = timer.status === 'idle' ? 'Sınav süresini başlat (çalışma süresine de eklenir)' : 'Çalışma sayacı';
 }
 
@@ -4577,7 +4545,7 @@ function renderReadingMarks() {
     if (got < qCount(q)) {
       // boşluk içindeyse kutunun yanına, değilse soru metninin sonuna
       const host = el.parentElement.classList.contains('rd-inline') ? el.parentElement : el.parentElement.querySelector(':scope > div, :scope > p') || el.parentElement;
-      host.insertAdjacentHTML('beforeend', `<span class="rd-correct" title="Doğru cevap">✓ ${esc(correctText(q))}</span>`);
+      host.insertAdjacentHTML('beforeend', `<span class="rd-correct" title="Doğru cevap">${ic('check', 'Doğru cevap')} ${esc(correctText(q))}</span>`);
     }
   });
   $$('input, select', box).forEach((el) => { el.disabled = reading.checked; });
@@ -4610,7 +4578,7 @@ function checkReading() {
 function setupPassageTools(box) {
   const pop = document.createElement('div');
   pop.className = 'rd-pop hidden';
-  pop.innerHTML = '<button type="button" data-rp="mark">🖍 Vurgula</button><button type="button" data-rp="unmark" class="hidden">Vurguyu kaldır</button><button type="button" data-rp="word">＋ Desteye ekle</button>';
+  pop.innerHTML = `<button type="button" data-rp="mark">${ic('pen')} Vurgula</button><button type="button" data-rp="unmark" class="hidden">Vurguyu kaldır</button><button type="button" data-rp="word">${ic('plus')} Desteye ekle</button>`;
   document.body.append(pop);
   let range = null;
   let markEl = null;
@@ -5076,7 +5044,7 @@ async function loadProfile() {
 }
 
 async function init() {
-  $$('[data-ic]').forEach((el) => { el.innerHTML = ICON[el.dataset.ic] || ''; });
+  $$('[data-ic]').forEach((el) => { el.innerHTML = ICON[el.dataset.ic] || ''; el.setAttribute('aria-hidden', 'true'); });
   applyTheme();
   applyRail();
   await store.open();

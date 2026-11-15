@@ -1,6 +1,7 @@
 import { initKurs, kursHtml, mountKurs, getStudy } from './kurs.js';
 import { initTrain, trainHtml, mountTrain } from './fsp-train.js';
 import { initLearn, learnHtml, mountLearn, learnBack } from './fsp-learn.js';
+import { ic } from './icons.js';
 // Fachsprachprüfung (FSP) Zahnmedizin: hasta görüşmesi (Teil 1), Arztbrief (Teil 2), Arzt-Arzt-Gespräch (Teil 3),
 // değerlendirme, Fachbegriffe ve rehber. Yapay zekâ sunucudaki fsp-ai fonksiyonundan (Gemini) gelir.
 // app.js bu modüle ortak yardımcıları initFsp(ctx) ile verir.
@@ -164,11 +165,11 @@ function renderHub() {
           <h1>FSP Zahnmedizin</h1>
           <div class="sub">Fachsprachprüfung · Hasta görüşmesi, Arztbrief, Arzt-Arzt-Gespräch</div>
         </div>
-        ${ui.tab === 'cases' || ui.tab === 'bayern' ? '<button data-f="exam-new" title="15 dk hazırlık + Teil 1, 2, 3 (3 × 20 dk)">⏱ Tam sınav</button>' : ''}
-        ${ui.tab === 'cases' ? '<button class="primary" data-f="new-case">✦ Yeni vaka (AI)</button>' : ''}
+        ${ui.tab === 'cases' || ui.tab === 'bayern' ? `<button data-f="exam-new" title="15 dk hazırlık + Teil 1, 2, 3 (3 × 20 dk)">${ic('timer')}Tam sınav</button>` : ''}
+        ${ui.tab === 'cases' ? `<button class="primary" data-f="new-case">${ic('sparkles')}Yeni vaka (AI)</button>` : ''}
       </header>
-      <div class="seg tabs fsp-tabs" role="tablist">${tabs.map(([k, ic, l]) => `<button type="button" role="tab" data-f="tab" data-tab="${k}" class="${ui.tab === k ? 'on' : ''}">${C.ICON[ic]}${l}</button>`).join('')}</div>
-      ${sub ? `<div class="chips fsp-subtabs">${SUBS[ui.tab].map(([k, l]) => `<button type="button" class="chip ${sub === k ? 'on' : ''}" data-f="sub" data-sub="${k}">${l}</button>`).join('')}</div>` : ''}
+      <div class="seg tabs fsp-tabs" role="tablist">${tabs.map(([k, icn, l]) => `<button type="button" role="tab" data-f="tab" data-tab="${k}" class="${ui.tab === k ? 'on' : ''}" aria-selected="${ui.tab === k}">${C.ICON[icn]}${l}</button>`).join('')}</div>
+      ${sub ? `<div class="chips fsp-subtabs">${SUBS[ui.tab].map(([k, l]) => `<button type="button" class="chip ${sub === k ? 'on' : ''}" aria-pressed="${!!(sub === k)}" data-f="sub" data-sub="${k}">${l}</button>`).join('')}</div>` : ''}
       <div id="fsp-body">${body()}</div>
     </div>`;
   if (ui.tab === 'kurs') { C.guard(mountKurs); return; }
@@ -184,7 +185,7 @@ function casesHtml() {
   const list = allCases().filter((c) => !ui.fach || (ui.fach === 'Bayern' ? c.bundesland === 'Bayern' : c.fachgebiet === ui.fach));
   const fachs = [...new Set(allCases().map((c) => c.fachgebiet))];
   return `
-    <div class="chips">${['', ...(content.bayern ? ['Bayern'] : []), ...fachs].map((f) => `<button type="button" class="chip ${ui.fach === f ? 'on' : ''} ${f === 'Bayern' ? 'chip-by' : ''}" data-f="fach" data-fach="${esc(f)}">${f ? esc(f) : 'Tümü'}</button>`).join('')}</div>
+    <div class="chips">${['', ...(content.bayern ? ['Bayern'] : []), ...fachs].map((f) => `<button type="button" class="chip ${ui.fach === f ? 'on' : ''} ${f === 'Bayern' ? 'chip-by' : ''}" aria-pressed="${!!(ui.fach === f)}" data-f="fach" data-fach="${esc(f)}">${f ? esc(f) : 'Tümü'}</button>`).join('')}</div>
     ${levelBarHtml()}
     <div class="fsp-grid">${list.map(caseCardHtml).join('') || '<div class="panel empty">Bu alanda vaka yok.</div>'}</div>`;
 }
@@ -193,7 +194,7 @@ function caseCardHtml(c) {
       const p = c.patient || {};
       const tried = attemptsOf(c.id).length > 0;
       return `<article class="panel fsp-case">
-        <div class="fc-top"><span class="badge">${esc(c.fachgebiet)}</span>${c.custom ? '<span class="fc-own">✦ senin vakan</span>' : ''}${c.bundesland ? `<span class="fc-by" title="München raporlarında ${c.freq} kez">${C.ICON.pin}${esc(c.bundesland)} · ${c.freq}×</span>` : ''}
+        <div class="fc-top"><span class="badge">${esc(c.fachgebiet)}</span>${c.custom ? `<span class="fc-own">${ic('sparkles')} senin vakan</span>` : ''}${c.bundesland ? `<span class="fc-by" title="München raporlarında ${c.freq} kez">${C.ICON.pin}${esc(c.bundesland)} · ${c.freq}×</span>` : ''}
           ${c.custom ? `<button class="icon-btn fc-del" data-f="del-case" data-case="${c.id}" title="Vakayı sil" aria-label="Vakayı sil">${C.ICON.trash}</button>` : ''}</div>
         <h3>${esc(p.name)}${p.age ? `, ${p.age}` : ''}</h3>
         <div class="muted fc-job">${esc(p.job)}</div>
@@ -204,7 +205,7 @@ function caseCardHtml(c) {
           return `<button class="fc-part" data-f="start" data-case="${c.id}" data-part="${n}" title="${PARTS[n].label}">
             <span class="fc-part-l">${C.ICON[PARTS[n].icon]}${n} · ${PARTS[n].short}</span>${b !== null ? `<b class="sc ${scoreClass(b)}">${b}</b>` : ''}</button>`;
         }).join('')}</div>
-        <button class="fx-card-exam" data-f="exam-case" data-case="${c.id}" title="Bu vakayla 15 dk hazırlık + 3 bölüm">⏱ Tam sınav</button>
+        <button class="fx-card-exam" data-f="exam-case" data-case="${c.id}" title="Bu vakayla 15 dk hazırlık + 3 bölüm">${ic('timer')}Tam sınav</button>
       </article>`;
 }
 
@@ -233,7 +234,7 @@ function historyHtml() {
       const r = d.report;
       const exam = isExam(a);
       const tag = exam
-        ? `<span class="badge fx-exam-badge">⏱ Tam sınav</span>`
+        ? `<span class="badge fx-exam-badge">${ic('timer')} Tam sınav</span>`
         : `<span class="badge">${PARTS[d.part]?.label || ''}</span>${d.part !== 2 && d.level ? `<span class="fx-lvl-tag">${levelLabel(d.level)}</span>` : ''}`;
       return `<div class="fh-row ${exam ? 'fx-hist-exam' : ''}">
         <button class="fh-open" data-f="open" data-attempt="${a.id}">
@@ -259,9 +260,9 @@ function termsHtml() {
     <p class="muted fsp-lead">Sınavda hastaya tıp terimiyle değil, günlük dille anlatman beklenir. Oberarzt da bir terimi hastaya nasıl açıklayacağını sorabilir.</p>
     <div class="fsp-term-tools">
       <input type="search" id="fsp-term-q" placeholder="Ara: Pulpitis, Zahnfleisch, çürük…" value="${esc(ui.termQ)}">
-      <button data-f="terms-all">＋ Listeyi “${DECK_NAME}” destesine ekle</button>
+      <button data-f="terms-all">${ic('plus')}Listeyi “${DECK_NAME}” destesine ekle</button>
     </div>
-    <div class="chips">${['', ...kats].map((k) => `<button type="button" class="chip ${ui.termKat === k ? 'on' : ''}" data-f="kat" data-kat="${esc(k)}">${k ? esc(k) : 'Tümü'}</button>`).join('')}</div>
+    <div class="chips">${['', ...kats].map((k) => `<button type="button" class="chip ${ui.termKat === k ? 'on' : ''}" aria-pressed="${!!(ui.termKat === k)}" data-f="kat" data-kat="${esc(k)}">${k ? esc(k) : 'Tümü'}</button>`).join('')}</div>
     <div id="fsp-terms">${termRows()}</div>`;
 }
 
@@ -272,7 +273,7 @@ function termRows() {
       <div class="ft-fach"><b>${esc(t.fach)}</b><button class="icon-btn ft-say" data-f="say" data-text="${esc(t.fach)}" title="Seslendir" aria-label="Seslendir">${C.ICON.speaker}</button></div>
       <div class="ft-umg">${esc(t.umgang)}</div>
       <div class="ft-tr muted">${esc(t.tr)}</div>
-      <button class="icon-btn" data-f="term-add" data-i="${content.guide.terms.indexOf(t)}" title="Desteye ekle" aria-label="Desteye ekle">＋</button>
+      <button class="icon-btn" data-f="term-add" data-i="${content.guide.terms.indexOf(t)}" title="Desteye ekle" aria-label="Desteye ekle">${ic('plus')}</button>
     </div>`).join('')}</div>` : '<div class="panel empty">Sonuç yok.</div>';
 }
 
@@ -374,7 +375,7 @@ function renderRun() {
         <div class="sub">${PARTS[d.part].label} · ${esc(c.fachgebiet)}${d.part !== 2 && d.report && d.level ? ` · ${levelLabel(d.level)}` : ''}</div></div>
       <div class="head-actions">${lvl}
         ${d.report ? `
-          <button data-f="again">↻ Tekrar dene</button>
+          <button data-f="again">${ic('refresh')}Tekrar dene</button>
           ${d.part < 3 ? `<button class="primary" data-f="next">${C.ICON[PARTS[d.part + 1].icon]}${PARTS[d.part + 1].short} →</button>` : ''}`
         : `<span class="fsp-clock" id="fsp-clock"></span>
           <button class="primary" data-f="finish">${d.part === 2 ? 'Teslim et ve değerlendir' : 'Bitir ve değerlendir'}</button>`}
@@ -490,8 +491,8 @@ function reportHtml(d, rk = '') {
         ${b.warum ? `<p class="muted">${esc(b.warum)}</p>` : ''}</div>`).join('')}</section>` : ''}
     ${r.staerken.length ? `<section class="panel"><h3>İyi yaptıkların</h3><ul>${r.staerken.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></section>` : ''}
     ${uebungHtml(r.uebung)}
-    ${r.vokabeln.length ? `<section class="panel"><div class="sec-head"><h3>Faydalı kelimeler</h3><button data-f="vocab-all"${rkAttr}>＋ Hepsini “${DECK_NAME}” destesine ekle</button></div>
-      <div class="fsp-terms">${r.vokabeln.map((v, i) => `<div class="ft-row"><div class="ft-fach"><b>${esc(v.de)}</b><button class="icon-btn ft-say" data-f="say" data-text="${esc(v.de)}" aria-label="Seslendir">${C.ICON.speaker}</button></div><div class="ft-tr muted">${esc(v.tr)}</div><button class="icon-btn" data-f="vocab-add" data-i="${i}"${rkAttr} title="Desteye ekle" aria-label="Desteye ekle">＋</button></div>`).join('')}</div></section>` : ''}
+    ${r.vokabeln.length ? `<section class="panel"><div class="sec-head"><h3>Faydalı kelimeler</h3><button data-f="vocab-all"${rkAttr}>${ic('plus')}Hepsini “${DECK_NAME}” destesine ekle</button></div>
+      <div class="fsp-terms">${r.vokabeln.map((v, i) => `<div class="ft-row"><div class="ft-fach"><b>${esc(v.de)}</b><button class="icon-btn ft-say" data-f="say" data-text="${esc(v.de)}" aria-label="Seslendir">${C.ICON.speaker}</button></div><div class="ft-tr muted">${esc(v.tr)}</div><button class="icon-btn" data-f="vocab-add" data-i="${i}"${rkAttr} title="Desteye ekle" aria-label="Desteye ekle">${ic('plus')}</button></div>`).join('')}</div></section>` : ''}
     ${ref}
   </div>`;
 }
@@ -521,7 +522,7 @@ function tickClock() {
     if (!mins) return;
     const left = mins * 60 - (now() - a.data.phaseStartedAt);
     if (el) {
-      el.textContent = `⏱ ${fmtClock(Math.max(0, left))}`;
+      el.innerHTML = `${ic('timer')}${fmtClock(Math.max(0, left))}`;
       el.classList.toggle('over', left < 60);
     }
     if (left <= 0 && !ui.advancing && C.state.view === 'fsp-run') examAdvance(true);
@@ -529,7 +530,7 @@ function tickClock() {
   }
   if (!el) return;
   const left = PARTS[a.data.part].minutes * 60 - (now() - a.data.startedAt);
-  el.textContent = `⏱ ${fmtClock(left)}`;
+  el.innerHTML = `${ic('timer')}${fmtClock(left)}`;
   el.classList.toggle('over', left < 0);
 }
 
@@ -609,11 +610,12 @@ function toggleMic(btn, target = 'fsp-input') {
     if (e.error === 'not-allowed') C.toast('Mikrofon izni verilmedi.', 'error');
     else if (e.error !== 'no-speech' && e.error !== 'aborted') C.toast(`Ses tanıma hatası: ${e.error}`, 'error');
   };
-  rec.onend = () => { ui.rec = null; btn.classList.remove('on'); };
+  rec.onend = () => { ui.rec = null; btn.classList.remove('on'); btn.setAttribute('aria-pressed', 'false'); };
   try { rec.start(); } catch { return; }
   C.stopSpeech?.();
   ui.rec = rec;
   btn.classList.add('on');
+  btn.setAttribute('aria-pressed', 'true');
 }
 
 /* ------------------------------------------------------------------ değerlendirme */
@@ -832,7 +834,7 @@ function bayernHtml() {
       <p>${esc(b.intro)}</p>
       <p class="muted by-period">${esc(b.title)} · ${esc(b.period)}</p>
     </section>
-    <div class="chips by-secs">${BY_SECS.map(([k, l]) => `<button type="button" class="chip ${ui.bySec === k ? 'on' : ''}" data-f="by-sec" data-sec="${k}">${l}</button>`).join('')}</div>`;
+    <div class="chips by-secs">${BY_SECS.map(([k, l]) => `<button type="button" class="chip ${ui.bySec === k ? 'on' : ''}" aria-pressed="${!!(ui.bySec === k)}" data-f="by-sec" data-sec="${k}">${l}</button>`).join('')}</div>`;
   if (ui.practice) return head + practiceHtml();
   if (ui.bySec === 'faelle') {
     const cs = [...b.cases].sort((x, y) => y.freq - x.freq);
@@ -846,7 +848,7 @@ function bayernHtml() {
   const topics = ui.bySec === 'fragen'
     ? `<div class="chips">${[{ key: '', name: 'Tümü' }, ...b.topics].map((t) => {
       const n = t.key ? b.questions.filter((q) => q.topic === t.key).length : b.questions.length;
-      return `<button type="button" class="chip ${ui.byTopic === t.key ? 'on' : ''}" data-f="by-topic" data-topic="${t.key}">${esc(t.name)} <small>${n}</small></button>`;
+      return `<button type="button" class="chip ${ui.byTopic === t.key ? 'on' : ''}" aria-pressed="${!!(ui.byTopic === t.key)}" data-f="by-topic" data-topic="${t.key}">${esc(t.name)} <small>${n}</small></button>`;
     }).join('')}</div>` : '';
   const k = known();
   const pool = byPool();
@@ -854,8 +856,8 @@ function bayernHtml() {
   return `${head}
     <div class="by-tools">
       <input type="search" id="by-q" placeholder="Soru ara (Almanca ya da Türkçe)…" value="${esc(ui.byQ)}">
-      <button class="primary" data-f="by-practice">▶ Pratik yap</button>
-      <button data-f="by-add-all" title="Filtredeki soruları kart olarak ekler; tekrar sistemiyle çalışırsın">＋ Desteye ekle</button>
+      <button class="primary" data-f="by-practice">${ic('play')}Pratik yap</button>
+      <button data-f="by-add-all" title="Filtredeki soruları kart olarak ekler; tekrar sistemiyle çalışırsın">${ic('plus')}Desteye ekle</button>
       <button class="ghost" data-f="by-tr">${ui.byTr ? 'Türkçeyi gizle' : 'Türkçeyi göster'}</button>
     </div>
     <div class="by-progress"><span style="width:${pool.length ? Math.round((done / pool.length) * 100) : 0}%"></span></div>
@@ -873,12 +875,12 @@ function byRows() {
     <details class="panel by-q ${k.has(q.id) ? 'is-known' : ''}">
       <summary>
         <span class="by-q-main"><span class="by-q-de" lang="de">${esc(q.de)}</span>${ui.byTr ? `<span class="by-q-tr">${esc(q.tr)}</span>` : ''}</span>
-        <span class="by-q-meta">${q.n ? `<span class="by-freq" title="Raporlarda geçme sayısı">${q.n}×</span>` : ''}${k.has(q.id) ? '<span class="by-ok">✓</span>' : ''}</span>
+        <span class="by-q-meta">${q.n ? `<span class="by-freq" title="Raporlarda geçme sayısı">${q.n}×</span>` : ''}${k.has(q.id) ? `<span class="by-ok">${ic('check', 'Biliyorum')}</span>` : ''}</span>
       </summary>
       <div class="by-a">
         <div class="by-a-de" lang="de">${say(q.a)}<p>${esc(q.a)}</p></div>
         ${ui.byTr ? `<p class="by-a-tr">${esc(q.atr)}</p>` : ''}
-        <div class="by-a-actions"><button data-f="by-practice" data-id="${q.id}">${C.ICON.mic}Cevaplamayı dene</button><button data-f="by-add" data-id="${q.id}">＋ Desteye ekle</button>${say(q.de)}</div>
+        <div class="by-a-actions"><button data-f="by-practice" data-id="${q.id}">${C.ICON.mic}Cevaplamayı dene</button><button data-f="by-add" data-id="${q.id}">${ic('plus')}Desteye ekle</button>${say(q.de)}</div>
       </div>
     </details>`).join('')}</div>`;
 }
@@ -937,7 +939,7 @@ function practiceHtml() {
       ${p.revealed ? `<div class="pr-model"><div class="by-a-de" lang="de">${say(q.a)}<p>${esc(q.a)}</p></div>${ui.byTr ? `<p class="by-a-tr">${esc(q.atr)}</p>` : ''}</div>` : ''}
       <div class="pr-actions">
         ${C.sync.user() ? `<button data-f="pr-check" ${ui.pending ? 'disabled' : ''}>${ui.pending ? 'Değerlendiriliyor…' : 'Cevabımı kontrol et (AI)'}</button>` : ''}
-        ${p.revealed ? `<button data-f="pr-next" data-ok="0">↺ Tekrar sor</button><button class="primary" data-f="pr-next" data-ok="1">✓ Bildim</button>`
+        ${p.revealed ? `<button data-f="pr-next" data-ok="0">${ic('refresh')}Tekrar sor</button><button class="primary" data-f="pr-next" data-ok="1">${ic('check')}Bildim</button>`
           : '<button class="primary" data-f="pr-reveal">Örnek cevabı göster</button>'}
       </div>
     </section>`;
@@ -1223,10 +1225,10 @@ function renderExam() {
         <div class="sub">${esc(p.name)}${p.age ? `, ${p.age}` : ''} · ${phaseLabel(ph)}${EXAM_MIN[ph] ? ` · ${EXAM_MIN[ph]} dk` : ''}</div></div>
       <div class="head-actions">
         ${btn ? `<span class="fsp-clock" id="fsp-clock"></span><button class="primary" data-f="exam-next">${btn}</button>` : ''}
-        ${ph === 'done' ? '<button data-f="exam-again">↻ Yeni sınav</button>' : ''}
+        ${ph === 'done' ? `<button data-f="exam-again">${ic('refresh')}Yeni sınav</button>` : ''}
       </div>
     </header>
-    <ol class="fx-steps">${EXAM_PHASES.map(([k, l], i) => `<li class="${i < idx ? 'done' : i === idx ? 'on' : ''}"><span>${i + 1}</span>${l}</li>`).join('')}</ol>`;
+    <ol class="fx-steps">${EXAM_PHASES.map(([k, l], i) => `<li class="${i < idx ? 'done' : i === idx ? 'on' : ''}"${i === idx ? ' aria-current="step"' : ''}><span>${i < idx ? ic('check', 'Tamamlandı') : i + 1}</span>${l}</li>`).join('')}</ol>`;
   let body;
   if (ph === 'prep') body = prepHtml(d);
   else if (ph === 't1') body = chatHtml(examView(d, 1));

@@ -2,6 +2,8 @@
 // fsp.js bu modülü initTrain(ctx) ile bağlar; sekmede trainHtml(sub) yer tutucusu çizilir, ardından mountTrain(sub) çağrılır.
 // Olay delegasyonu kendi önekini kullanır: data-tr (eylem), data-tri (sıra no), data-trv (değer), data-tr-in (giriş alanı).
 
+import { ic } from './icons.js';
+
 let C = null;
 const T = {
   sub: 'vokabel',
@@ -251,13 +253,13 @@ function vocSetupHtml() {
       <h3>Vokabeltrainer</h3>
       <p class="muted">${v.items.length} kelime${nKurs ? ` · ${nKurs} tanesi kurstan` : ' · kurs paketi yok, rehberdeki Fachbegriffe kullanılıyor'}. Yanlış bildiklerin otomatik olarak “${esc(DECK)}” destesine eklenir ve sonraki oturumlarda önce sorulur.</p>
       <div class="ftr-field"><span class="ftr-lbl">Alıştırma türü</span>
-        <div class="chips">${MODES.map(([k, l]) => `<button type="button" class="chip ${v.mode === k ? 'on' : ''}" data-tr="v-mode" data-trv="${k}">${esc(l)}</button>`).join('')}</div></div>
+        <div class="chips">${MODES.map(([k, l]) => `<button type="button" class="chip ${v.mode === k ? 'on' : ''}" aria-pressed="${!!(v.mode === k)}" data-tr="v-mode" data-trv="${k}">${esc(l)}</button>`).join('')}</div></div>
       ${nKurs ? `<div class="ftr-field"><span class="ftr-lbl">Kaynak</span>
-        <div class="chips">${[['', 'Tümü'], ['kurs', 'Kurs'], ['ek', 'Ek']].map(([k, l]) => `<button type="button" class="chip ${v.src === k ? 'on' : ''}" data-tr="v-src" data-trv="${k}">${l}</button>`).join('')}</div></div>` : ''}
+        <div class="chips">${[['', 'Tümü'], ['kurs', 'Kurs'], ['ek', 'Ek']].map(([k, l]) => `<button type="button" class="chip ${v.src === k ? 'on' : ''}" aria-pressed="${!!(v.src === k)}" data-tr="v-src" data-trv="${k}">${l}</button>`).join('')}</div></div>` : ''}
       <div class="ftr-field"><span class="ftr-lbl">Kategori</span>
-        <div class="chips">${['', ...kats].map((k) => `<button type="button" class="chip ${v.kat === k ? 'on' : ''}" data-tr="v-kat" data-trv="${esc(k)}">${k ? esc(k) : 'Tümü'}</button>`).join('')}</div></div>
+        <div class="chips">${['', ...kats].map((k) => `<button type="button" class="chip ${v.kat === k ? 'on' : ''}" aria-pressed="${!!(v.kat === k)}" data-tr="v-kat" data-trv="${esc(k)}">${k ? esc(k) : 'Tümü'}</button>`).join('')}</div></div>
       <div class="ftr-field"><span class="ftr-lbl">Oturum uzunluğu</span>
-        <div class="chips">${[10, 20, 40].map((n) => `<button type="button" class="chip ${v.len === n ? 'on' : ''}" data-tr="v-len" data-trv="${n}">${n} soru</button>`).join('')}</div></div>
+        <div class="chips">${[10, 20, 40].map((n) => `<button type="button" class="chip ${v.len === n ? 'on' : ''}" aria-pressed="${!!(v.len === n)}" data-tr="v-len" data-trv="${n}">${n} soru</button>`).join('')}</div></div>
       <div class="ftr-actions"><span class="muted">${pool.length} kelime seçili</span>
         <button class="primary" data-tr="v-start" ${pool.length ? '' : 'disabled'}>Başla</button></div>
     </section>
@@ -288,7 +290,7 @@ function vocQuestionHtml() {
       ${q.done ? '' : '<button class="primary" data-tr="v-check">Kontrol et</button><button class="ghost" data-tr="v-skip">Bilmiyorum</button>'}</div>`;
   const opts = (list, right) => `<div class="ftr-opts">${list.map((o) => {
     const cls = q.done ? (norm(o) === norm(right) ? 'right' : norm(o) === norm(q.given) ? 'wrong' : '') : '';
-    return `<button type="button" class="ftr-opt ${cls}" data-tr="v-opt" data-trv="${esc(o)}" ${dis}>${esc(o)}</button>`;
+    return `<button type="button" class="ftr-opt ${cls}" data-tr="v-opt" data-trv="${esc(o)}" ${dis}>${esc(o)}${cls === 'right' ? ic('check', 'Doğru cevap') : cls === 'wrong' ? ic('x', 'Senin cevabın, yanlış') : ''}</button>`;
   }).join('')}</div>`;
   switch (q.mode) {
     case 'de-tr': prompt = `<span lang="de">${esc(full(it))}</span>${sayBtn(full(it))}`; body = input('Türkçe anlamı…'); break;
@@ -299,7 +301,7 @@ function vocQuestionHtml() {
       prompt = `<span lang="de">${esc(it.wort)}</span>`;
       body = `${it.tr ? `<p class="muted ftr-hint">${esc(it.tr)}</p>` : ''}<div class="ftr-opts ftr-arts">${ARTS.map((a) => {
         const cls = q.done ? (a === it.artikel ? 'right' : a === q.given ? 'wrong' : '') : '';
-        return `<button type="button" class="ftr-opt ftr-art-${a} ${cls}" data-tr="v-opt" data-trv="${a}" ${dis}>${a}</button>`;
+        return `<button type="button" class="ftr-opt ftr-art-${a} ${cls}" data-tr="v-opt" data-trv="${a}" ${dis}>${a}${cls === 'right' ? ic('check', 'Doğru cevap') : cls === 'wrong' ? ic('x', 'Senin cevabın, yanlış') : ''}</button>`;
       }).join('')}</div>`;
       break;
     case 'luecke': {
@@ -314,7 +316,7 @@ function vocQuestionHtml() {
         <textarea data-tr-in="satz" rows="3" placeholder="Bir ya da iki cümle yaz… (Ctrl+Enter: kontrol)" spellcheck="false" ${q.done ? 'disabled' : 'data-tr-focus'}>${esc(q.given)}</textarea>
         ${q.done ? '' : `<div class="ftr-actions">
           ${C.sync.user() ? `<button class="primary" data-tr="v-ai" ${T.voc.pending ? 'disabled' : ''}>${T.voc.pending ? 'Değerlendiriliyor…' : 'AI ile kontrol et'}</button>` : ''}
-          ${q.shown ? '<button data-tr="v-self" data-trv="1">✓ Doğru kurdum</button><button data-tr="v-self" data-trv="0">✗ Kuramadım</button>'
+          ${q.shown ? `<button data-tr="v-self" data-trv="1">${ic('check')}Doğru kurdum</button><button data-tr="v-self" data-trv="0">${ic('x')}Kuramadım</button>`
             : '<button data-tr="v-show">Örneği göster</button>'}</div>`}
         ${q.shown && !q.done ? exampleHtml(it) : ''}`;
       break;
@@ -343,7 +345,7 @@ function feedbackHtml(q) {
     it.synonyme?.length ? `<div><span class="muted">Eş anlamlı:</span> <span lang="de">${esc(it.synonyme.join(', '))}</span></div>` : '',
   ].join('');
   return `<div class="ftr-fb ${q.ok ? 'ok' : 'no'}">
-    <div class="ftr-fb-h"><b>${q.ok ? '✓ Doğru' : '✗ Yanlış'}</b>${q.note ? ` <span class="muted">${esc(q.note)}</span>` : ''}</div>
+    <div class="ftr-fb-h"><b>${q.ok ? `${ic('checkCircle')} Doğru` : `${ic('x')} Yanlış`}</b>${q.note ? ` <span class="muted">${esc(q.note)}</span>` : ''}</div>
     ${ch ? `<div class="ftr-ai"><span class="sc ${scoreClass(ch.punkte)}">${ch.punkte}</span> ${esc(ch.feedback)}
       ${ch.korrigiert ? `<div class="ftr-fix"><span class="muted">Düzeltilmiş:</span> <span lang="de">${esc(ch.korrigiert)}</span>${sayBtn(ch.korrigiert)}</div>` : ''}</div>` : ''}
     <div class="ftr-right"><b lang="de">${esc(full(it))}</b>${sayBtn(full(it))} <span class="muted">— ${esc(it.tr)}</span></div>
@@ -556,7 +558,7 @@ function gramTopicHtml(t) {
   const n = t.uebungen?.length || 0;
   const s = gramScores()[t.id];
   return `<section class="panel ftr-gram">
-      <div class="ftr-sec-head"><button class="ghost" data-tr="g-back">← Konular</button>${s ? `<span class="muted">Son skor: ${s.correct}/${s.done}</span>` : ''}</div>
+      <div class="ftr-sec-head"><button class="ghost" data-tr="g-back">${ic('back')}Konular</button>${s ? `<span class="muted">Son skor: ${s.correct}/${s.done}</span>` : ''}</div>
       <h2 lang="de">${esc(t.title_de)}</h2>${t.title_tr ? `<p class="muted">${esc(t.title_tr)}</p>` : ''}
       <div class="ftr-expl">${esc(t.erklaerung_tr || '').replace(/\n/g, '<br>')}</div>
       ${t.beispiele?.length ? `<h3>Örnekler</h3><ul class="ftr-ex">${t.beispiele.map((b) => `<li><span lang="de">${esc(b)}</span>${sayBtn(b)}</li>`).join('')}</ul>` : ''}
@@ -613,7 +615,7 @@ function gramExerciseHtml(t) {
     const ci = choiceIndex(u);
     body = `<div class="ftr-opts">${(u.optionen || []).map((o, k) => {
       const cls = r ? (k === ci ? 'right' : String(k) === r.given ? 'wrong' : '') : '';
-      return `<button type="button" class="ftr-opt ${cls}" data-tr="g-opt" data-tri="${k}" lang="de" ${dis}>${esc(o)}</button>`;
+      return `<button type="button" class="ftr-opt ${cls}" data-tr="g-opt" data-tri="${k}" lang="de" ${dis}>${esc(o)}${cls === 'right' ? ic('check', 'Doğru cevap') : cls === 'wrong' ? ic('x', 'Senin cevabın, yanlış') : ''}</button>`;
     }).join('')}</div>`;
   } else {
     const ta = u.typ === 'transform';
@@ -622,7 +624,7 @@ function gramExerciseHtml(t) {
       ${r ? '' : '<div class="ftr-actions"><button class="primary" data-tr="g-check">Kontrol et</button><button class="ghost" data-tr="g-skip">Çözümü göster</button></div>'}`;
   }
   const fb = r ? `<div class="ftr-fb ${r.ok ? 'ok' : 'no'}">
-      <div class="ftr-fb-h"><b>${r.ok ? '✓ Doğru' : '✗ Tam eşleşmedi'}</b>${r.note ? ` <span class="muted">${esc(r.note)}</span>` : ''}</div>
+      <div class="ftr-fb-h"><b>${r.ok ? `${ic('checkCircle')} Doğru` : `${ic('x')} Tam eşleşmedi`}</b>${r.note ? ` <span class="muted">${esc(r.note)}</span>` : ''}</div>
       ${r.check ? `<div class="ftr-ai"><span class="sc ${scoreClass(r.check.punkte)}">${r.check.punkte}</span> ${esc(r.check.feedback)}
         ${r.check.korrigiert ? `<div class="ftr-fix"><span class="muted">Düzeltilmiş:</span> <span lang="de">${esc(r.check.korrigiert)}</span></div>` : ''}</div>` : ''}
       <div class="ftr-right"><span class="muted">Çözüm:</span> <b lang="de">${esc(solutionText(u))}</b>${sayBtn(solutionText(u))}</div>
@@ -818,7 +820,7 @@ function fehHtml() {
           <span class="ftr-bar-l">${esc(k)}</span><span class="ftr-bar"><i style="width:${Math.round((counts[k] / max) * 100)}%"></i></span><b>${counts[k]}</b></button>`).join('')}</div>
     </section>
     <div class="ftr-filter">
-      <div class="chips"><button type="button" class="chip ${f.kat ? '' : 'on'}" data-tr="f-kat" data-trv="">Tümü</button>${f.kat ? `<button type="button" class="chip on" data-tr="f-kat" data-trv="">${esc(f.kat)} ✕</button>` : ''}</div>
+      <div class="chips"><button type="button" class="chip ${f.kat ? '' : 'on'}" data-tr="f-kat" data-trv="" aria-pressed="${!f.kat}">Tümü</button>${f.kat ? `<button type="button" class="chip on ftr-chip-x" data-tr="f-kat" data-trv="" aria-pressed="true" aria-label="${esc(f.kat)} filtresini kaldır">${esc(f.kat)}${ic('x')}</button>` : ''}</div>
       <label class="radio"><input type="checkbox" data-tr-chk="fixed" ${f.showFixed ? 'checked' : ''}> Öğrendiklerimi de göster</label>
     </div>
     <div class="ftr-errs">${list.slice(0, f.limit).map((e) => errHtml(e, fixed.has(e.key))).join('') || '<div class="panel empty">Bu kategoride açık hata yok.</div>'}</div>
@@ -830,7 +832,7 @@ function fehHtml() {
 function errHtml(e, isFixed) {
   const f = T.feh;
   const meta = `<div class="ftr-err-meta muted"><span class="badge">${esc(e.kat)}</span>${e.typ ? ` <span>${esc(e.typ)}</span>` : ''} · ${esc(e.where)} · ${dateStr(e.at)}${e.n > 1 ? ` · <b>${e.n}×</b>` : ''}</div>`;
-  const fixBtn = `<button class="ghost ${isFixed ? '' : 'ftr-learned'}" data-tr="f-fix" data-trv="${e.key}">${isFixed ? '↺ Tekrar aç' : '✓ Öğrendim'}</button>`;
+  const fixBtn = `<button class="ghost ${isFixed ? '' : 'ftr-learned'}" data-tr="f-fix" data-trv="${e.key}">${isFixed ? `${ic('refresh')}Tekrar aç` : `${ic('check')}Öğrendim`}</button>`;
   if (e.note) {
     return `<article class="panel ftr-err ${isFixed ? 'fixed' : ''}">${meta}
       <div class="ftr-note"><b lang="de">${esc(e.name)}</b> <span class="sc ${scoreClass(e.punkte)}">${e.punkte}</span><p>${esc(e.kommentar)}</p></div>

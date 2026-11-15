@@ -4,6 +4,8 @@
 // Beklenen ek ctx alanları: getStudy() (gizli paket ya da null), loadTraining() (fsp-training.json),
 // startCase(caseObj, part), goTab(tab, sub).
 
+import { ic } from './icons.js';
+
 let C = null;
 const L = {
   sub: 'panel',
@@ -325,7 +327,7 @@ function panelHtml() {
         <div class="by-progress lx-prog"><span style="width:${Math.round((doneN / tasks.length) * 100)}%"></span></div>
         <ul class="lx-tasks">${tasks.map((t) => `
           <li class="${t.done ? 'done' : ''}">
-            <button type="button" class="lx-check ${t.done ? 'on' : ''}" data-lx="task-done" data-key="${t.key}" ${t.auto ? 'disabled title="Otomatik işaretlendi"' : 'title="Tamamlandı olarak işaretle"'} aria-label="Tamamlandı">${t.done ? '✓' : ''}</button>
+            <button type="button" class="lx-check ${t.done ? 'on' : ''}" data-lx="task-done" data-key="${t.key}" ${t.auto ? 'disabled title="Otomatik işaretlendi"' : 'title="Tamamlandı olarak işaretle"'} aria-label="Tamamlandı" aria-pressed="${!!t.done}">${t.done ? ic('check') : ''}</button>
             <button type="button" class="lx-task" data-lx="task-go" data-key="${t.key}">
               <b>${esc(t.title)}</b><small class="muted">${esc(t.detail)}</small></button>
           </li>`).join('')}</ul>
@@ -347,8 +349,8 @@ function panelHtml() {
     <section class="panel">
       <div class="lx-h"><h3>Haftalık plan</h3>${left !== null && left > 0 ? `<span class="muted">Sınava ${left} gün</span>` : ''}</div>
       <div class="lx-week">${weekPlan().map((w) => `
-        <div class="lx-day ${w.today ? 'today' : ''}">
-          <span class="lx-day-n">${w.d.toLocaleDateString('tr-TR', { weekday: 'short', day: 'numeric' })}</span>
+        <div class="lx-day ${w.today ? 'today' : ''}"${w.today ? ' aria-current="date"' : ''}>
+          <span class="lx-day-n">${w.d.toLocaleDateString('tr-TR', { weekday: 'short', day: 'numeric' })}${w.today ? ' · Bugün' : ''}</span>
           <b>${esc(w.focus[0])}</b><small class="muted">${esc(w.focus[1])}</small>
           <span class="lx-day-m">${w.min ? `${w.min} dk` : '—'} · ${esc(w.level)}</span>
         </div>`).join('')}</div>
@@ -465,10 +467,10 @@ function krHtml() {
   return `
     <div class="lx-tools">
       <input type="search" id="lx-kr-q" placeholder="Ara: Perikoronitis, apse, Marcumar…" value="${esc(L.kr.q)}">
-      <button type="button" class="chip ${L.kr.fav ? 'on' : ''}" data-lx="kr-fav-filter">★ Favoriler</button>
+      <button type="button" class="chip ${L.kr.fav ? 'on' : ''}" aria-pressed="${!!(L.kr.fav)}" data-lx="kr-fav-filter">${ic(L.kr.fav ? 'starFill' : 'star')}Favoriler</button>
     </div>
     <div class="chips">${[['', 'Tümü'], ...fachs.map((f) => [f, f]), ...(risks().length ? [['__risk', 'Risikopatienten']] : [])]
-      .map(([k, l]) => `<button type="button" class="chip ${L.kr.fach === k ? 'on' : ''}" data-lx="kr-fach" data-fach="${esc(k)}">${esc(l)}</button>`).join('')}</div>
+      .map(([k, l]) => `<button type="button" class="chip ${L.kr.fach === k ? 'on' : ''}" aria-pressed="${!!(L.kr.fach === k)}" data-lx="kr-fach" data-fach="${esc(k)}">${esc(l)}</button>`).join('')}</div>
     <div id="lx-kr-list">${krListHtml()}</div>`;
 }
 
@@ -481,7 +483,7 @@ function krListHtml() {
         <span class="lx-card-top"><span class="badge">${esc(t === 'r' ? x.gruppe || 'Risiko' : x.fach || '')}</span>${srcBadge(x.source)}${arr(x.ek_fields).length ? '<span class="lx-ek-dot" title="Bazı alanlar ek bilgiyle tamamlandı">+Ek</span>' : ''}</span>
         <b lang="de">${esc(x.title_de)}</b><small class="muted">${esc(x.title_tr || '')}</small>
       </button>
-      <button type="button" class="icon-btn lx-star ${f.has(`${t}:${x.id}`) ? 'on' : ''}" data-lx="fav" data-key="${t}:${esc(x.id)}" title="Favori" aria-label="Favori">${f.has(`${t}:${x.id}`) ? '★' : '☆'}</button>
+      <button type="button" class="icon-btn lx-star ${f.has(`${t}:${x.id}`) ? 'on' : ''}" data-lx="fav" data-key="${t}:${esc(x.id)}" title="Favori" aria-label="Favori" aria-pressed="${f.has(`${t}:${x.id}`)}">${f.has(`${t}:${x.id}`) ? ic('starFill') : ic('star')}</button>
     </article>`;
   if (!d.length && !r.length) return '<div class="panel empty">Sonuç yok.</div>';
   return `${d.length ? `<div class="lx-grid">${d.map((x) => card(x, 'd')).join('')}</div>` : ''}
@@ -503,9 +505,9 @@ function secBody(x, key) {
       return `<div class="lx-terms">${arr(v).map((t, i) => `<div class="lx-term">
           <div><b lang="de">${esc(t.de)}</b> ${say(t.de)}</div>
           <small class="muted">${esc(t.tr || '')}${t.patient ? ` · Patient: <span lang="de">${esc(t.patient)}</span>` : ''}</small>
-          <button type="button" class="icon-btn" data-lx="term-add" data-id="${esc(x.id)}" data-i="${i}" title="“${DECK}” destesine ekle" aria-label="Desteye ekle">＋</button>
+          <button type="button" class="icon-btn" data-lx="term-add" data-id="${esc(x.id)}" data-i="${i}" title="“${DECK}” destesine ekle" aria-label="Desteye ekle">${ic('plus')}</button>
         </div>`).join('')}</div>
-        ${arr(v).length > 1 ? `<button type="button" data-lx="terms-all" data-id="${esc(x.id)}">＋ Tümünü “${DECK}” destesine ekle</button>` : ''}`;
+        ${arr(v).length > 1 ? `<button type="button" data-lx="terms-all" data-id="${esc(x.id)}">${ic('plus')}Tümünü “${DECK}” destesine ekle</button>` : ''}`;
     case 'patientenformulierungen':
       return `<div class="lx-terms">${arr(v).map((p) => `<div class="lx-pf"><span lang="de">„${esc(p.patient)}“</span>${say(p.patient)}<span class="lx-arrow">→</span><b lang="de">${esc(p.fach)}</b></div>`).join('')}</div>`;
     case 'fsp_fragen':
@@ -528,7 +530,7 @@ function diseaseDetail(x) {
         <h2 lang="de">${esc(x.title_de)} ${say(x.title_de)}</h2>
         <div class="muted">${esc(x.title_tr || '')} · ${esc(x.fach || '')} ${srcBadge(x.source)}</div>
       </div>
-      <button type="button" class="icon-btn lx-star ${f.has(`d:${x.id}`) ? 'on' : ''}" data-lx="fav" data-key="d:${esc(x.id)}" title="Favori" aria-label="Favori">${f.has(`d:${x.id}`) ? '★' : '☆'}</button>
+      <button type="button" class="icon-btn lx-star ${f.has(`d:${x.id}`) ? 'on' : ''}" data-lx="fav" data-key="d:${esc(x.id)}" title="Favori" aria-label="Favori" aria-pressed="${f.has(`d:${x.id}`)}">${f.has(`d:${x.id}`) ? ic('starFill') : ic('star')}</button>
     </div>
     ${x.sim ? `<section class="panel lx-sim"><b>Bu vakayı simüle et</b>
       <div class="lx-sim-btns">${[[1, 'Teil 1 · Gespräch'], [2, 'Teil 2 · Arztbrief'], [3, 'Teil 3 · Oberarzt']].map(([p, l]) => `<button type="button" data-lx="sim" data-id="${esc(x.id)}" data-part="${p}">${C.ICON.talk}${l}</button>`).join('')}</div></section>` : ''}
@@ -552,7 +554,7 @@ function riskDetail(x) {
         <h2 lang="de">${esc(x.title_de)} ${say(x.title_de)}</h2>
         <div class="muted">${esc(x.title_tr || '')} · ${esc(x.gruppe || 'Risikopatient')} ${srcBadge(x.source)}</div>
       </div>
-      <button type="button" class="icon-btn lx-star ${f.has(`r:${x.id}`) ? 'on' : ''}" data-lx="fav" data-key="r:${esc(x.id)}" title="Favori" aria-label="Favori">${f.has(`r:${x.id}`) ? '★' : '☆'}</button>
+      <button type="button" class="icon-btn lx-star ${f.has(`r:${x.id}`) ? 'on' : ''}" data-lx="fav" data-key="r:${esc(x.id)}" title="Favori" aria-label="Favori" aria-pressed="${f.has(`r:${x.id}`)}">${f.has(`r:${x.id}`) ? ic('starFill') : ic('star')}</button>
     </div>
     ${x.beschreibung ? `<section class="panel">${textBlock(x.beschreibung)}</section>` : ''}
     <div class="lx-secs">${lists.filter(([k]) => hasVal(x[k])).map(([k, l], i) => `
@@ -577,12 +579,12 @@ function quizHtml(x, sc) {
         <p lang="de"><b>${i + 1}.</b> ${esc(q.q)}</p>
         <div class="lx-opts">${arr(q.options).map((o, j) => {
           const cls = a === undefined ? '' : j === q.correct ? 'right' : j === a ? 'wrong' : 'dim';
-          return `<button type="button" class="lx-opt ${cls}" data-lx="quiz" data-q="${i}" data-o="${j}" ${a !== undefined ? 'disabled' : ''} lang="de">${esc(o)}</button>`;
+          return `<button type="button" class="lx-opt ${cls}" data-lx="quiz" data-q="${i}" data-o="${j}" ${a !== undefined ? 'disabled' : ''} lang="de">${esc(o)}${cls === 'right' ? ic('check', 'Doğru cevap') : cls === 'wrong' ? ic('x', 'Senin cevabın, yanlış') : ''}</button>`;
         }).join('')}</div>
-        ${a !== undefined ? `<p class="lx-qz-fb ${a === q.correct ? 'ok' : 'no'}">${a === q.correct ? '✓ Doğru.' : '✗ Yanlış.'} ${esc(q.explain_tr || '')}</p>` : ''}
+        ${a !== undefined ? `<p class="lx-qz-fb ${a === q.correct ? 'ok' : 'no'}">${a === q.correct ? `${ic('checkCircle')} Doğru.` : `${ic('x')} Yanlış.`} ${esc(q.explain_tr || '')}</p>` : ''}
       </div>`;
     }).join('')}
-    ${answered === qs.length ? `<div class="lx-qz-end"><b class="sc ${scoreClass(Math.round((100 * correct) / qs.length))}">%${Math.round((100 * correct) / qs.length)}</b><span>${correct} / ${qs.length} doğru</span><button type="button" data-lx="quiz-reset">↺ Tekrar çöz</button></div>` : ''}
+    ${answered === qs.length ? `<div class="lx-qz-end"><b class="sc ${scoreClass(Math.round((100 * correct) / qs.length))}">%${Math.round((100 * correct) / qs.length)}</b><span>${correct} / ${qs.length} doğru</span><button type="button" data-lx="quiz-reset">${ic('refresh')}Tekrar çöz</button></div>` : ''}
   </section>`;
 }
 
@@ -670,14 +672,14 @@ function anHtml() {
   const body = { fragen: anFragenHtml, drill: anDrillHtml, umg: anUmgHtml, gespr: anGesprHtml, aufkl: anAufklHtml, brief: anBriefHtml }[L.an.sec]();
   return `
     ${hasStudy ? '' : '<div class="panel lx-hint">Kurs paketi yüklenmediği için genel rehberdeki soru kalıpları gösteriliyor; Aufklärung ve Arztbrief alıştırmaları paketle açılır.</div>'}
-    <div class="chips lx-an-secs">${secs.map(([k, l]) => `<button type="button" class="chip ${L.an.sec === k ? 'on' : ''}" data-lx="an-sec" data-sec="${k}">${l}</button>`).join('')}</div>
+    <div class="chips lx-an-secs">${secs.map(([k, l]) => `<button type="button" class="chip ${L.an.sec === k ? 'on' : ''}" aria-pressed="${!!(L.an.sec === k)}" data-lx="an-sec" data-sec="${k}">${l}</button>`).join('')}</div>
     ${body}`;
 }
 
 function sitSelect() {
   const sits = situations();
   if (!sits.some((s) => s.id === L.an.sit)) L.an.sit = sits[0]?.id || '';
-  return `<div class="chips">${sits.map((s) => `<button type="button" class="chip ${L.an.sit === s.id ? 'on' : ''}" data-lx="an-sit" data-id="${esc(s.id)}" title="${esc(s.title_tr || '')}">${esc(s.title_de)}</button>`).join('')}</div>`;
+  return `<div class="chips">${sits.map((s) => `<button type="button" class="chip ${L.an.sit === s.id ? 'on' : ''}" aria-pressed="${!!(L.an.sit === s.id)}" data-lx="an-sit" data-id="${esc(s.id)}" title="${esc(s.title_tr || '')}">${esc(s.title_de)}</button>`).join('')}</div>`;
 }
 const curSit = () => situations().find((s) => s.id === L.an.sit) || situations()[0];
 
@@ -694,7 +696,7 @@ function anFragenHtml() {
         <button type="button" class="ghost" data-lx="an-uncheck">Sıfırla</button></div>
       <ul class="lx-checklist">${qs.map((q, i) => `
         <li class="${ch[i] ? 'done' : ''}">
-          <button type="button" class="lx-check ${ch[i] ? 'on' : ''}" data-lx="an-check" data-i="${i}" aria-label="Sordum">${ch[i] ? '✓' : ''}</button>
+          <button type="button" class="lx-check ${ch[i] ? 'on' : ''}" data-lx="an-check" data-i="${i}" aria-label="Sordum" aria-pressed="${!!ch[i]}">${ch[i] ? ic('check') : ''}</button>
           <div class="lx-cl-txt">${q.w ? `<span class="lx-w">${esc(q.w)}</span>` : ''}<span lang="de">${esc(q.de)}</span>${q.tr ? `<small class="muted">${esc(q.tr)}${q.ziel_tr ? ` · ${esc(q.ziel_tr)}` : ''}</small>` : ''}</div>
           ${say(q.de)}
         </li>`).join('')}</ul>
@@ -828,7 +830,7 @@ function anAufklHtml() {
         <textarea id="lx-an-text" rows="8" lang="de" placeholder="Hastaya Almanca, günlük dille anlat…">${esc(L.an.text)}</textarea>
         ${micBtn('lx-an-text')}
       </div>
-      ${L.an.warn.length ? `<div class="lx-warn">⚠ Hastaya şu tıp terimlerini kullandın: ${L.an.warn.map((w) => `<b lang="de">${esc(w)}</b>`).join(', ')}. Günlük dille açıkla.</div>` : ''}
+      ${L.an.warn.length ? `<div class="lx-warn">${ic('alert')} Hastaya şu tıp terimlerini kullandın: ${L.an.warn.map((w) => `<b lang="de">${esc(w)}</b>`).join(', ')}. Günlük dille açıkla.</div>` : ''}
       ${checkHtml()}
       ${L.an.revealed ? `<div class="pr-model"><h4>Örnek metin</h4>${textBlock(x.muster)}</div>` : ''}
       <div class="pr-actions">
@@ -897,7 +899,7 @@ function stopMic() {
 }
 function toggleMic(btn) {
   const target = btn.dataset.target;
-  if (L.rec) { const same = L.rec.target === target; stopMic(); btn.classList.remove('on'); if (same) return; }
+  if (L.rec) { const same = L.rec.target === target; stopMic(); btn.classList.remove('on'); btn.setAttribute('aria-pressed', 'false'); if (same) return; }
   const box = document.getElementById(target);
   if (!SR || !box) return;
   const r = new SR();
@@ -919,11 +921,12 @@ function toggleMic(btn) {
     if (e.error === 'not-allowed') C.toast('Mikrofon izni verilmedi.', 'error');
     else if (e.error !== 'no-speech' && e.error !== 'aborted') C.toast(`Ses tanıma hatası: ${e.error}`, 'error');
   };
-  r.onend = () => { if (L.rec?.r === r) L.rec = null; btn.classList.remove('on'); };
+  r.onend = () => { if (L.rec?.r === r) L.rec = null; btn.classList.remove('on'); btn.setAttribute('aria-pressed', 'false'); };
   try { r.start(); } catch { return; }
   C.stopSpeech?.();
   L.rec = { r, target };
   btn.classList.add('on');
+  btn.setAttribute('aria-pressed', 'true');
 }
 
 function syncText(el) {
@@ -986,7 +989,7 @@ function nsRow(tab, x) {
     case 'redemittel':
       return `<div class="lx-row">${x.bereich ? `<span class="badge">${esc(x.bereich)}</span>` : ''}<span lang="de">${esc(x.de)}</span>${say(x.de)}<small class="muted">${esc(x.tr || '')}</small>${src}</div>`;
     case 'fehler_tipps':
-      return `<div class="lx-row"><span>💡 ${esc(x.tr)}</span>${src}</div>`;
+      return `<div class="lx-row"><span>${ic('bulb')} ${esc(x.tr)}</span>${src}</div>`;
     case 'quellen':
       return `<div class="lx-row"><span>${esc(x.titel)}</span>${x.url && /^https?:\/\//.test(x.url) ? `<a href="${esc(x.url)}" target="_blank" rel="noopener noreferrer">${esc(x.url)}</a>` : ''}</div>`;
     default: return '';
@@ -999,7 +1002,7 @@ function nsHtml() {
   if (!tabs.some(([k]) => k === L.ns.tab)) L.ns.tab = tabs[0][0];
   return `
     <div class="lx-tools"><input type="search" id="lx-ns-q" placeholder="Tüm başvuruda ara: INR, Articain, pochend…" value="${esc(L.ns.q)}"></div>
-    <div class="chips">${tabs.map(([k, l]) => `<button type="button" class="chip ${L.ns.tab === k && !L.ns.q.trim() ? 'on' : ''}" data-lx="ns-tab" data-tab="${k}">${l} <small>${nsData(k).length}</small></button>`).join('')}</div>
+    <div class="chips">${tabs.map(([k, l]) => `<button type="button" class="chip ${L.ns.tab === k && !L.ns.q.trim() ? 'on' : ''}" aria-pressed="${!!(L.ns.tab === k && !L.ns.q.trim())}" data-lx="ns-tab" data-tab="${k}">${l} <small>${nsData(k).length}</small></button>`).join('')}</div>
     <div id="lx-ns-body">${nsBodyHtml()}</div>`;
 }
 
@@ -1123,7 +1126,7 @@ function onInput(e) {
     L.ns.q = el.value;
     const box = document.getElementById('lx-ns-body');
     if (box) box.innerHTML = nsBodyHtml();
-    root()?.querySelectorAll('[data-lx="ns-tab"]').forEach((b) => b.classList.toggle('on', !L.ns.q.trim() && b.dataset.tab === L.ns.tab));
+    root()?.querySelectorAll('[data-lx="ns-tab"]').forEach((b) => { const on = !L.ns.q.trim() && b.dataset.tab === L.ns.tab; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); });
   } else if (el.dataset.lx === 'note') {
     saveNote(el.dataset.id, el.value);
   } else {
