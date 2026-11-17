@@ -34,19 +34,20 @@ There is no build step, bundler, linter or test suite. `web/` is plain HTML/CSS/
   - Esc/keyboard handling and the Android back button each have per-view branches. Update them when adding a view.
   - Remote-change refresh (`onRemoteChange`) re-renders the current view. The home page patches nodes instead of re-rendering, to avoid flicker (`refreshHome`, `patchNode`).
   - Native features (TTS, files, notifications, share) go through Capacitor plugins when `isNative`, and fall back to web APIs otherwise.
+- `speaking.js` (+ `speaking.css`): IELTS Speaking mock exam, same `initX(ctx)` pattern as `fsp.js`. Views `speaking`, `speaking-setup`, `speaking-run`, `speaking-result`. Local-only data in its own IndexedDB `kelime-speaking` (tests, attempts, audio blobs; not synced, not in `store.js`). Tests are pasted by the user (`parseTests`). AI report goes through `kelime-ai` `action: 'speaking'`.
 - Styling: `app.css` holds the base styles. `ds.css` (loaded after it) is the design system: tokens on `:root` and `:root[data-theme="dark"]`, Inter/Fraunces fonts vendored in `web/vendor/fonts`. Use the tokens; don't hard-code colors.
 - CSP in `index.html` is strict (`script-src 'self'`). External libraries must be vendored into `web/vendor/` (e.g. pdf.js), and new network hosts must be added to `connect-src`.
 - `web/content/*.json` holds static content (writing criteria summary, sample reading test, Task 1 collocations).
 
 **Backend (`supabase/`)**
 - `migrations/`: tables, RLS, RPCs (sharing codes, history triggers, study board, messages, activity feed, user stats, reading tests). New migrations go in date-named files (`YYYYMMDD000000_name.sql`) and must be idempotent enough to run by hand.
-- `functions/kelime-ai/index.ts`: the only AI entry point. It calls NVIDIA-hosted models with `NVIDIA_API_KEY` from Supabase secrets and has a per-user daily limit. It switches on an `action` field: card generation by default, plus `essay`, `figure` (vision models raced against a time budget), `ocr` and `reading-part`. The client never calls a model directly.
+- `functions/kelime-ai/index.ts`: the only AI entry point. It calls NVIDIA-hosted models with `NVIDIA_API_KEY` from Supabase secrets and has a per-user daily limit. It switches on an `action` field: card generation by default, plus `essay`, `speaking`, `figure` (vision models raced against a time budget), `ocr` and `reading-part`. The client never calls a model directly.
 
 **Legacy:** `app.py` and `ui/` are the old Windows-only pywebview app (no sync). Don't change them unless asked.
 
 ## Rules for this repo
 
-- Never commit: `android-imza/`, `data/`, `kelime_yedek.json`, `ielts-descriptors/`, `reading-tests/`. Stage files selectively (`git add web/ ...`), never `git add -A`.
+- Never commit: `android-imza/`, `data/`, `kelime_yedek.json`, `ielts-descriptors/`, `reading-tests/`, `speaking-tests/`. Stage files selectively (`git add web/ ...`), never `git add -A`.
 - The NVIDIA API key lives only in Supabase secrets, never in client code or the repo.
 - Copyright: don't transcribe IELTS/Cambridge books or the official band descriptors into tracked files. The in-app criteria page is an original Turkish summary. Reading tests built from user-provided text stay in the gitignored `reading-tests/`.
 - Don't create accounts or enter secrets on the live Supabase project; test against local Supabase.

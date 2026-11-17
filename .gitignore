@@ -34,3 +34,6 @@ reading-tests/
 
 # FSP kurs scripti paketi (telifli kurs materyali) — depoya girmez
 fsp-kurs/
+
+# IELTS Speaking soruları (telifli kitap içeriği) — depoya girmez
+speaking-tests/

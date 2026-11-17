@@ -171,6 +171,7 @@ Deno.serve(async (req) => {
   };
 
   if (body.action === 'essay') return evaluateEssay(body, admin, useQuota, callModel, reply, apiKey);
+  if (body.action === 'speaking') return evaluateSpeaking(body, useQuota, callModel, reply);
   // Task 1 görselini ayrı istekte okur (analizle aynı istekte süre sınırı aşılmasın diye)
   if (body.action === 'figure') {
     const image = validImage(body.image);
@@ -591,6 +592,181 @@ async function evaluateEssay(
     return reply({ report });
   } catch (e) {
     console.error('Essay değerlendirmesi çözülemedi', e, out.slice(0, 500));
+    return reply({ error: 'Yapay zekâ anlaşılır bir değerlendirme vermedi. Tekrar dene.' }, 502);
+  }
+}
+
+/* ------------------------------------------------------------------ IELTS Speaking değerlendirmesi */
+
+// IELTS Speaking band tanımlayıcıları (IELTS'in herkese açık "Speaking Band Descriptors" belgesi).
+// Metin telifli olduğu için birebir değil, ayırt edici özellikler kendi cümlelerimizle özetlenmiştir.
+const SPEAKING_DESCRIPTORS = `FLUENCY AND COHERENCE
+9: Speaks fluently; repetition or self-correction is very rare; any pausing is only to plan CONTENT, never to find words or grammar; cohesion is fully natural; topics are developed fully, coherently and appropriately.
+8: Fluent, with only occasional repetition/self-correction; hesitation is mostly about content, only occasionally about language; topic development is coherent, relevant and appropriate.
+7: Keeps going and produces long turns without noticeable effort; some hesitation, repetition or self-correction, often mid-sentence, signals trouble accessing language BUT does not damage coherence; discourse markers, connectives and cohesive devices are used flexibly.
+6: Keeps going and is willing to produce long turns; coherence is sometimes lost through hesitation, repetition or self-correction; uses a range of discourse markers and connectives, though not always appropriately.
+5: Keeps going but relies on repetition, self-correction and/or slow speech to keep going; hesitation is noticeable and often about finding words/grammar; overuses certain connectives and discourse markers; produces simple speech fluently, but complex communication causes fluency problems.
+4: Cannot respond without noticeable pauses and may speak slowly, with frequent repetition and self-correction; links basic sentences but with repetitious connectives and some breakdowns in coherence.
+3: Frequent, sometimes long, pauses while searching for words; limited ability to link simple sentences or go beyond simple answers; often cannot convey the basic message.
+2 and below: long pauses before nearly every word / essentially no communicative speech.
+
+LEXICAL RESOURCE
+9: Total flexibility and precision in all contexts; sustained, accurate, idiomatic language.
+8: Wide resource used readily and flexibly on all topics to convey precise meaning; skilful use of less common and idiomatic items despite occasional inaccuracy in word choice/collocation; effective paraphrase when needed.
+7: Resource used flexibly on a variety of topics; some use of less common/idiomatic items and awareness of style and collocation, though inappropriacies occur; effective paraphrase.
+6: Resource sufficient to discuss topics at length; some inappropriate word choice but meaning stays clear; generally able to paraphrase successfully.
+5: Manages to talk about familiar AND unfamiliar topics but with limited flexibility; attempts paraphrase with mixed success.
+4: Able to talk about familiar topics but can only convey basic meaning on unfamiliar topics; frequent word-choice errors; rarely attempts paraphrase.
+3: Simple vocabulary mostly for personal information; inadequate for unfamiliar topics.
+2 and below: isolated words or memorised utterances only.
+
+GRAMMATICAL RANGE AND ACCURACY
+9: Precise and accurate structures at all times apart from native-like slips.
+8: Wide range of structures used flexibly; the majority of sentences are error-free; occasional inappropriacies and non-systematic errors; a few basic errors may persist.
+7: A range of structures used flexibly; error-free sentences are frequent; simple and complex sentences both used effectively despite some errors; a few basic errors persist.
+6: Mix of short and complex sentence forms and a variety of structures but with limited flexibility; errors frequent in complex structures but rarely impede communication.
+5: Basic sentence forms produced with reasonable accuracy; limited range of more complex structures, which usually contain errors and may cause some comprehension problems.
+4: Basic sentence forms and some short utterances are correct; subordinate structures are rare; errors are frequent and may cause misunderstanding.
+3: Basic sentence forms attempted; numerous errors except in memorised utterances.
+2 and below: no evidence of basic sentence forms.`;
+
+const SPEAKING_PROMPT = `You are a certified IELTS Speaking examiner. You are given a machine-generated TRANSCRIPT of a candidate's mock speaking test (Part 1 interview, Part 2 long turn, Part 3 discussion) plus timing statistics. Assess it exactly as a trained examiner would, using the public IELTS Speaking band descriptors below.
+
+${SPEAKING_DESCRIPTORS}
+
+EXAMINER METHOD (follow exactly):
+1. The test is rated HOLISTICALLY: one whole band (0-9, no halves) per criterion for the whole performance, not per answer. Rate each criterion independently.
+2. A band is awarded only when the performance fits its positive features. If it does not fully fit, award the band below. Weigh the whole sample, not the best moments.
+3. The transcript comes from speech recognition. It has NO reliable punctuation or capitalisation and may drop fillers ("um", "er"), false starts and repetitions. Do NOT penalise punctuation, capitalisation or spelling. A strange word that sounds like a plausible mis-hearing may be a recognition error: do not count it as a vocabulary or grammar error. Real grammar errors (tense, agreement, articles, prepositions, word order, missing words) that appear in the transcript are real, because recognition does not invent them.
+4. Because recognition cleans speech up, it makes candidates look MORE fluent than they were. Be calibrated against inflation: do not give 7+ for Fluency unless the statistics and the text show long, well-developed turns produced readily. Use the statistics:
+   - "words" and "secs" per answer, and "wpm" (words per minute). Natural fluent speech is roughly 110-170 wpm; below ~80 wpm over a whole answer suggests laboured speech; a very high wpm with little content is not a plus.
+   - "latency_s": seconds before the first words. Over ~3 s repeatedly signals trouble planning.
+   - "pauses" and "max_gap_s": counts of silences over ~2.5 s and the longest one while speaking. Several long gaps point to language-searching hesitation.
+5. Development expectations: Part 1 answers should usually be 2-4 sentences, not one-word or one-line replies. Part 2 is meant to last about 2 minutes: under ~75 s clearly limits Fluency and Coherence (an examiner would have to prompt the candidate) and also limits topic development; check that the cue-card points are covered and the talk has a structure. Part 3 should show extended, abstract reasoning with justification and examples, not repeated Part 1-style answers.
+6. Memorised or formulaic phrases, off-topic answers, and "impressive" words used inaccurately are discounted. Reward appropriacy and precision, not rare words. Spoken grammar is judged as speech: contractions, incomplete sentences and restarts are normal.
+7. Be realistic: most real candidates fall between bands 5 and 7. Bands 8-9 need near-native control. Do not be generous or harsh.
+8. PRONUNCIATION cannot be judged from a transcript. Do NOT give it a band. Say so briefly in "pronunciation.comment" and, if the transcript contains words that are likely mis-heard because of mispronunciation (a recognised word that makes no sense in context but sounds like the intended word), list at most 5 in "pronunciation.watch" with low confidence. If there are none, use an empty list.
+
+OUTPUT: valid JSON only, no prose and no code fences, in exactly this shape:
+{
+  "criteria": {
+    "fluency": {"band": 6, "comment": "...", "evidence": ["exact quote", "..."], "next_band": "..."},
+    "lexical": {"band": 6, "comment": "...", "evidence": ["..."], "next_band": "..."},
+    "grammar": {"band": 6, "comment": "...", "evidence": ["..."], "next_band": "..."}
+  },
+  "pronunciation": {"comment": "...", "watch": [{"heard": "...", "likely": "...", "note": "..."}]},
+  "parts": [{"part": 1, "comment": "..."}],
+  "summary": "...",
+  "strengths": ["..."],
+  "improvements": ["..."],
+  "errors": [{"original": "...", "correction": "...", "type": "grammar", "explanation": "..."}],
+  "upgrades": [{"original": "...", "better": "...", "why": "..."}],
+  "model_answer": {"question": "...", "answer": "..."},
+  "practice_plan": ["..."]
+}
+
+FIELD RULES:
+- "evidence": 1-3 short quotes copied EXACTLY from the transcript (or a statistic such as "Part 2: 71 s, 118 wpm") that justify the band.
+- "next_band": what is specifically missing to reach the next band up.
+- "parts": one entry for each part that appears in the input, a short comment on how that part went (development, relevance, timing).
+- "errors": real errors only (max 15, most important first); "original" must be copied EXACTLY from the transcript; type is one of grammar, vocabulary, collocation, other.
+- "upgrades": up to 6 natural vocabulary/phrase improvements for words the candidate actually said; "original" exact quote; "better" a more precise or idiomatic alternative that fits that sentence.
+- "model_answer": pick the candidate's weakest answer and rewrite it at about band 7-8 level, keeping the candidate's own ideas; spoken style, 60-120 words; "question" is that question.
+- "practice_plan": 3-5 concrete, short exercises for the next week.
+- LANGUAGE: write comment, next_band, summary, strengths, improvements, explanation, why, note and practice_plan fields in TURKISH. Keep quotes, corrections, upgrades and the model answer in English.`;
+
+async function evaluateSpeaking(
+  body: Record<string, unknown>,
+  useQuota: (units: number) => Promise<Response | null>,
+  callModel: (messages: unknown[], maxTokens: number, timeoutMs: number, temperature?: number, model?: string) => Promise<string | Response>,
+  reply: (b: unknown, status?: number) => Response,
+): Promise<Response> {
+  const n = (v: unknown, max = 100000) => (v !== null && v !== undefined && v !== '' && Number.isFinite(Number(v)) ? Math.min(max, Math.max(0, Number(v))) : null);
+  const answers = (Array.isArray(body.answers) ? body.answers : []).slice(0, 24).map((a: Record<string, unknown>) => ({
+    part: [1, 2, 3].includes(Number(a?.part)) ? Number(a.part) : 1,
+    q: str(a?.q, 500),
+    text: typeof a?.text === 'string' ? a.text.replace(/\s+/g, ' ').trim().slice(0, 6000) : '',
+    secs: n(a?.secs, 900),
+    words: n(a?.words, 5000),
+    wpm: n(a?.wpm, 600),
+    latency: n(a?.latency, 600),
+    pauses: n(a?.pauses, 200),
+    maxGap: n(a?.maxGap, 600),
+    notes: str(a?.notes, 600),
+  }));
+  const spoken = answers.reduce((t, a) => t + (a.text ? a.text.split(' ').length : 0), 0);
+  if (spoken < 60) return reply({ error: 'Değerlendirme için konuşma çok kısa (en az ~60 kelime gerekli).' }, 400);
+  const quota = await useQuota(ESSAY_COST);
+  if (quota) return quota;
+
+  const blocks = answers.map((a, i) => {
+    const stats = [
+      a.secs !== null ? `secs=${Math.round(a.secs)}` : '', a.words !== null ? `words=${a.words}` : '',
+      a.wpm !== null ? `wpm=${Math.round(a.wpm)}` : '', a.latency !== null ? `latency_s=${a.latency.toFixed(1)}` : '',
+      a.pauses !== null ? `pauses=${a.pauses}` : '', a.maxGap !== null ? `max_gap_s=${a.maxGap.toFixed(1)}` : '',
+    ].filter(Boolean).join(', ');
+    return `[Answer ${i + 1} · Part ${a.part}]\nQuestion: ${a.q}\nStats: ${stats}${a.notes ? `\nCandidate's notes during preparation: ${a.notes}` : ''}\nTranscript: ${a.text || '(nothing recognised)'}`;
+  }).join('\n\n');
+  const parts = [...new Set(answers.map((a) => a.part))].sort().join(', ');
+
+  const out = await callModel([
+    { role: 'system', content: SPEAKING_PROMPT },
+    { role: 'user', content: `Parts present: ${parts}\n\n${blocks}` },
+  ], 6500, 140_000, 0.1);
+  if (out instanceof Response) return out;
+
+  try {
+    const m = out.match(/\{[\s\S]*\}/);
+    if (!m) throw new Error('JSON yok');
+    const raw = JSON.parse(m[0]);
+    const criteria: Record<string, { band: number; comment: string; evidence: string[]; next_band: string }> = {};
+    for (const k of ['fluency', 'lexical', 'grammar']) {
+      const c = raw.criteria?.[k] ?? {};
+      const b = Number(c.band);
+      if (!Number.isFinite(b)) throw new Error(`${k} bandı yok`);
+      criteria[k] = {
+        band: Math.min(9, Math.max(0, Math.round(b))), // Speaking: her ölçüt tam band
+        comment: str(c.comment, 900),
+        evidence: strList(c.evidence, 3, 260),
+        next_band: str(c.next_band, 500),
+      };
+    }
+    // IELTS gibi ortalama, en yakın yarım banda (x.25 → x.5, x.75 → x+1). Telaffuz metinden ölçülemediği için dışarıda.
+    const avg = Object.values(criteria).reduce((a, c) => a + c.band, 0) / 3;
+    const errors = (Array.isArray(raw.errors) ? raw.errors : []).slice(0, 20).map((e: Record<string, unknown>) => ({
+      original: str(e?.original, 300),
+      correction: str(e?.correction, 300),
+      type: ['grammar', 'vocabulary', 'collocation', 'other'].includes(String(e?.type)) ? String(e.type) : 'grammar',
+      explanation: str(e?.explanation, 400),
+    })).filter((e: { original: string; correction: string }) => e.original && e.correction);
+    const report = {
+      overall: Math.round(avg * 2) / 2,
+      criteria,
+      pronunciation: {
+        comment: str(raw.pronunciation?.comment, 600),
+        watch: (Array.isArray(raw.pronunciation?.watch) ? raw.pronunciation.watch : []).slice(0, 5).map((w: Record<string, unknown>) => ({
+          heard: str(w?.heard, 80), likely: str(w?.likely, 80), note: str(w?.note, 300),
+        })).filter((w: { heard: string }) => w.heard),
+      },
+      parts: (Array.isArray(raw.parts) ? raw.parts : []).slice(0, 3).map((p: Record<string, unknown>) => ({
+        part: Number(p?.part), comment: str(p?.comment, 700),
+      })).filter((p: { part: number; comment: string }) => [1, 2, 3].includes(p.part) && p.comment),
+      summary: str(raw.summary, 1200),
+      strengths: strList(raw.strengths, 6, 400),
+      improvements: strList(raw.improvements, 6, 400),
+      errors,
+      upgrades: (Array.isArray(raw.upgrades) ? raw.upgrades : []).slice(0, 8).map((u: Record<string, unknown>) => ({
+        original: str(u?.original, 200), better: str(u?.better, 300), why: str(u?.why, 300),
+      })).filter((u: { original: string; better: string }) => u.original && u.better),
+      model_answer: raw.model_answer?.answer
+        ? { question: str(raw.model_answer.question, 400), answer: str(raw.model_answer.answer, 1500) } : null,
+      practice_plan: strList(raw.practice_plan, 6, 300),
+      words: spoken,
+      model: MODEL,
+    };
+    return reply({ report });
+  } catch (e) {
+    console.error('Speaking değerlendirmesi çözülemedi', e, out.slice(0, 500));
     return reply({ error: 'Yapay zekâ anlaşılır bir değerlendirme vermedi. Tekrar dene.' }, 502);
   }
 }

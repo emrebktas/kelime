@@ -414,6 +414,13 @@ export async function aiEssayReport({ task, prompt, body, targetWords = [], figu
   return data.report;
 }
 
+/** Speaking denemesini IELTS ölçütlerine göre değerlendirir (kelime-ai, action: speaking). */
+export async function aiSpeakingReport(answers) {
+  const data = await invokeAi({ action: 'speaking', answers }, 170_000, 'Analiz çok uzun sürdü. Biraz sonra tekrar dene.');
+  if (!data?.report) throw new Error('Yapay zekâ bir değerlendirme döndürmedi. Sunucu fonksiyonu güncel mi?');
+  return data.report;
+}
+
 /* ------------------------------------------------------------------ FSP (Fachsprachprüfung) yapay zekâsı: fsp-ai (Gemini) */
 
 /** body.action: patient | oberarzt | evaluate | case (bkz. supabase/functions/fsp-ai). */

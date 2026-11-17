@@ -2,6 +2,7 @@ import * as store from './store.js';
 import * as sync from './sync.js';
 import { nowSec } from './srs.js';
 import { initFsp, showFsp, fspBack, fspRemote, flushFsp } from './fsp.js';
+import { initSpeaking, showSpeaking, speakingBack, leaveSpeaking } from './speaking.js';
 import { svg, ICON, ic } from './icons.js';
 
 // Android uygulaması (Capacitor) içinde mi çalışıyoruz? Orada bazı işler yerel eklentilerle yapılır.
@@ -386,10 +387,12 @@ function renderSidebar() {
   $('#nav-decks')?.classList.toggle('active', ['decks', 'deck', 'study'].includes(state.view));
   document.body.classList.toggle('in-study', state.view === 'study');
   // Telefonda alttaki sekme çubuğu tam ekran gereken görünümlerde gizlenir
-  document.body.classList.toggle('focus-view', ['study', 'reading', 'essay', 'fsp-run'].includes(state.view));
+  document.body.classList.toggle('focus-view', ['study', 'reading', 'essay', 'fsp-run', 'speaking-run'].includes(state.view));
   $('#nav-essays')?.classList.toggle('active', ['essays', 'essay', 'phrases', 'criteria'].includes(state.view));
   $('#nav-reading')?.classList.toggle('active', ['readings', 'reading'].includes(state.view));
   $('#nav-fsp')?.classList.toggle('active', ['fsp', 'fsp-run'].includes(state.view));
+  $('#nav-speaking')?.classList.toggle('active', String(state.view).startsWith('speaking'));
+  if (!String(state.view).startsWith('speaking')) leaveSpeaking(); // mikrofon ve kayıt açık kalmasın
   document.body.classList.toggle('reading-on', state.view === 'reading');
   renderChatBadges();
   checkFigDock();
@@ -4781,6 +4784,7 @@ document.addEventListener('click', (e) => {
       case 'essays': showEssays(); break;
       case 'readings': flushReading(); showReadings(); break;
       case 'fsp': await showFsp(); break;
+      case 'speaking': await showSpeaking(); break;
       case 'reading-import': readingImportModal(); break;
       case 'reading-check': checkReading(); break;
       case 'reading-timer': {
@@ -4951,6 +4955,11 @@ document.addEventListener('keydown', (e) => {
   if (e.ctrlKey && key === 'n') { e.preventDefault(); deckForm(); return; }
   if (e.ctrlKey && key === 'o') { e.preventDefault(); guard(() => importFlow(state.view === 'home' ? null : state.deckId)); return; }
 
+  if (String(state.view).startsWith('speaking') && e.key === 'Escape') {
+    if (typing) document.activeElement.blur(); else speakingBack();
+    return;
+  }
+
   if ((state.view === 'fsp' || state.view === 'fsp-run') && e.key === 'Escape') {
     if (typing) document.activeElement.blur(); else fspBack();
     return;
@@ -5050,6 +5059,7 @@ async function init() {
   await store.open();
   initFsp({ $, $$, main, state, prefs, savePrefs, store, sync, ICON, toast, guard, openModal, confirmBox, speak, stopSpeech, addWordsToDeck, openDeck,
     renderSidebar, setTitle, leaveStudy, refreshDecks, showHome });
+  initSpeaking({ $, $$, main, state, prefs, savePrefs, sync, ICON, toast, openModal, confirmBox, setTitle, leaveStudy, renderSidebar, showHome });
   store.onRemoteChange(onRemoteChange);
   sync.setPresenceProvider(() => (timer.status === 'running' ? Math.floor((Date.now() - liveSec() * 1000) / 1000) : null));
   sync.onStatus(() => renderAccount());

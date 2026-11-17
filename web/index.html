@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://ytrrmjhhbmarwniaqngz.supabase.co wss://ytrrmjhhbmarwniaqngz.supabase.co https://api.github.com https://api.languagetool.org http://127.0.0.1:54321; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' https://ytrrmjhhbmarwniaqngz.supabase.co wss://ytrrmjhhbmarwniaqngz.supabase.co https://api.github.com https://api.languagetool.org http://127.0.0.1:54321; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <meta name="referrer" content="no-referrer">
   <title>Kelime</title>
   <meta name="description" content="Anki tarzı kelime kartları: IELTS, Almanca ve diğer diller için aralıklı tekrar.">
@@ -18,6 +18,7 @@
   <link rel="stylesheet" href="fsp-train.css">
   <link rel="stylesheet" href="fsp-learn.css">
   <link rel="stylesheet" href="fsp-exam.css">
+  <link rel="stylesheet" href="speaking.css">
 </head>
 <body>
   <div id="app">
@@ -49,6 +50,7 @@
       <button id="nav-decks" class="nav-btn" data-act="decks" title="Desteler"><i class="nav-ic" data-ic="layers"></i><span>Desteler</span></button>
       <button id="nav-essays" class="nav-btn" data-act="essays" title="IELTS Writing yazıların"><i class="nav-ic" data-ic="pen"></i><span>Yazılarım</span><small>IELTS Writing</small></button>
       <button id="nav-reading" class="nav-btn" data-act="readings" title="IELTS Reading testlerin"><i class="nav-ic" data-ic="book"></i><span>Okuma</span><small>IELTS Reading</small></button>
+      <button id="nav-speaking" class="nav-btn" data-act="speaking" title="IELTS Speaking sınav simülasyonu"><i class="nav-ic" data-ic="mic"></i><span>Konuşma</span><small>IELTS Speaking</small></button>
       <button id="nav-fsp" class="nav-btn" data-act="fsp" title="Fachsprachprüfung Zahnmedizin"><i class="nav-ic" data-ic="tooth"></i><span>FSP</span><small>Zahnmedizin</small></button>
       <button id="nav-chat" class="nav-btn hidden" data-act="chat" title="Ortak destedeki kişilerle mesajlaş">
         <i class="nav-ic" data-ic="chat"></i><span>Mesajlar</span><span class="chat-count count-badge hidden"></span>
