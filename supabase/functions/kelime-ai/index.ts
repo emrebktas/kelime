@@ -172,6 +172,7 @@ Deno.serve(async (req) => {
 
   if (body.action === 'essay') return evaluateEssay(body, admin, useQuota, callModel, reply, apiKey);
   if (body.action === 'speaking') return evaluateSpeaking(body, useQuota, callModel, reply);
+  if (body.action === 'transcribe') return transcribeSpeech(body, useQuota, reply);
   // Task 1 görselini ayrı istekte okur (analizle aynı istekte süre sınırı aşılmasın diye)
   if (body.action === 'figure') {
     const image = validImage(body.image);
@@ -637,8 +638,8 @@ ${SPEAKING_DESCRIPTORS}
 EXAMINER METHOD (follow exactly):
 1. The test is rated HOLISTICALLY: one whole band (0-9, no halves) per criterion for the whole performance, not per answer. Rate each criterion independently.
 2. A band is awarded only when the performance fits its positive features. If it does not fully fit, award the band below. Weigh the whole sample, not the best moments.
-3. The transcript comes from speech recognition. It has NO reliable punctuation or capitalisation and may drop fillers ("um", "er"), false starts and repetitions. Do NOT penalise punctuation, capitalisation or spelling. A strange word that sounds like a plausible mis-hearing may be a recognition error: do not count it as a vocabulary or grammar error. Real grammar errors (tense, agreement, articles, prepositions, word order, missing words) that appear in the transcript are real, because recognition does not invent them.
-4. Because recognition cleans speech up, it makes candidates look MORE fluent than they were. Be calibrated against inflation: do not give 7+ for Fluency unless the statistics and the text show long, well-developed turns produced readily. Use the statistics:
+3. Each transcript is labelled. "verbatim" = an AI audio transcriber wrote down exactly what was said, KEEPING fillers (um, er), repetitions, false starts and self-corrections, and marking long silences as [pause]: treat these as real evidence of hesitation and self-correction. "recognition" = browser speech recognition, which has NO reliable punctuation and may drop fillers, false starts and repetitions. For both, do NOT penalise punctuation, capitalisation or spelling. A strange word that sounds like a plausible mis-hearing may be a recognition error: do not count it as a vocabulary or grammar error. Real grammar errors (tense, agreement, articles, prepositions, word order, missing words) that appear in the transcript are real, because recognition does not invent them.
+4. A "recognition" transcript cleans speech up and makes candidates look MORE fluent than they were. Be calibrated against inflation: do not give 7+ for Fluency unless the statistics and the text show long, well-developed turns produced readily. Use the statistics:
    - "words" and "secs" per answer, and "wpm" (words per minute). Natural fluent speech is roughly 110-170 wpm; below ~80 wpm over a whole answer suggests laboured speech; a very high wpm with little content is not a plus.
    - "latency_s": seconds before the first words. Over ~3 s repeatedly signals trouble planning.
    - "pauses" and "max_gap_s": counts of silences over ~2.5 s and the longest one while speaking. Several long gaps point to language-searching hesitation.
@@ -693,6 +694,7 @@ async function evaluateSpeaking(
     pauses: n(a?.pauses, 200),
     maxGap: n(a?.maxGap, 600),
     notes: str(a?.notes, 600),
+    verbatim: a?.verbatim === true,
   }));
   const spoken = answers.reduce((t, a) => t + (a.text ? a.text.split(' ').length : 0), 0);
   if (spoken < 60) return reply({ error: 'Değerlendirme için konuşma çok kısa (en az ~60 kelime gerekli).' }, 400);
@@ -705,7 +707,7 @@ async function evaluateSpeaking(
       a.wpm !== null ? `wpm=${Math.round(a.wpm)}` : '', a.latency !== null ? `latency_s=${a.latency.toFixed(1)}` : '',
       a.pauses !== null ? `pauses=${a.pauses}` : '', a.maxGap !== null ? `max_gap_s=${a.maxGap.toFixed(1)}` : '',
     ].filter(Boolean).join(', ');
-    return `[Answer ${i + 1} · Part ${a.part}]\nQuestion: ${a.q}\nStats: ${stats}${a.notes ? `\nCandidate's notes during preparation: ${a.notes}` : ''}\nTranscript: ${a.text || '(nothing recognised)'}`;
+    return `[Answer ${i + 1} · Part ${a.part}]\nQuestion: ${a.q}\nStats: ${stats}${a.notes ? `\nCandidate's notes during preparation: ${a.notes}` : ''}\nTranscript (${a.verbatim ? 'verbatim' : 'recognition'}): ${a.text || '(nothing recognised)'}`;
   }).join('\n\n');
   const parts = [...new Set(answers.map((a) => a.part))].sort().join(', ');
 
@@ -769,4 +771,78 @@ async function evaluateSpeaking(
     console.error('Speaking değerlendirmesi çözülemedi', e, out.slice(0, 500));
     return reply({ error: 'Yapay zekâ anlaşılır bir değerlendirme vermedi. Tekrar dene.' }, 502);
   }
+}
+
+/* ------------------------------------------------------------------ Speaking: ses kaydını yazıya çevirme (Gemini) */
+
+// Tarayıcının konuşma tanıması araya giren "um/er", tekrar ve yarım kalan cümleleri siler ve sık hata yapar.
+// Ses dosyası Gemini'ye verilir; metin söylenenin birebir dökümü olur (akıcılık değerlendirmesi için önemli).
+const GEMINI_BASE = Deno.env.get('GEMINI_BASE_URL') ?? 'https://generativelanguage.googleapis.com';
+const GEMINI_MODELS = [...new Set([
+  Deno.env.get('GEMINI_MODEL') ?? 'gemini-3.8-flash',
+  Deno.env.get('GEMINI_FALLBACK_MODEL') ?? 'gemini-3.5-flash-lite',
+].filter(Boolean))];
+const TRANSCRIBE_COST = 3;
+const TRANSCRIBE_PROMPT = `Transcribe this audio exactly as spoken. The speaker is a learner of English taking a mock IELTS Speaking test.
+Rules:
+- Write VERBATIM: keep fillers (um, er, uh, hmm), repetitions, false starts, self-corrections and incomplete sentences. Do NOT clean up, summarise or reorder.
+- Do NOT correct grammar, vocabulary or pronunciation mistakes: write the words the speaker actually said, even when they are wrong.
+- Use simple sentence punctuation and capital letters. Mark a long silence (over about 3 seconds) as "[pause]". Mark unclear words as "[unclear]". Do not invent words.
+- Output only the transcript, in English, with no commentary, labels or quotation marks. If there is no speech, output nothing.`;
+
+async function transcribeSpeech(
+  body: Record<string, unknown>,
+  useQuota: (units: number) => Promise<Response | null>,
+  reply: (b: unknown, status?: number) => Response,
+): Promise<Response> {
+  const apiKey = Deno.env.get('GEMINI_API_KEY');
+  if (!apiKey) return reply({ error: 'Sunucuda GEMINI_API_KEY tanımlı değil.' }, 500);
+  const audio = typeof body.audio === 'string' ? body.audio : '';
+  const mime = String(body.mime ?? '').split(';')[0].trim().toLowerCase();
+  if (!audio || audio.length > 4_000_000 || !/^[A-Za-z0-9+/=]+$/.test(audio)) return reply({ error: 'Ses kaydı geçersiz ya da çok büyük.' }, 400);
+  if (!['audio/webm', 'audio/ogg', 'audio/mp4', 'audio/mpeg', 'audio/wav'].includes(mime)) return reply({ error: 'Ses biçimi desteklenmiyor.' }, 400);
+  const question = str(body.q, 300);
+  const quota = await useQuota(TRANSCRIBE_COST);
+  if (quota) return quota;
+
+  const started = Date.now();
+  let lastStatus = 502;
+  for (const model of GEMINI_MODELS) {
+    const left = 100_000 - (Date.now() - started);
+    if (left < 8000) break;
+    let res: Response;
+    try {
+      res = await fetch(`${GEMINI_BASE}/v1beta/models/${model}:generateContent`, {
+        method: 'POST',
+        headers: { 'x-goog-api-key': apiKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            role: 'user',
+            parts: [
+              { inline_data: { mime_type: mime, data: audio } },
+              { text: `${TRANSCRIBE_PROMPT}${question ? `\n\n(Context only, do not include it: the examiner's question was "${question}")` : ''}` },
+            ],
+          }],
+          generationConfig: { temperature: 0, maxOutputTokens: 3000 },
+        }),
+        signal: AbortSignal.timeout(Math.min(left, model === GEMINI_MODELS[0] && GEMINI_MODELS.length > 1 ? 60_000 : left)),
+      });
+    } catch {
+      lastStatus = 504;
+      continue;
+    }
+    if (!res.ok) {
+      console.error('Gemini transcribe hata', model, res.status, (await res.text()).slice(0, 400));
+      lastStatus = res.status === 429 || res.status === 503 ? res.status : 502;
+      continue;
+    }
+    const data = await res.json();
+    const text = (data.candidates?.[0]?.content?.parts ?? [])
+      .filter((p: Record<string, unknown>) => !p.thought && typeof p.text === 'string')
+      .map((p: Record<string, unknown>) => p.text).join('').trim();
+    return reply({ text: text.slice(0, 8000), model });
+  }
+  const msg = lastStatus === 429 ? 'Gemini kotası doldu ya da servis yoğun. Biraz sonra tekrar dene.'
+    : lastStatus === 504 ? 'Yazıya çevirme zamanında bitmedi. Tekrar dene.' : 'Yazıya çevirme servisine ulaşılamadı.';
+  return reply({ error: msg }, lastStatus === 504 || lastStatus === 429 || lastStatus === 503 ? lastStatus : 502);
 }

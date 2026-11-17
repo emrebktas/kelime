@@ -2,7 +2,8 @@ import { ic } from './icons.js';
 // IELTS Speaking sınav simülasyonu: Part 1 (röportaj), Part 2 (1 dk hazırlık + 2 dk konuşma), Part 3 (tartışma).
 // Sorular sesli sorulur; cevap hem ses kaydı (MediaRecorder) hem de metin (tarayıcının konuşma tanıması) olarak saklanır.
 // Veriler yalnızca bu cihazdaki ayrı bir IndexedDB'de durur (ses dosyaları büyük olduğu için eşitlenmez).
-// Yapay zekâ değerlendirmesi sunucudaki kelime-ai fonksiyonundan gelir (action: speaking).
+// Canlı metin tarayıcının tanımasından gelir; cevap bitince ses dosyası Gemini ile birebir yazıya çevrilir (action: transcribe),
+// değerlendirme de bu dökümle yapılır. Değerlendirme sunucudaki kelime-ai fonksiyonundan gelir (action: speaking).
 // app.js bu modüle ortak yardımcıları initSpeaking(ctx) ile verir.
 
 let C = null; // app.js'ten gelen yardımcılar
@@ -27,7 +28,8 @@ const CRIT = {
 };
 const ERR_TYPE = { grammar: 'gramer', vocabulary: 'kelime', collocation: 'birliktelik', other: 'diğer' };
 
-const ui = { tests: [], attempts: [], cur: null, edit: new Set(), pending: false, urls: [], saveT: null, setupId: null };
+const ui = { tests: [], attempts: [], cur: null, edit: new Set(), pending: false, urls: [], saveT: null, setupId: null, tx: new Set(), txWarned: false };
+let txChain = Promise.resolve();
 let run = null; // süren sınav (mikrofon, sayaç, kayıt)
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -245,7 +247,7 @@ async function showSetup(id) {
           <li><b>Part 1:</b> ${t.p1.length} kısa soru. Her cevabı bitirince “Sonraki” de.</li>
           <li><b>Part 2:</b> konu kartı gelir; <b>1 dakika hazırlık</b> (not alabilirsin), sonra <b>2 dakika konuşma</b>. Süre dolunca kayıt kendiliğinden durur.</li>
           <li><b>Part 3:</b> ${t.p3.length} tartışma sorusu.</li>
-          <li>Konuşman hem <b>ses kaydı</b> hem <b>metin</b> olarak saklanır; bitince dinleyip yapay zekâ değerlendirmesi alabilirsin.</li>
+          <li>Konuşman hem <b>ses kaydı</b> hem <b>metin</b> olarak saklanır. Giriş yaptıysan her cevap bitince ses kaydı yapay zekâyla <b>birebir (um/er dahil)</b> yazıya çevrilir; sonra değerlendirme alabilirsin.</li>
         </ul>
         <div class="sp-modes" role="radiogroup" aria-label="Bölüm">${MODES.map(([k, n, d]) => `
           <label class="sp-mode ${ui.mode === k ? 'on' : ''}"><input type="radio" name="mode" value="${k}" data-sp-mode ${ui.mode === k ? 'checked' : ''}><b>${n}</b><small>${d}</small></label>`).join('')}
@@ -457,6 +459,7 @@ function capture(limit, countdown) {
       if (btn) { btn.disabled = true; btn.textContent = 'Kaydediliyor…'; }
       if (countdown) beep(660, 260);
       await saveAnswer(r, await stopCapture(r));
+      queueTx(r.attempt.id, r.attempt.answers.length - 1);
       resolve();
     };
     r.advance = end;
@@ -637,6 +640,55 @@ async function exitRun() {
   if (n) showResult(id); else showSpeaking();
 }
 
+/* ------------------------------------------------------------------ ses kaydını yazıya çevirme */
+
+const canAi = () => !!(C.sync.enabled && C.sync.user?.());
+
+// Çalışan sınavın (bellekteki) ya da açık sonuç ekranının nesnesi önceliklidir; böylece sonradan yazılan kayıt ezilmez.
+async function getAttempt(id) {
+  if (run?.attempt?.id === id) return run.attempt;
+  if (ui.cur?.id === id) return ui.cur;
+  return dbGet('attempts', id);
+}
+
+async function patchAnswer(id, idx, patch) {
+  const a = await getAttempt(id);
+  if (!a?.answers[idx]) return;
+  Object.assign(a.answers[idx], patch);
+  await dbPut('attempts', id, a).catch(() => {});
+  if (ui.cur?.id === id && ui.cur !== a) Object.assign(ui.cur.answers[idx], patch);
+}
+
+function queueTx(id, idx) {
+  const key = `${id}:${idx}`;
+  if (idx < 0 || ui.tx.has(key) || !canAi()) return;
+  ui.tx.add(key);
+  txChain = txChain.then(() => runTx(id, idx, key)).catch(() => {});
+  if (C.state.view === 'speaking-result' && ui.cur?.id === id) { renderResult(); attachAudio(ui.cur); }
+}
+
+async function runTx(id, idx, key) {
+  try {
+    const blob = await dbGet('audio', key);
+    const a = await getAttempt(id);
+    const x = a?.answers[idx];
+    if (!blob || !x) { await patchAnswer(id, idx, { txFail: true }); return; }
+    const text = (await C.sync.aiTranscribe(blob, x.q)).replace(/\s+/g, ' ').trim();
+    if (!text) { await patchAnswer(id, idx, { txFail: true }); return; }
+    const words = wordCount(text);
+    const speak = x.secs - (x.latency || 0);
+    await patchAnswer(id, idx, { srText: x.text, text, tx: true, txFail: false, words, wpm: speak > 3 ? Math.round(words / (speak / 60)) : x.wpm });
+  } catch (e) {
+    await patchAnswer(id, idx, { txFail: true });
+    if (!ui.txWarned) { ui.txWarned = true; C.toast(`Yazıya çevirme başarısız: ${e.message || e}. Tarayıcının canlı metni kullanılacak.`, 'info', 6000); }
+  } finally {
+    ui.tx.delete(key);
+    const playing = [...document.querySelectorAll('audio')].some((au) => !au.paused);
+    const typing = document.activeElement?.matches?.('[data-sp-tr]');
+    if (C.state.view === 'speaking-result' && ui.cur?.id === id && !playing && !typing) { renderResult(); attachAudio(ui.cur); }
+  }
+}
+
 /* ------------------------------------------------------------------ sonuç ekranı */
 
 function freeUrls() {
@@ -654,6 +706,7 @@ async function showResult(id) {
   setView('speaking-result', 'Speaking');
   renderResult();
   attachAudio(a);
+  a.answers.forEach((x, i) => { if (x.audio && !x.tx && !x.txFail) queueTx(a.id, i); });
 }
 
 async function attachAudio(a) {
@@ -726,16 +779,19 @@ function renderResult() {
 
 function answerHtml(x, i, a) {
   const errs = a.report?.errors || [];
+  const busy = ui.tx.has(`${a.id}:${i}`);
   const editing = ui.edit.has(i) || !x.text || !errs.length;
   const stats = [`${x.secs} sn`, `${wordCount(x.text)} kelime`, x.wpm ? `${x.wpm} kelime/dk` : '', x.latency !== null && x.latency !== undefined ? `ilk ses ${x.latency} sn` : '',
     x.pauses ? `${x.pauses} uzun duraklama (en uzun ${x.maxGap} sn)` : ''].filter(Boolean);
   return `<div class="panel sp-ans">
     <p class="sp-aq"><b>${x.part === 2 ? 'Konu' : `Soru ${x.n}`}:</b> ${esc(x.q)}</p>
     ${x.audio ? `<audio id="sp-au-${i}" controls preload="metadata"></audio>` : '<p class="muted">Bu cevap için ses kaydı yok.</p>'}
-    <div class="sp-chips">${stats.map((s) => `<span class="badge">${esc(s)}</span>`).join('')}</div>
+    <div class="sp-chips">${stats.map((s) => `<span class="badge">${esc(s)}</span>`).join('')}
+      ${busy ? '<span class="badge sp-busy">AI ile yazıya çevriliyor…</span>' : x.tx ? '<span class="badge sp-ai" title="Ses kaydından birebir dökümü">AI dökümü</span>' : ''}
+      ${!busy && !x.tx && x.audio && canAi() ? `<button type="button" class="link" data-sp="retx" data-i="${i}">AI ile yazıya çevir</button>` : ''}</div>
     ${x.notes ? `<details class="sp-notes-saved"><summary>Hazırlık notların</summary><p>${esc(x.notes)}</p></details>` : ''}
     ${editing
-      ? `<textarea class="sp-tr" data-sp-tr="${i}" rows="${Math.min(14, Math.max(3, Math.ceil(x.text.length / 90)))}" placeholder="${SR ? 'Metin tanınamadı. Ne söylediğini buraya yazabilirsin.' : 'Konuşmanın metnini buraya yazabilirsin.'}">${esc(x.text)}</textarea>`
+      ? `<textarea class="sp-tr" data-sp-tr="${i}" ${busy ? 'readonly' : ''} rows="${Math.min(14, Math.max(3, Math.ceil(x.text.length / 90)))}" placeholder="${SR ? 'Metin tanınamadı. Ne söylediğini buraya yazabilirsin.' : 'Konuşmanın metnini buraya yazabilirsin.'}">${esc(x.text)}</textarea>`
       : `<div class="sp-tr-view">${markText(x.text, errs)}</div><button type="button" class="link" data-sp="edit-tr" data-i="${i}">Metni düzenle</button>`}
   </div>`;
 }
@@ -776,6 +832,10 @@ function reportHtml(r) {
 async function evaluate() {
   const a = ui.cur;
   if (!a || ui.pending) return;
+  if ([...ui.tx].some((k) => k.startsWith(`${a.id}:`))) {
+    C.toast('Ses kayıtları yazıya çevriliyor; bitince tekrar dene.', 'info', 4000);
+    return;
+  }
   if (a.answers.reduce((t, x) => t + wordCount(x.text), 0) < 60) {
     C.toast('Değerlendirme için metin çok kısa (en az ~60 kelime). Metinleri aşağıdan tamamlayabilirsin.', 'info', 5000);
     return;
@@ -786,7 +846,7 @@ async function evaluate() {
   try {
     const report = await C.sync.aiSpeakingReport(a.answers.map((x) => ({
       part: x.part, q: x.q, text: x.text, secs: x.secs, words: wordCount(x.text), wpm: x.wpm, latency: x.latency,
-      pauses: x.pauses, maxGap: x.maxGap, notes: x.notes,
+      pauses: x.pauses, maxGap: x.maxGap, notes: x.notes, verbatim: !!x.tx,
     })));
     a.report = { ...report, at: Date.now() };
     await dbPut('attempts', a.id, a);
@@ -817,6 +877,11 @@ async function onClick(e) {
     case 'next': run?.advance?.(); break;
     case 'exit': exitRun(); break;
     case 'evaluate': evaluate(); break;
+    case 'retx': {
+      const i = Number(el.dataset.i);
+      if (ui.cur?.answers[i]) { ui.cur.answers[i].txFail = false; queueTx(ui.cur.id, i); renderResult(); attachAudio(ui.cur); }
+      break;
+    }
     case 'edit-tr': ui.edit.add(Number(el.dataset.i)); renderResult(); attachAudio(ui.cur); break;
     case 'del-test':
       if (await C.confirmBox('Bu test silinsin mi? Bu testteki geçmiş denemelerin korunur.', { ok: 'Sil', danger: true })) {

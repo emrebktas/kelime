@@ -414,6 +414,19 @@ export async function aiEssayReport({ task, prompt, body, targetWords = [], figu
   return data.report;
 }
 
+/** Speaking: ses kaydını Gemini ile birebir yazıya çevirir (kelime-ai, action: transcribe). */
+export async function aiTranscribe(blob, question = '') {
+  const audio = await new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(String(r.result).split(',')[1] || '');
+    r.onerror = () => rej(r.error);
+    r.readAsDataURL(blob);
+  });
+  const data = await invokeAi({ action: 'transcribe', audio, mime: blob.type || 'audio/webm', q: question }, 100_000, 'Yazıya çevirme çok uzun sürdü.');
+  if (typeof data?.text !== 'string') throw new Error('Yazıya çevirme sonuç vermedi. Sunucu fonksiyonu güncel mi?');
+  return data.text;
+}
+
 /** Speaking denemesini IELTS ölçütlerine göre değerlendirir (kelime-ai, action: speaking). */
 export async function aiSpeakingReport(answers) {
   const data = await invokeAi({ action: 'speaking', answers }, 170_000, 'Analiz çok uzun sürdü. Biraz sonra tekrar dene.');
