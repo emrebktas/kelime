@@ -250,8 +250,8 @@ async function showSetup(id) {
         <div class="sp-modes" role="radiogroup" aria-label="Bölüm">${MODES.map(([k, n, d]) => `
           <label class="sp-mode ${ui.mode === k ? 'on' : ''}"><input type="radio" name="mode" value="${k}" data-sp-mode ${ui.mode === k ? 'checked' : ''}><b>${n}</b><small>${d}</small></label>`).join('')}
         </div>
-        <label class="sp-check"><input type="checkbox" data-sp-opt="spVoice" ${voice ? 'checked' : ''}> Sınav görevlisi soruları sesli okusun</label>
-        <label class="sp-check"><input type="checkbox" data-sp-opt="spText" ${text ? 'checked' : ''}> Soru metni ekranda görünsün <small class="muted">(gerçek sınavda görünmez)</small></label>
+        <label class="sp-check"><input type="checkbox" data-sp-opt="spVoice" ${voice ? 'checked' : ''}> <span>Sınav görevlisi soruları sesli okusun</span></label>
+        <label class="sp-check"><input type="checkbox" data-sp-opt="spText" ${text ? 'checked' : ''}> <span>Soru metni ekranda görünsün <small class="muted">(gerçek sınavda görünmez)</small></span></label>
         ${SR ? '' : '<p class="sp-warn">Bu tarayıcı konuşmayı canlı yazıya çevirmiyor. Ses yine kaydedilir ama metin boş kalır; Chrome ya da Edge kullan veya metni sonradan elle yaz.</p>'}
         <p class="muted" style="font-size:13px">Başlayınca tarayıcı mikrofon izni isteyecek. Sessiz bir yerde, hoparlör yerine kulaklıkla çalışman tanımayı iyileştirir.</p>
         <div class="sp-actions">

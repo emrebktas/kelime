@@ -8,7 +8,8 @@
 .sp-mode small { color: var(--muted); }
 .sp-mode.on { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
 .sp-mode:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
-.sp-check { display: flex; align-items: center; gap: var(--sp-2); cursor: pointer; }
+.sp-check { display: flex; flex-direction: row; justify-content: flex-start; align-items: center; gap: var(--sp-2); cursor: pointer; font-weight: 500; }
+.sp-check input { flex: none; width: 18px; height: 18px; min-height: 0; margin: 0; padding: 0; }
 .sp-warn { color: var(--hard); font-weight: 600; margin: 0; }
 .sp-actions { display: flex; flex-wrap: wrap; gap: var(--sp-3); align-items: center; margin-top: var(--sp-4); }
 button.big { padding: 12px 22px; font-size: var(--fs-lg); }
