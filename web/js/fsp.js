@@ -9,7 +9,7 @@ import { ic } from './icons.js';
 let C = null; // app.js'ten gelen yardımcılar
 let content = null; // { cases, guide }
 const ui = { tab: 'panel', subs: { train: 'anamnese', ref: 'nachschlagen' }, fach: '', termQ: '', termKat: '', attemptId: null, pending: false, tick: null, rec: null, saveT: null,
-  bySec: 'fragen', byTopic: '', byQ: '', byTr: true, practice: null };
+  bySec: 'fragen', byTopic: '', byQ: '', byTr: true, practice: null, byOpen: new Set() };
 
 const PARTS = {
   1: { label: 'Teil 1 · Patientengespräch', short: 'Gespräch', minutes: 20, icon: 'talk' },
@@ -87,6 +87,12 @@ export function initFsp(ctx) {
     document.head.appendChild(l);
   }
   C.main.addEventListener('click', onClick);
+  // Soru cevapları yalnızca kullanıcı kapatınca kapansın: yeniden çizimde (eşitleme, dil değişimi…) açık olanlar korunur
+  C.main.addEventListener('toggle', (e) => {
+    const d = e.target;
+    if (!d.matches?.('details.by-q[data-qid]')) return;
+    if (d.open) ui.byOpen.add(d.dataset.qid); else ui.byOpen.delete(d.dataset.qid);
+  }, true);
   C.main.addEventListener('keydown', onKey);
   C.main.addEventListener('input', onInput);
   C.main.addEventListener('change', onChange);
@@ -145,6 +151,7 @@ export async function showFsp(tab) {
   renderHub();
 }
 
+let hubKey = ''; // son çizilen sekme/alt sekme: açık <details> durumu sadece aynı görünümde korunur
 function renderHub() {
   const tabs = [['panel', 'compass', 'Panel'], ['cases', 'tooth', 'Vakalar'], ...(content.bayern ? [['bayern', 'pin', 'Bayern']] : []),
     ['krankheiten', 'steth', 'Krankheitsbilder'], ['train', 'talk', 'Antrenman'], ['kurs', 'doc', 'Kurs'], ['ref', 'book', 'Başvuru'],
@@ -157,6 +164,10 @@ function renderHub() {
     train: () => (sub === 'anamnese' ? learnHtml('anamnese') : trainHtml(sub)),
     ref: () => (sub === 'nachschlagen' ? learnHtml('nachschlagen') : sub === 'terms' ? termsHtml() : guideHtml()),
   }[ui.tab];
+  // Yeniden çizimde (eşitleme, ayar değişimi…) aynı sekmedeki açık açıklamalar kapanmasın
+  const viewKey = `${ui.tab}|${ui.subs[ui.tab] || ''}|${ui.bySec}|${ui.practice ? 'p' : ''}|${ui.byTopic}|${ui.byQ}|${ui.fach}|${ui.termKat}|${ui.byTr}`;
+  const openIdx = hubKey === viewKey ? [...C.main.querySelectorAll('#fsp-body details')].map((d, i) => (d.open ? i : -1)).filter((i) => i >= 0) : [];
+  hubKey = viewKey;
   C.main.innerHTML = `
     <div class="page fsp-page">
       <header class="deck-head">
@@ -172,6 +183,7 @@ function renderHub() {
       ${sub ? `<div class="chips fsp-subtabs">${SUBS[ui.tab].map(([k, l]) => `<button type="button" class="chip ${sub === k ? 'on' : ''}" aria-pressed="${!!(sub === k)}" data-f="sub" data-sub="${k}">${l}</button>`).join('')}</div>` : ''}
       <div id="fsp-body">${body()}</div>
     </div>`;
+  if (openIdx.length) { const ds = C.main.querySelectorAll('#fsp-body details'); openIdx.forEach((i) => { if (ds[i]) ds[i].open = true; }); }
   if (ui.tab === 'kurs') { C.guard(mountKurs); return; }
   if (ui.tab === 'panel' || ui.tab === 'krankheiten') { C.guard(() => mountLearn(ui.tab)); return; }
   if (ui.tab === 'train') { C.guard(() => (sub === 'anamnese' ? mountLearn('anamnese') : mountTrain(sub))); return; }
@@ -808,6 +820,7 @@ export function fspBack() {
 
 /** Başka cihazdan veri gelince: açık ekranı (yazım sırasında bozmadan) tazeler. */
 export function fspRemote() {
+  if (C.state.view === 'fsp' && ui.tab === 'bayern' && ui.bySec !== 'faelle') return; // soru listesi uzaktan değişmez; okurken bozulmasın
   if (C.state.view === 'fsp') renderHub();
   else if (C.state.view === 'fsp-run' && !current()) showFsp();
 }
@@ -872,7 +885,7 @@ function byRows() {
   if (!list.length) return '<div class="panel empty">Sonuç yok.</div>';
   const say = (s) => `<button class="icon-btn ft-say" data-f="say" data-text="${esc(s)}" title="Seslendir" aria-label="Seslendir">${C.ICON.speaker}</button>`;
   return `<div class="by-list">${list.map((q) => `
-    <details class="panel by-q ${k.has(q.id) ? 'is-known' : ''}">
+    <details class="panel by-q ${k.has(q.id) ? 'is-known' : ''}" data-qid="${esc(q.id)}" ${ui.byOpen.has(q.id) ? 'open' : ''}>
       <summary>
         <span class="by-q-main"><span class="by-q-de" lang="de">${esc(q.de)}</span>${ui.byTr ? `<span class="by-q-tr">${esc(q.tr)}</span>` : ''}</span>
         <span class="by-q-meta">${q.n ? `<span class="by-freq" title="Raporlarda geçme sayısı">${q.n}×</span>` : ''}${k.has(q.id) ? `<span class="by-ok">${ic('check', 'Biliyorum')}</span>` : ''}</span>
