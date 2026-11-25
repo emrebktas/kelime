@@ -1,0 +1,508 @@
+{
+  "level": "B2",
+  "title": "Orta üstü",
+  "intro": "Yazılı ve resmî dilde kendini rahat ifade etmek: <b>pasif yerine geçen yapılar, geçmişte Konjunktiv II, dolaylı anlatım (Konjunktiv I), sıfat-fiiller, Genitiv edatları, Nomen-Verb-Verbindungen</b>. Goethe-Zertifikat B2 / telc B2 / TestDaF hazırlığına uygun.",
+  "sources": [
+    { "n": "Goethe-Institut – Deutschprüfungen A1–C2", "u": "https://www.goethe.de/de/spr/prf.html" },
+    { "n": "Lingolia Deutsch – Grammatik", "u": "https://deutsch.lingolia.com/de/grammatik" },
+    { "n": "Schubert-Verlag – Spektrum Deutsch B2 Online-Übungen", "u": "https://www.schubert-verlag.de/aufgaben/uebungen_b2/sb2_uebungen_index.htm" },
+    { "n": "Schubert-Verlag – Erkundungen B2 Online-Übungen", "u": "https://www.schubert-verlag.de/aufgaben/uebungen_b2/b2_erkund_uebungen_index.htm" }
+  ],
+  "topics": [
+    {
+      "id": "b2-passiversatz",
+      "title": "Durum pasifi ve pasif yerine geçen yapılar",
+      "de": "Zustandspassiv · Passiversatz: sein + zu, sich lassen, -bar / -lich, man",
+      "summary": "<b>Vorgangspassiv</b> süreci (<i>Die Tür wird geschlossen</i> – kapatılıyor), <b>Zustandspassiv</b> sonucu (<i>Die Tür ist geschlossen</i> – kapalı) anlatır. Yazı dilinde pasif anlamı başka yapılarla da verilir.",
+      "blocks": [
+        { "type": "table", "h": "Vorgang ↔ Zustand", "head": ["", "Vorgangspassiv (süreç)", "Zustandspassiv (sonuç)"], "rows": [
+          ["Präsens", "Das Geschäft <b>wird</b> geschlossen.", "Das Geschäft <b>ist</b> geschlossen."],
+          ["Präteritum", "Das Geschäft <b>wurde</b> geschlossen.", "Das Geschäft <b>war</b> geschlossen."]
+        ] },
+        { "type": "table", "h": "Passiversatzformen", "head": ["Yapı", "Anlam", "Örnek", "= Passiv"], "rows": [
+          ["sein + zu + mastar", "-malı (zorunluluk) / -abilir (imkân)", "Der Antrag <b>ist</b> bis Montag ab<b>zu</b>geben.", "muss abgegeben werden"],
+          ["sich lassen + mastar", "-abilir (imkân)", "Das Problem <b>lässt sich</b> leicht <b>lösen</b>.", "kann gelöst werden"],
+          ["Sıfat -bar / -lich", "-abilir", "Das Wasser ist trink<b>bar</b>. · Das ist unverständ<b>lich</b>.", "kann (nicht) getrunken / verstanden werden"],
+          ["man + aktif", "genel özne", "<b>Man</b> repariert das Auto.", "Das Auto wird repariert."],
+          ["bekommen + PII", "alıcı vurgusu", "Er <b>bekommt</b> das Paket <b>geschickt</b>.", "Ihm wird das Paket geschickt."]
+        ] },
+        { "type": "tip", "h": "sein + zu: iki anlam", "text": "Bağlam belirler: <i>Die Regeln <b>sind zu beachten</b>.</i> (uyulmalıdır – zorunluluk) ↔ <i>Der Fehler <b>ist</b> leicht <b>zu finden</b>.</i> (bulunabilir – imkân)." },
+        { "type": "tr", "text": "Türkçede “Dükkân kapatıldı” (süreç) ve “Dükkân kapalı” (durum) ayrımı Almancadaki wird/ist ayrımına tam karşılık gelir. “İçilebilir su” = trinkbares Wasser; “-ebilir” anlamı için -bar eki çok üretkendir." },
+        { "type": "examples", "h": "Örnekler", "items": [
+          ["Die Rechnung <b>ist</b> innerhalb von 14 Tagen <b>zu bezahlen</b>.", "Fatura 14 gün içinde ödenmelidir."],
+          ["Der Fleck <b>lässt sich</b> nicht <b>entfernen</b>.", "Leke çıkarılamıyor."],
+          ["Diese Aufgabe ist nicht <b>lösbar</b>.", "Bu görev çözülemez."],
+          ["Als wir ankamen, <b>war</b> das Restaurant schon <b>geschlossen</b>.", "Vardığımızda restoran çoktan kapanmıştı."]
+        ] }
+      ],
+      "mistakes": [
+        ["Der Text ist leicht zu verstehen werden.", "Der Text ist leicht zu verstehen.", "sein + zu + mastar; werden yok."],
+        ["Das Problem lässt leicht lösen.", "Das Problem lässt sich leicht lösen.", "sich zorunlu."],
+        ["Die Tür ist geschlossen worden. (sadece durum)", "Die Tür ist geschlossen.", "Durum → Zustandspassiv."]
+      ],
+      "exercises": [
+        { "t": "choice", "q": "Das Formular muss ausgefüllt werden. = Das Formular ___ auszufüllen.", "o": ["ist", "wird", "lässt"], "a": "ist", "x": "sein + zu + mastar." },
+        { "t": "choice", "q": "Das Fenster kann leicht geöffnet werden. = Das Fenster ___ leicht öffnen.", "o": ["ist sich", "lässt sich", "wird sich"], "a": "lässt sich", "x": "sich lassen + mastar." },
+        { "t": "gap", "q": "Dieses Material kann man recyceln. = Es ist recycel___. (ek)", "a": ["bar"], "x": "-bar = -abilir." },
+        { "t": "choice", "q": "Keine Sorge, die Tür ___ schon abgeschlossen. (sonuç)", "o": ["wird", "ist", "lässt"], "a": "ist", "x": "Durum → ist + PII." },
+        { "t": "gap", "q": "Die Medikamente sind kühl ___ lagern.", "a": ["zu"], "x": "sein + zu." },
+        { "t": "choice", "q": "Seine Schrift ist kaum ___. (okunabilir)", "o": ["lesbar", "lesenbar", "leslich"], "a": "lesbar", "x": "lesen → lesbar." },
+        { "t": "order", "q": "Passiversatz (sich lassen): Der Fehler kann nicht korrigiert werden.", "w": ["der", "Fehler", "lässt", "sich", "nicht", "korrigieren"], "a": "Der Fehler lässt sich nicht korrigieren.", "x": "lassen + sich + mastar sonda." },
+        { "t": "choice", "q": "Im Jahr 2020 ___ das Museum wegen Corona geschlossen. (durum)", "o": ["war", "wurde", "hat"], "a": "war", "x": "Geçmiş durum → war + PII." },
+        { "t": "gap", "q": "Die Hausaufgaben sind bis morgen zu ___. (machen)", "a": ["machen"], "x": "sein + zu + mastar." },
+        { "t": "choice", "q": "Das ist ein ___ Problem. (çözülemez)", "o": ["unlösbares", "unlösliches", "nicht lösbar"], "a": "unlösbares", "x": "un- + lösbar + sıfat eki." }
+      ],
+      "links": [
+        { "n": "mein-deutschbuch – Passiv", "u": "https://mein-deutschbuch.de/grammatikuebungen-passiv/" },
+        { "n": "Schubert – Spektrum B2 Online-Übungen", "u": "https://www.schubert-verlag.de/aufgaben/uebungen_b2/sb2_uebungen_index.htm" },
+        { "n": "Lingolia – Verben", "u": "https://deutsch.lingolia.com/de/grammatik/verben" }
+      ]
+    },
+    {
+      "id": "b2-konj2-verg",
+      "title": "Konjunktiv II geçmiş zaman",
+      "de": "Konjunktiv II der Vergangenheit: hätte / wäre + Partizip II · mit Modalverb",
+      "summary": "Geçmişteki gerçekleşmemiş durumlar, pişmanlıklar ve sitemler: <i>Wenn ich das <b>gewusst hätte</b>, <b>wäre</b> ich <b>gekommen</b>.</i>",
+      "blocks": [
+        { "type": "table", "h": "Yapı", "head": ["Tür", "Yapı", "Örnek"], "rows": [
+          ["haben-fiili", "<b>hätte</b> + PII", "Ich <b>hätte</b> dich <b>angerufen</b>."],
+          ["sein-fiili", "<b>wäre</b> + PII", "Wir <b>wären</b> früher <b>gekommen</b>."],
+          ["Modal fiil", "<b>hätte</b> + mastar + modal mastarı", "Du <b>hättest</b> mich fragen <b>sollen</b>."],
+          ["Passiv", "wäre + PII + worden", "Das <b>wäre</b> nie entdeckt <b>worden</b>."]
+        ], "note": "Modal fiilli yapıda Partizip yerine <b>çift mastar</b> kullanılır: hätte kommen <b>müssen</b> / <b>können</b> / <b>sollen</b>." },
+        { "type": "table", "h": "Kullanım", "head": ["Amaç", "Örnek", "Türkçesi"], "rows": [
+          ["Gerçek dışı koşul", "Wenn du früher gegangen <b>wärst</b>, <b>hättest</b> du den Zug nicht verpasst.", "Erken çıksaydın treni kaçırmazdın."],
+          ["Pişmanlık", "Hätte ich doch mehr gelernt!", "Keşke daha çok çalışsaydım!"],
+          ["Sitem / eleştiri", "Du <b>hättest</b> mir Bescheid sagen <b>können</b>!", "Bana haber verebilirdin!"],
+          ["Neredeyse olan", "Ich <b>wäre</b> fast <b>hingefallen</b>.", "Az kalsın düşüyordum."]
+        ] },
+        { "type": "tip", "h": "Yan cümlede çift mastar", "text": "Yan cümlede çekimli “hätte” çift mastarın <b>önüne</b> geçer: <i>…, weil ich hätte arbeiten müssen.</i> (✗ arbeiten müssen hätte)" },
+        { "type": "tr", "text": "Türkçe “-saydı … -ardı / -mıştı”: “Bilseydim gelirdim.” Almancada iki taraf da Konjunktiv II geçmiş: <i>Wenn ich es gewusst hätte, wäre ich gekommen.</i> Sitem: “Söyleyebilirdin!” = <i>Du hättest es sagen können!</i>" },
+        { "type": "examples", "h": "Örnekler", "items": [
+          ["An deiner Stelle <b>hätte</b> ich das Angebot <b>angenommen</b>.", "Senin yerinde olsam teklifi kabul ederdim."],
+          ["Ohne deine Hilfe <b>hätte</b> ich es nicht <b>geschafft</b>.", "Senin yardımın olmasaydı başaramazdım."],
+          ["Wir <b>hätten</b> früher losfahren <b>sollen</b>.", "Daha erken yola çıkmalıydık."]
+        ] }
+      ],
+      "mistakes": [
+        ["Wenn ich Zeit gehabt würde, …", "Wenn ich Zeit gehabt hätte, …", "Geçmiş Konj. II: hätte + PII."],
+        ["Du hättest mich fragen gesollt.", "Du hättest mich fragen sollen.", "Modal fiilde çift mastar."],
+        ["Wenn ich gekommen hätte, …", "Wenn ich gekommen wäre, …", "kommen → sein."]
+      ],
+      "exercises": [
+        { "t": "gap", "q": "Wenn ich das gewusst ___, hätte ich dir geholfen. (haben)", "a": ["hätte", "haette"], "x": "hätte + PII." },
+        { "t": "gap", "q": "Wenn der Bus pünktlich gekommen ___, wäre ich nicht zu spät. (sein)", "a": ["wäre", "waere"], "x": "kommen → wäre gekommen." },
+        { "t": "choice", "q": "Du ___ mir früher Bescheid sagen können!", "o": ["hättest", "wärst", "würdest"], "a": "hättest", "x": "Modal + hätte." },
+        { "t": "choice", "q": "Wir hätten das Problem früher erkennen ___.", "o": ["gemusst", "müssen", "müssten"], "a": "müssen", "x": "Çift mastar: erkennen müssen." },
+        { "t": "choice", "q": "Ich ___ fast den Zug verpasst.", "o": ["wäre", "hätte", "würde"], "a": "hätte", "x": "verpassen → haben: hätte verpasst." },
+        { "t": "choice", "q": "Er ___ beinahe gestürzt.", "o": ["hätte", "wäre", "war"], "a": "wäre", "x": "stürzen → sein: wäre gestürzt." },
+        { "t": "order", "w": ["hätte", "ich", "doch", "nur", "mehr", "gelernt!"], "a": "Hätte ich doch nur mehr gelernt!", "x": "Pişmanlık: fiil başta." },
+        { "t": "order", "q": "Er sagt, …", "w": ["dass", "er", "hätte", "anrufen", "sollen"], "a": "dass er hätte anrufen sollen", "x": "Yan cümlede: hätte + çift mastar." },
+        { "t": "gap", "q": "Ohne Navi ___ wir uns verfahren. (haben)", "a": ["hätten", "haetten"], "x": "sich verfahren → haben: hätten verfahren." },
+        { "t": "choice", "q": "Das Haus ___ ohne die Feuerwehr komplett zerstört worden.", "o": ["hätte", "wäre", "würde"], "a": "wäre", "x": "Passiv: wäre + PII + worden." }
+      ],
+      "links": [
+        { "n": "mein-deutschbuch – Konjunktiv II", "u": "https://mein-deutschbuch.de/grammatikuebungen-konjunktiv-2/" },
+        { "n": "Lingolia – Verben", "u": "https://deutsch.lingolia.com/de/grammatik/verben" }
+      ]
+    },
+    {
+      "id": "b2-konj1",
+      "title": "Dolaylı anlatım (Konjunktiv I)",
+      "de": "Indirekte Rede: Konjunktiv I (Gegenwart, Vergangenheit, Zukunft) · Ersatz durch Konjunktiv II",
+      "summary": "Haber ve resmî metinlerde başkasının sözü <b>Konjunktiv I</b> ile aktarılır: <i>Der Minister sagte, er <b>sei</b> zufrieden.</i> Bu, aktaranın mesafe koyduğunu gösterir.",
+      "blocks": [
+        { "type": "table", "h": "Konjunktiv I biçimi: kök + e-ekleri", "head": ["", "sein", "haben", "kommen", "können", "werden"], "rows": [
+          ["ich", "sei", "(hätte)*", "(käme)*", "könne", "(würde)*"],
+          ["du", "sei(e)st", "habest", "kommest", "könnest", "werdest"],
+          ["er/sie/es", "<b>sei</b>", "<b>habe</b>", "<b>komme</b>", "<b>könne</b>", "<b>werde</b>"],
+          ["wir", "seien", "(hätten)*", "(kämen)*", "(könnten)*", "(würden)*"],
+          ["ihr", "seiet", "habet", "kommet", "könnet", "werdet"],
+          ["sie/Sie", "seien", "(hätten)*", "(kämen)*", "(könnten)*", "(würden)*"]
+        ], "note": "* Konjunktiv I biçimi Indikativ ile aynıysa (ich habe, wir kommen …) ayırt edilemez; bu yüzden <b>Konjunktiv II</b> kullanılır. Pratikte en sık 3. tekil kullanılır: er sei / habe / komme / könne / werde." },
+        { "type": "table", "h": "Zamanlar", "head": ["Doğrudan", "Dolaylı"], "rows": [
+          ["„Ich <b>bin</b> müde.“", "Er sagt, er <b>sei</b> müde."],
+          ["„Ich <b>habe</b> keine Zeit <b>gehabt</b>.“ / „Ich <b>hatte</b> …“", "Er sagt, er <b>habe</b> keine Zeit <b>gehabt</b>. (tüm geçmiş zamanlar → habe/sei + PII)"],
+          ["„Ich <b>bin</b> gestern <b>gekommen</b>.“", "Er sagt, er <b>sei</b> gestern <b>gekommen</b>."],
+          ["„Ich <b>werde</b> anrufen.“", "Er sagt, er <b>werde</b> anrufen."],
+          ["„<b>Komm</b> bitte!“ (emir)", "Er sagt, ich <b>solle</b> kommen. (rica: möge)"],
+          ["„<b>Kommst</b> du?“", "Er fragt, <b>ob</b> ich <b>komme</b>."]
+        ] },
+        { "type": "tip", "h": "Zamirleri değiştirmeyi unutma", "text": "„<b>Ich</b> gebe <b>dir</b> <b>mein</b> Buch.“ → Sie sagt, <b>sie</b> gebe <b>mir</b> <b>ihr</b> Buch. Zaman ifadeleri de kayar: heute → an diesem Tag, morgen → am nächsten Tag, hier → dort." },
+        { "type": "tr", "text": "Türkçedeki “-mış” (duyulan geçmiş) ve “… dediğine göre” yapısı Konjunktiv I’in işlevine yakındır: <i>Er sei krank.</i> ≈ “Hastaymış.” Konuşma dilinde Almanlar çoğunlukla Indikativ veya würde kullanır; Konjunktiv I resmî yazıda zorunludur." },
+        { "type": "examples", "h": "Örnekler", "items": [
+          ["Die Polizei teilte mit, der Täter <b>sei</b> geflohen.", "Polis, failin kaçtığını bildirdi."],
+          ["Der Sprecher erklärte, man <b>werde</b> die Preise nicht erhöhen.", "Sözcü fiyatların artırılmayacağını açıkladı."],
+          ["Sie behauptet, sie <b>habe</b> nichts davon <b>gewusst</b>.", "Bundan haberi olmadığını iddia ediyor."]
+        ] }
+      ],
+      "mistakes": [
+        ["Er sagt, er ist krank sei.", "Er sagt, er sei krank.", "Konjunktiv I yan cümlede (dass’sız) fiil 2. sırada."],
+        ["Sie sagten, sie haben keine Zeit. (resmî metin)", "Sie sagten, sie hätten keine Zeit.", "Konj. I = Indikativ → Konj. II."],
+        ["Er sagte, er sei gestern gekommt.", "…, er sei gestern gekommen.", "Partizip doğru olmalı."]
+      ],
+      "exercises": [
+        { "t": "gap", "q": "„Ich bin krank.“ → Er sagt, er ___ krank.", "a": ["sei"], "x": "sein → sei." },
+        { "t": "gap", "q": "„Ich habe keine Lust.“ → Sie sagt, sie ___ keine Lust.", "a": ["habe"], "x": "haben → habe (3. tekil)." },
+        { "t": "choice", "q": "„Wir haben keine Zeit.“ → Sie sagen, sie ___ keine Zeit.", "o": ["haben", "hätten", "habe"], "a": "hätten", "x": "sie haben = Indikativ → Konj. II: hätten." },
+        { "t": "choice", "q": "„Ich habe das Buch gelesen.“ → Er sagt, er ___ das Buch gelesen.", "o": ["habe", "hatte", "hätte gehabt"], "a": "habe", "x": "Geçmiş → habe + PII." },
+        { "t": "choice", "q": "„Ich bin nach Rom gefahren.“ → Sie erzählt, sie ___ nach Rom gefahren.", "o": ["ist", "sei", "wäre gewesen"], "a": "sei", "x": "sein-fiili → sei + PII." },
+        { "t": "gap", "q": "„Ich werde pünktlich sein.“ → Er verspricht, er ___ pünktlich sein.", "a": ["werde"], "x": "Futur → werde." },
+        { "t": "choice", "q": "„Ruf mich an!“ → Sie sagt, ich ___ sie anrufen. (Konjunktiv I)", "o": ["soll", "solle", "sollte"], "a": "solle", "x": "Emir → solle (Konj. I)." },
+        { "t": "choice", "q": "„Kommst du mit?“ → Er fragt, ___ ich mitkomme.", "o": ["dass", "ob", "wenn"], "a": "ob", "x": "Evet/hayır sorusu → ob." },
+        { "t": "gap", "q": "„Wir können nicht kommen.“ → Sie teilen mit, sie ___ nicht kommen.", "a": ["könnten", "koennten"], "x": "sie können = Indikativ → Konj. II: könnten." },
+        { "t": "order", "q": "„Ich gebe dir mein Auto.“ → Er sagt, …", "w": ["er", "gebe", "mir", "sein", "Auto"], "a": "er gebe mir sein Auto", "x": "Zamir değişimi: ich → er, dir → mir, mein → sein." }
+      ],
+      "links": [
+        { "n": "Schubert – Indirekte Rede (C1, Nachrichten)", "u": "https://www.schubert-verlag.de/aufgaben/uebungen_c1/c1_indirekte-rede1.htm" },
+        { "n": "Lingolia – Verben", "u": "https://deutsch.lingolia.com/de/grammatik/verben" }
+      ]
+    },
+    {
+      "id": "b2-partizip",
+      "title": "Sıfat-fiiller (Partizip I ve II)",
+      "de": "Partizip I und II als Adjektiv · erweiterte Partizipialattribute (Einstieg)",
+      "summary": "<b>Partizip I</b> (mastar + d) eşzamanlı/aktif: <i>das weinend<b>e</b> Kind</i> (ağlayan çocuk). <b>Partizip II</b> tamamlanmış/pasif: <i>das reparierte Auto</i> (tamir edilmiş araba).",
+      "blocks": [
+        { "type": "table", "h": "İki Partizip", "head": ["", "Partizip I", "Partizip II"], "rows": [
+          ["Yapılış", "mastar + <b>d</b>: lachen<b>d</b>, schlafen<b>d</b>", "ge…t / ge…en"],
+          ["Anlam", "aktif, aynı anda olan (-en/-an)", "pasif (geçişli) veya tamamlanmış (-mış/-ılmış)"],
+          ["Örnek", "das <b>schlafende</b> Baby (uyuyan bebek)", "das <b>gekochte</b> Ei (haşlanmış yumurta)"],
+          ["Örnek", "steigende Preise (artan fiyatlar)", "die <b>gestiegenen</b> Preise (artmış fiyatlar)"]
+        ], "note": "İsim önünde normal sıfat gibi çekilir: ein schlafend<b>es</b> Baby, mit dem reparierten Auto." },
+        { "type": "table", "h": "İlgi cümlesi → sıfat-fiil", "head": ["Relativsatz", "Partizipialattribut"], "rows": [
+          ["die Frau, <b>die</b> dort <b>sitzt</b>", "die dort <b>sitzende</b> Frau"],
+          ["das Buch, <b>das</b> 2020 <b>veröffentlicht wurde</b>", "das 2020 <b>veröffentlichte</b> Buch"],
+          ["der Zug, <b>der</b> aus Berlin <b>kommt</b>", "der aus Berlin <b>kommende</b> Zug"],
+          ["die Gäste, <b>die</b> spät <b>angekommen sind</b>", "die spät <b>angekommenen</b> Gäste"]
+        ], "note": "Ek bilgiler (dort, 2020, aus Berlin) artikel ile Partizip arasına girer. Bu yapı C1’de genişletilir." },
+        { "type": "tr", "text": "Türkçe sıfat-fiil mantığına çok yakın! “<i>Berlin’den gelen</i> tren” = <i>der aus Berlin kommende Zug</i>. Türkçede de tamamlayıcılar sıfat-fiilin önüne gelir. Almancada sadece artikel en başa geçer." },
+        { "type": "examples", "h": "Örnekler", "items": [
+          ["Vorsicht, <b>frisch gestrichene</b> Wand!", "Dikkat, yeni boyanmış duvar!"],
+          ["Die <b>steigenden</b> Mieten sind ein großes Problem.", "Artan kiralar büyük bir sorun."],
+          ["Er sprach mit <b>zitternder</b> Stimme.", "Titreyen bir sesle konuştu."],
+          ["Die <b>gestohlenen</b> Bilder wurden gefunden.", "Çalınan tablolar bulundu."]
+        ] }
+      ],
+      "mistakes": [
+        ["das lachen Kind", "das lachende Kind", "Partizip I: mastar + d + sıfat eki."],
+        ["die gestiegende Preise", "die gestiegenen Preise", "Partizip II + sıfat eki."],
+        ["ein spielendes Kinder", "spielende Kinder", "Çoğulda belirsiz artikel yok."]
+      ],
+      "exercises": [
+        { "t": "choice", "q": "Das ___ Baby wacht nicht auf. (uyuyan)", "o": ["schlafende", "geschlafene", "schlafend"], "a": "schlafende", "x": "Eşzamanlı/aktif → Partizip I + -e." },
+        { "t": "choice", "q": "Die ___ Hausaufgaben liegen auf dem Tisch. (yapılmış)", "o": ["machenden", "gemachten", "gemacht"], "a": "gemachten", "x": "Tamamlanmış/pasif → Partizip II + -en." },
+        { "t": "gap", "q": "Wir sehen ein spiel___ Kind. (ek dahil Partizip I sonu)", "a": ["endes"], "x": "spielend + es." },
+        { "t": "choice", "q": "der Brief, der gestern geschrieben wurde = der gestern ___ Brief", "o": ["schreibende", "geschriebene", "geschriebener"], "a": "geschriebene", "x": "der + Partizip II + -e." },
+        { "t": "choice", "q": "die Kinder, die im Garten spielen = die im Garten ___ Kinder", "o": ["spielenden", "gespielten", "spielende"], "a": "spielenden", "x": "die (Plural) + Partizip I + -en." },
+        { "t": "gap", "q": "Er hat ein ___ Auto gekauft. (gebrauchen → kullanılmış)", "a": ["gebrauchtes"], "x": "Partizip II + -es." },
+        { "t": "choice", "q": "Die Preise steigen ständig. → die ständig ___ Preise", "o": ["steigenden", "gestiegene", "steigend"], "a": "steigenden", "x": "Süren olay → Partizip I." },
+        { "t": "order", "q": "das Haus, das 1900 gebaut wurde →", "w": ["das", "1900", "gebaute", "Haus"], "a": "das 1900 gebaute Haus", "x": "artikel + ek bilgi + Partizip + isim." },
+        { "t": "choice", "q": "Mit ___ Augen hörte sie zu. (parlayan)", "o": ["leuchtenden", "geleuchteten", "leuchtende"], "a": "leuchtenden", "x": "mit + Dativ çoğul, artikelsiz → -en." }
+      ],
+      "links": [
+        { "n": "Schubert – Partizipialattribute (C1)", "u": "https://www.schubert-verlag.de/aufgaben/uebungen_c1/c1_attribute1.htm" },
+        { "n": "Lingolia – Adjektive", "u": "https://deutsch.lingolia.com/de/grammatik/adjektive" }
+      ]
+    },
+    {
+      "id": "b2-genitivpraep",
+      "title": "Genitiv edatları",
+      "de": "Präpositionen mit Genitiv: aufgrund, infolge, trotz, während, innerhalb, außerhalb, anstelle, angesichts, bezüglich …",
+      "summary": "Resmî ve yazılı dilde sık kullanılır. Edatların çoğu Genitiv ister; konuşmada trotz/wegen/während sıkça Dativ’le de duyulur, ama yazıda Genitiv doğrudur.",
+      "blocks": [
+        { "type": "table", "h": "Anlamlarına göre", "head": ["Anlam", "Edatlar", "Örnek"], "rows": [
+          ["sebep", "wegen, aufgrund, infolge, dank*", "<b>Aufgrund des</b> Streiks fallen Züge aus."],
+          ["karşıtlık", "trotz, ungeachtet", "<b>Trotz des</b> Regens gingen wir spazieren."],
+          ["zaman", "während, innerhalb, außerhalb, binnen", "<b>Innerhalb einer</b> Woche"],
+          ["yer", "innerhalb, außerhalb, oberhalb, unterhalb, jenseits, diesseits", "<b>außerhalb der</b> Stadt"],
+          ["yerine", "(an)statt, anstelle", "<b>Statt eines</b> Briefes schrieb er eine Mail."],
+          ["konu / bağlam", "bezüglich, hinsichtlich, angesichts, laut**", "<b>Bezüglich Ihrer</b> Anfrage …"]
+        ], "note": "* dank çoğunlukla Dativ veya Genitiv. ** laut artikelsiz isimle genelde Dativ: laut Gesetz, laut dem Bericht." },
+        { "type": "tip", "h": "von + Dativ ile değiştirme", "text": "Artikel yoksa Genitiv görünmez; o zaman <b>von</b> eklenir: innerhalb <b>von</b> zwei Tagen (✗ innerhalb zweier Tage — doğru ama çok resmî)." },
+        { "type": "tr", "text": "Türkçede “-den dolayı, -e rağmen, süresince, içinde, yerine, ile ilgili olarak” gibi edat grupları bu Almanca edatlara karşılık gelir. Hepsi resmî yazışmalarda (Bewerbung, Beschwerde) çok işe yarar." },
+        { "type": "examples", "h": "Örnekler", "items": [
+          ["<b>Infolge des</b> Unfalls kam es zu langen Staus.", "Kaza sonucunda uzun trafik sıkışıklığı oluştu."],
+          ["<b>Angesichts der</b> hohen Kosten wurde das Projekt gestoppt.", "Yüksek maliyetler karşısında proje durduruldu."],
+          ["Bitte zahlen Sie <b>innerhalb von</b> 14 Tagen.", "Lütfen 14 gün içinde ödeyin."]
+        ] }
+      ],
+      "mistakes": [
+        ["aufgrund dem Wetter", "aufgrund des Wetters", "aufgrund + Genitiv."],
+        ["innerhalb zwei Wochen", "innerhalb von zwei Wochen", "Artikelsiz çoğul → von + Dativ."],
+        ["während dem Urlaub (yazıda)", "während des Urlaubs", "Yazı dilinde Genitiv."]
+      ],
+      "exercises": [
+        { "t": "choice", "q": "___ des schlechten Wetters wurde das Spiel abgesagt.", "o": ["Trotz", "Aufgrund", "Statt"], "a": "Aufgrund", "x": "Sebep → aufgrund." },
+        { "t": "choice", "q": "___ der Kälte gingen sie schwimmen.", "o": ["Trotz", "Infolge", "Bezüglich"], "a": "Trotz", "x": "Karşıtlık → trotz." },
+        { "t": "gap", "q": "Während ___ Fluges darf man nicht rauchen. (der Flug)", "a": ["des"], "x": "während + Gen." },
+        { "t": "choice", "q": "Wir wohnen außerhalb ___ Stadt.", "o": ["der", "die", "dem"], "a": "der", "x": "außerhalb + Gen.; die Stadt → der." },
+        { "t": "choice", "q": "Bitte antworten Sie innerhalb ___ drei Tagen.", "o": ["von", "der", "–"], "a": "von", "x": "Artikelsiz → von + Dativ." },
+        { "t": "gap", "q": "___ Ihrer E-Mail vom 3. Mai möchte ich Folgendes mitteilen. (ile ilgili olarak)", "a": ["Bezüglich", "Hinsichtlich"], "x": "Resmî: bezüglich / hinsichtlich + Gen." },
+        { "t": "choice", "q": "Anstelle ___ Chefs kam seine Assistentin.", "o": ["des", "dem", "den"], "a": "des", "x": "anstelle + Gen." },
+        { "t": "gap", "q": "Infolge ___ Sturms fiel der Strom aus. (der Sturm)", "a": ["des"], "x": "infolge + Gen." },
+        { "t": "choice", "q": "___ der Krise investierte die Firma. (krize rağmen)", "o": ["Ungeachtet", "Aufgrund", "Infolge"], "a": "Ungeachtet", "x": "-e rağmen (resmî) → ungeachtet." },
+        { "t": "choice", "q": "___ der steigenden Zahlen reagierte die Regierung.", "o": ["Angesichts", "Anstatt", "Außerhalb"], "a": "Angesichts", "x": "-in karşısında → angesichts." }
+      ],
+      "links": [
+        { "n": "mein-deutschbuch – Präpositionen (B2)", "u": "https://mein-deutschbuch.de/grammatikuebungen-praepositionen/" },
+        { "n": "Lingolia – Präpositionen", "u": "https://deutsch.lingolia.com/de/grammatik/praepositionen" }
+      ]
+    },
+    {
+      "id": "b2-vermutung",
+      "title": "Tahmin ve varsayım bildirmek",
+      "de": "Vermutungen: werden + wohl, Modalverben (müssen, dürfen, können, mögen) · Adverbien",
+      "summary": "Ne kadar emin olduğunu kelime seçimiyle gösterirsin: <b>muss</b> (eminim) → <b>dürfte</b> (büyük ihtimalle) → <b>kann / könnte</b> (olabilir).",
+      "blocks": [
+        { "type": "table", "h": "Kesinlik ölçeği", "head": ["Kesinlik", "Modal fiil", "Zarf", "Örnek"], "rows": [
+          ["~ %90", "muss", "sicher, bestimmt", "Er <b>muss</b> zu Hause sein, das Licht brennt."],
+          ["~ %75", "dürfte · wird (wohl)", "wahrscheinlich, vermutlich", "Sie <b>dürfte</b> etwa 40 sein."],
+          ["~ %50", "kann", "vielleicht, möglicherweise", "Das <b>kann</b> stimmen."],
+          ["< %50", "könnte", "eventuell", "Es <b>könnte</b> morgen regnen."],
+          ["olumsuz kesin", "kann nicht", "sicher nicht", "Das <b>kann nicht</b> sein!"]
+        ] },
+        { "type": "table", "h": "Geçmiş hakkında tahmin", "head": ["Yapı", "Örnek", "Türkçesi"], "rows": [
+          ["Modal + PII + haben/sein", "Er <b>muss</b> den Bus <b>verpasst haben</b>.", "Otobüsü kaçırmış olmalı."],
+          ["Modal + PII + sein", "Sie <b>dürfte</b> schon <b>angekommen sein</b>.", "Muhtemelen varmıştır."],
+          ["werden + PII + haben/sein", "Er <b>wird</b> es <b>vergessen haben</b>.", "Herhalde unutmuştur."]
+        ] },
+        { "type": "tip", "h": "Nesnel ↔ öznel modal", "text": "<i>Er <b>muss</b> arbeiten.</i> (zorunda – nesnel) ↔ <i>Er <b>muss</b> krank sein.</i> (eminim hastadır – öznel). Geçmişte fark netleşir: <i>Er <b>musste</b> arbeiten.</i> ↔ <i>Er <b>muss</b> krank <b>gewesen sein</b>.</i>" },
+        { "type": "tr", "text": "Türkçe “-malı / -mış olmalı / herhalde / -abilir” ekleri bu yapıların karşılığıdır: “Evde olmalı” = Er muss zu Hause sein. “Unutmuş olabilir” = Er kann es vergessen haben." },
+        { "type": "examples", "h": "Örnekler", "items": [
+          ["Das <b>dürfte</b> kein Problem sein.", "Bu muhtemelen sorun olmaz."],
+          ["Sie <b>wird wohl</b> im Stau stehen.", "Herhalde trafikte kalmıştır."],
+          ["Er <b>kann</b> das nicht <b>gesagt haben</b>, das passt nicht zu ihm.", "Bunu söylemiş olamaz, ona hiç uymuyor."]
+        ] }
+      ],
+      "mistakes": [
+        ["Er musste krank sein. (tahmin)", "Er muss krank sein. / Er muss krank gewesen sein.", "Öznel modal geçmiş: muss + gewesen sein."],
+        ["Er muss den Zug verpasst.", "Er muss den Zug verpasst haben.", "Mastar perfekt: PII + haben."],
+        ["Es darf morgen regnen. (tahmin)", "Es dürfte morgen regnen.", "Tahminde dürfte (Konj. II)."]
+      ],
+      "exercises": [
+        { "t": "choice", "q": "Das Licht ist an. Er ___ zu Hause sein. (eminim)", "o": ["muss", "könnte", "dürfte"], "a": "muss", "x": "Yüksek kesinlik → muss." },
+        { "t": "choice", "q": "Ich bin nicht sicher, aber es ___ morgen schneien.", "o": ["muss", "könnte", "will"], "a": "könnte", "x": "Düşük ihtimal → könnte." },
+        { "t": "choice", "q": "Sie ___ ungefähr 30 Jahre alt sein. (büyük ihtimalle)", "o": ["dürfte", "darf", "durfte"], "a": "dürfte", "x": "Tahmin → dürfte." },
+        { "t": "gap", "q": "Er ist nicht gekommen. Er muss es vergessen ___.", "a": ["haben"], "x": "Geçmiş tahmin: PII + haben." },
+        { "t": "gap", "q": "Sie ist nicht hier. Sie muss schon nach Hause gegangen ___.", "a": ["sein"], "x": "gehen → sein." },
+        { "t": "choice", "q": "Er ist nicht da. Er ___ wohl krank sein.", "o": ["wird", "wurde", "würde"], "a": "wird", "x": "werden + wohl = herhalde." },
+        { "t": "choice", "q": "Das ___ nicht stimmen! Ich habe ihn gestern gesehen. (imkânsız)", "o": ["kann", "muss", "dürfte"], "a": "kann", "x": "Olumsuz kesinlik → kann nicht." },
+        { "t": "order", "w": ["er", "muss", "den", "Termin", "vergessen", "haben"], "a": "Er muss den Termin vergessen haben.", "x": "Modal + … + PII + haben." },
+        { "t": "choice", "q": "Er ___ sehr müde gewesen sein. (eminim)", "o": ["musste", "muss", "hat gemusst"], "a": "muss", "x": "Öznel modal Präsens + mastar perfekt." },
+        { "t": "choice", "q": "Hangisi “tahmin” bildirir?", "o": ["Er muss heute arbeiten, sein Chef will es.", "Er muss im Büro sein, sein Auto steht da.", "Er musste gestern arbeiten."], "a": "Er muss im Büro sein, sein Auto steht da.", "x": "Kanıta dayalı çıkarım → öznel." }
+      ],
+      "links": [
+        { "n": "Schubert – Modalverben subjektiv/objektiv (C1)", "u": "https://www.schubert-verlag.de/aufgaben/uebungen_c1/c1_modalverben1.htm" },
+        { "n": "Lingolia – Verben", "u": "https://deutsch.lingolia.com/de/grammatik/verben" }
+      ]
+    },
+    {
+      "id": "b2-konnektoren",
+      "title": "İleri bağlaçlar",
+      "de": "indem, sodass / so … dass, falls, sofern, solange, ohne dass, anstatt dass, je nachdem, wohingegen",
+      "summary": "Tarz, sonuç, koşul ve karşıtlığı tek cümlede ince ayrımlarla ifade etmek için. Hepsi yan cümle kurar: <b>fiil sonda</b>.",
+      "blocks": [
+        { "type": "table", "h": "Anlamlar", "head": ["Bağlaç", "Anlam", "Örnek"], "rows": [
+          ["indem", "-erek (yöntem)", "Man lernt, <b>indem</b> man übt."],
+          ["dadurch, dass", "-mesi sayesinde", "Er hat abgenommen, <b>dadurch, dass</b> er Sport macht."],
+          ["sodass / so …, dass", "-ecek kadar / bu yüzden", "Es regnete, <b>sodass</b> wir drinnen blieben. · Er war <b>so</b> müde, <b>dass</b> er einschlief."],
+          ["falls / sofern", "-diği takdirde (koşul)", "<b>Falls</b> es regnet, fällt das Fest aus."],
+          ["solange", "-dığı sürece", "<b>Solange</b> du Fieber hast, bleibst du im Bett."],
+          ["ohne dass", "-meden (farklı özne)", "Er ging, <b>ohne dass</b> ich es merkte."],
+          ["(an)statt dass", "-eceğine (farklı özne)", "<b>Statt dass</b> er hilft, schaut er zu."],
+          ["je nachdem, ob / wie", "-e bağlı olarak", "<b>Je nachdem, wie</b> das Wetter ist, fahren wir."],
+          ["wohingegen / während", "-ken (karşıtlık)", "Ich mag Tee, <b>wohingegen</b> er Kaffee liebt."]
+        ] },
+        { "type": "tip", "h": "indem ↔ um … zu", "text": "<b>indem</b> = <i>nasıl?</i> (yöntem): Wie spart man Energie? – <i>Indem man das Licht ausschaltet.</i> <b>um … zu</b> = <i>ne için?</i> (amaç)." },
+        { "type": "tr", "text": "“Pratik yap<b>arak</b> öğrenirsin” = indem. “Ben fark et<b>meden</b> gitti” = ohne dass (farklı özne); aynı özne ise ohne … zu: Er ging, ohne sich zu verabschieden." },
+        { "type": "examples", "h": "Örnekler", "items": [
+          ["Sie verbesserte ihr Deutsch, <b>indem</b> sie täglich Nachrichten hörte.", "Her gün haber dinleyerek Almancasını geliştirdi."],
+          ["Der Vortrag war <b>so</b> langweilig, <b>dass</b> viele gingen.", "Sunum o kadar sıkıcıydı ki birçok kişi çıktı."],
+          ["<b>Sofern</b> nichts dazwischenkommt, sehen wir uns morgen.", "Bir aksilik olmazsa yarın görüşürüz."]
+        ] }
+      ],
+      "mistakes": [
+        ["Ich lerne, indem ich höre Podcasts.", "…, indem ich Podcasts höre.", "Yan cümle: fiil sonda."],
+        ["Er ging, ohne dass er sich zu verabschieden.", "…, ohne sich zu verabschieden.", "Aynı özne → ohne … zu."],
+        ["Es war so kalt, sodass …", "Es war so kalt, dass …", "so … dass ya da sodass; ikisi birden değil."]
+      ],
+      "exercises": [
+        { "t": "choice", "q": "Man kann Geld sparen, ___ man öfter selbst kocht.", "o": ["indem", "damit", "sodass"], "a": "indem", "x": "Yöntem → indem." },
+        { "t": "choice", "q": "Es schneite stark, ___ der Flug gestrichen wurde.", "o": ["sodass", "indem", "falls"], "a": "sodass", "x": "Sonuç → sodass." },
+        { "t": "choice", "q": "___ Sie Fragen haben, rufen Sie mich an.", "o": ["Falls", "Indem", "Solange"], "a": "Falls", "x": "Koşul → falls." },
+        { "t": "choice", "q": "Er hat die Wohnung verlassen, ___ jemand es bemerkt hat.", "o": ["ohne dass", "ohne zu", "statt dass"], "a": "ohne dass", "x": "Farklı özne → ohne dass." },
+        { "t": "gap", "q": "Der Koffer war ___ schwer, dass ich ihn nicht tragen konnte.", "a": ["so"], "x": "so … dass." },
+        { "t": "choice", "q": "___ du bei mir wohnst, musst du keine Miete zahlen.", "o": ["Solange", "Sodass", "Indem"], "a": "Solange", "x": "-dığı sürece → solange." },
+        { "t": "choice", "q": "___ wie viel Zeit wir haben, besuchen wir auch das Museum.", "o": ["Je nachdem,", "Falls,", "Indem,"], "a": "Je nachdem,", "x": "-e bağlı olarak → je nachdem, wie …" },
+        { "t": "order", "q": "Wie hast du so gut Deutsch gelernt? – …", "w": ["indem", "ich", "viel", "gelesen", "habe"], "a": "indem ich viel gelesen habe", "x": "indem + fiil sonda." },
+        { "t": "choice", "q": "Mein Bruder ist sehr ordentlich, ___ ich eher chaotisch bin.", "o": ["wohingegen", "sodass", "indem"], "a": "wohingegen", "x": "Karşıtlık → wohingegen." },
+        { "t": "choice", "q": "___ er im Haushalt hilft, sitzt er nur vor dem Computer.", "o": ["Statt dass", "Ohne dass", "Sofern"], "a": "Statt dass", "x": "-eceğine → (an)statt dass." }
+      ],
+      "links": [
+        { "n": "Schubert – Satzverbindungen (C1)", "u": "https://www.schubert-verlag.de/aufgaben/uebungen_c1/c1_uebungen_index.htm" },
+        { "n": "Lingolia – Satzbau", "u": "https://deutsch.lingolia.com/de/grammatik/satzbau" }
+      ]
+    },
+    {
+      "id": "b2-nvv",
+      "title": "İsim–fiil birlikteliği",
+      "de": "Nomen-Verb-Verbindungen (Funktionsverbgefüge): in Frage kommen, zur Verfügung stehen …",
+      "summary": "Resmî dilde anlamı <b>isim</b> taşır, fiil sadece “işlev” görür: <i>eine Entscheidung treffen</i> (= entscheiden). B2 yazma ve konuşma sınavlarında beklenen üsluptur.",
+      "blocks": [
+        { "type": "table", "h": "Sık birliktelikler", "head": ["Nomen-Verb-Verbindung", "Basit fiil", "Türkçe"], "rows": [
+          ["eine Entscheidung <b>treffen</b>", "entscheiden", "karar vermek"],
+          ["eine Frage <b>stellen</b>", "fragen", "soru sormak"],
+          ["einen Antrag <b>stellen</b>", "beantragen", "başvuru yapmak"],
+          ["Kritik <b>üben</b> an", "kritisieren", "eleştirmek"],
+          ["in Kontakt <b>treten</b> mit", "kontaktieren", "iletişime geçmek"],
+          ["zur Verfügung <b>stehen</b>", "verfügbar sein", "hazır/emre amade olmak"],
+          ["zur Verfügung <b>stellen</b>", "bereitstellen", "sağlamak"],
+          ["in Frage <b>kommen</b>", "möglich sein", "söz konusu olmak"],
+          ["Bescheid <b>geben / sagen</b>", "informieren", "haber vermek"],
+          ["Rücksicht <b>nehmen</b> auf", "berücksichtigen", "dikkate almak"],
+          ["Einfluss <b>nehmen / haben</b> auf", "beeinflussen", "etkilemek"],
+          ["zum Ausdruck <b>bringen</b>", "ausdrücken", "ifade etmek"],
+          ["in Kraft <b>treten</b>", "gültig werden", "yürürlüğe girmek"],
+          ["Maßnahmen <b>ergreifen</b>", "handeln", "önlem almak"],
+          ["eine Rolle <b>spielen</b>", "wichtig sein", "rol oynamak"]
+        ] },
+        { "type": "tip", "h": "Pasif anlam", "text": "Bazı NVV’ler pasif anlam taşır: <i>zur Diskussion <b>stehen</b></i> (tartışılıyor), <i>in Gebrauch <b>kommen</b></i> (kullanılmaya başlanmak), <i>Anerkennung <b>finden</b></i> (takdir görmek)." },
+        { "type": "tr", "text": "Türkçede de benzer kalıplar var: “karar vermek”, “soru sormak”, “önlem almak”. Ama fiiller tutmaz: Almancada karar “vurulur” (treffen), soru “konur” (stellen). Kalıpları bütün olarak ezberle." },
+        { "type": "examples", "h": "Örnekler", "items": [
+          ["Für weitere Fragen <b>stehe</b> ich Ihnen gern <b>zur Verfügung</b>.", "Başka sorularınız için memnuniyetle hizmetinizdeyim."],
+          ["Das neue Gesetz <b>tritt</b> im Januar <b>in Kraft</b>.", "Yeni yasa ocakta yürürlüğe giriyor."],
+          ["Die Regierung muss endlich <b>Maßnahmen ergreifen</b>.", "Hükümet sonunda önlem almalı."]
+        ] }
+      ],
+      "mistakes": [
+        ["eine Entscheidung machen", "eine Entscheidung treffen", "Kalıp: treffen."],
+        ["eine Frage fragen", "eine Frage stellen", "Kalıp: stellen."],
+        ["Ich gebe dir Bescheid sagen.", "Ich gebe dir Bescheid. / Ich sage dir Bescheid.", "Tek fiil."]
+      ],
+      "exercises": [
+        { "t": "choice", "q": "Wir müssen bald eine Entscheidung ___.", "o": ["machen", "treffen", "geben"], "a": "treffen", "x": "eine Entscheidung treffen." },
+        { "t": "choice", "q": "Darf ich Ihnen eine Frage ___?", "o": ["stellen", "fragen", "machen"], "a": "stellen", "x": "eine Frage stellen." },
+        { "t": "gap", "q": "Für Rückfragen stehe ich Ihnen gern zur ___.", "a": ["Verfügung", "Verfuegung"], "x": "zur Verfügung stehen." },
+        { "t": "choice", "q": "Das Gesetz ___ am 1. Juli in Kraft.", "o": ["tritt", "kommt", "steht"], "a": "tritt", "x": "in Kraft treten." },
+        { "t": "choice", "q": "Diese Lösung kommt leider nicht in ___.", "o": ["Sicht", "Frage", "Kraft"], "a": "Frage", "x": "in Frage kommen = söz konusu olmak (eş anlamlısı: in Betracht kommen)." },
+        { "t": "gap", "q": "Bitte geben Sie mir bis Freitag ___. (haber verin)", "a": ["Bescheid"], "x": "Bescheid geben." },
+        { "t": "choice", "q": "Der Chef hat an meinem Bericht Kritik ___.", "o": ["gemacht", "geübt", "gestellt"], "a": "geübt", "x": "Kritik üben an." },
+        { "t": "choice", "q": "Man sollte auf ältere Menschen Rücksicht ___.", "o": ["nehmen", "geben", "machen"], "a": "nehmen", "x": "Rücksicht nehmen auf." },
+        { "t": "gap", "q": "Geld spielt für mich keine große ___.", "a": ["Rolle"], "x": "eine Rolle spielen." },
+        { "t": "choice", "q": "Ich möchte meinen Dank zum ___ bringen.", "o": ["Ausdruck", "Abschluss", "Einsatz"], "a": "Ausdruck", "x": "zum Ausdruck bringen = ifade etmek." }
+      ],
+      "links": [
+        { "n": "Schubert – Nomen-Verb-Verbindungen 1 (C1)", "u": "https://www.schubert-verlag.de/aufgaben/uebungen_c1/c1_nomen-verb1.htm" },
+        { "n": "Schubert – Nomen-Verb-Verbindungen 2 (C1)", "u": "https://www.schubert-verlag.de/aufgaben/uebungen_c1/c1_nomen-verb2.htm" }
+      ]
+    },
+    {
+      "id": "b2-infinitiv",
+      "title": "Mastar yapıları: geçmiş ve edilgen",
+      "de": "Infinitiv Perfekt und Infinitiv Passiv mit zu · Modalverben im Perfekt",
+      "summary": "Mastar da zaman ve çatı taşıyabilir: <i>Ich freue mich, dich <b>kennengelernt zu haben</b>.</i> (tanışmış olmaktan) · <i>Er hofft, <b>eingeladen zu werden</b>.</i> (davet edilmeyi).",
+      "blocks": [
+        { "type": "table", "h": "Mastar biçimleri", "head": ["", "Aktiv", "Passiv"], "rows": [
+          ["şimdi", "zu machen", "gemacht <b>zu werden</b>"],
+          ["geçmiş", "gemacht <b>zu haben</b> / gegangen <b>zu sein</b>", "gemacht worden <b>zu sein</b>"]
+        ] },
+        { "type": "table", "h": "dass-cümlesi → zu’lu mastar", "head": ["dass-Satz", "Infinitiv"], "rows": [
+          ["Ich bin froh, dass ich <b>helfen kann</b>.", "Ich bin froh, helfen <b>zu können</b>."],
+          ["Er bedauert, dass er nichts <b>gesagt hat</b>.", "Er bedauert, nichts <b>gesagt zu haben</b>."],
+          ["Sie ist stolz, dass sie <b>angenommen wurde</b>.", "Sie ist stolz, <b>angenommen worden zu sein</b>."],
+          ["Ich hoffe, dass ich <b>eingeladen werde</b>.", "Ich hoffe, <b>eingeladen zu werden</b>."]
+        ], "note": "Koşul: iki cümlenin öznesi (veya ana cümlenin nesnesi ile yan cümlenin öznesi) aynı olmalı." },
+        { "type": "table", "h": "Modal fiillerin Perfekt’i", "head": ["Durum", "Örnek"], "rows": [
+          ["tek başına (tam fiil)", "Ich habe das nicht <b>gewollt</b>. · Er hat Deutsch <b>gekonnt</b>."],
+          ["mastarla (çift mastar)", "Ich habe arbeiten <b>müssen</b>. · Sie hat nicht kommen <b>können</b>."],
+          ["yan cümlede", "…, weil ich <b>habe</b> arbeiten müssen."]
+        ] },
+        { "type": "tr", "text": "Türkçe “tanışmış <b>olmaktan</b> mutluyum”, “davet <b>edilmeyi</b> umuyorum” yapıları bu mastar biçimlerine birebir karşılık gelir." },
+        { "type": "examples", "h": "Örnekler", "items": [
+          ["Ich erinnere mich nicht, das <b>gesagt zu haben</b>.", "Bunu söylediğimi hatırlamıyorum."],
+          ["Er behauptet, nie in Paris <b>gewesen zu sein</b>.", "Hiç Paris’te bulunmadığını iddia ediyor."],
+          ["Niemand möchte <b>kritisiert werden</b>.", "Kimse eleştirilmek istemez."]
+        ] }
+      ],
+      "mistakes": [
+        ["Ich freue mich, dich kennengelernt zu sein.", "…, dich kennengelernt zu haben.", "kennenlernen → haben."],
+        ["Ich habe arbeiten gemusst.", "Ich habe arbeiten müssen.", "Çift mastar."],
+        ["Er hofft, eingeladen zu worden.", "Er hofft, eingeladen zu werden.", "Passiv şimdiki mastar: PII + zu werden."]
+      ],
+      "exercises": [
+        { "t": "gap", "q": "Ich bin froh, die Prüfung bestanden zu ___.", "a": ["haben"], "x": "bestehen → haben." },
+        { "t": "gap", "q": "Er bereut, so früh nach Hause gegangen zu ___.", "a": ["sein"], "x": "gehen → sein." },
+        { "t": "choice", "q": "Sie hofft, zum Vorstellungsgespräch eingeladen zu ___.", "o": ["werden", "worden", "sein"], "a": "werden", "x": "Passiv şimdi: PII + zu werden." },
+        { "t": "choice", "q": "Er ist stolz, ausgewählt worden zu ___.", "o": ["haben", "sein", "werden"], "a": "sein", "x": "Passiv geçmiş: worden zu sein." },
+        { "t": "choice", "q": "Gestern habe ich lange arbeiten ___.", "o": ["gemusst", "müssen", "musste"], "a": "müssen", "x": "Modal + mastar → çift mastar." },
+        { "t": "choice", "q": "Das habe ich nicht ___! (istemedim)", "o": ["wollen", "gewollt", "gewollen"], "a": "gewollt", "x": "Tek başına modal → gewollt." },
+        { "t": "order", "q": "Er sagt, …", "w": ["dass", "er", "nicht", "hat", "kommen", "können"], "a": "dass er nicht hat kommen können", "x": "Yan cümlede “hat” çift mastarın önünde." },
+        { "t": "order", "q": "Ich erinnere mich nicht, …", "w": ["dich", "jemals", "gesehen", "zu", "haben"], "a": "dich jemals gesehen zu haben", "x": "PII + zu haben." },
+        { "t": "gap", "q": "Niemand will gern ___ werden. (kritisieren, pasif)", "a": ["kritisiert"], "x": "Modal + PII + werden." }
+      ],
+      "links": [
+        { "n": "mein-deutschbuch – Infinitivsätze", "u": "https://mein-deutschbuch.de/grammatikuebungen-infinitivsaetze/" },
+        { "n": "Lingolia – Verben", "u": "https://deutsch.lingolia.com/de/grammatik/verben" }
+      ]
+    },
+    {
+      "id": "b2-wortbildung",
+      "title": "Kelime türetme: önekli fiiller ve ekler",
+      "de": "Wortbildung: Präfixverben (be-, er-, ver-, zer-, ent-), Nominalsuffixe (-ung, -heit, -keit, -schaft), Adjektivsuffixe",
+      "summary": "Kök bilen B2 öğrencisi yeni kelimeleri tahmin edebilir. Ön ekler fiilin anlamını, son ekler kelimenin türünü ve artikelini belirler.",
+      "blocks": [
+        { "type": "table", "h": "Ayrılmayan önekler", "head": ["Önek", "Tipik anlam", "Örnek"], "rows": [
+          ["be-", "geçişli yapar (nesne alır)", "antworten auf → <b>be</b>antworten (Akk.)"],
+          ["er-", "sonuç, başarma", "<b>er</b>reichen, <b>er</b>finden, <b>er</b>trinken"],
+          ["ver-", "yanlış / tükenme / değişme", "sich <b>ver</b>laufen (yolu kaybetmek), <b>ver</b>brauchen, <b>ver</b>bessern"],
+          ["zer-", "parçalamak", "<b>zer</b>brechen, <b>zer</b>stören"],
+          ["ent-", "uzaklaşma, kaldırma", "<b>ent</b>fernen, <b>ent</b>kommen, <b>ent</b>decken"],
+          ["miss-", "yanlış, kötü", "<b>miss</b>verstehen, <b>miss</b>lingen"]
+        ] },
+        { "type": "table", "h": "İsim ekleri ve artikel", "head": ["Ek", "Artikel", "Örnek"], "rows": [
+          ["-ung", "die", "entscheiden → die Entscheid<b>ung</b>"],
+          ["-heit / -keit", "die", "frei → die Frei<b>heit</b>, möglich → die Möglich<b>keit</b>"],
+          ["-schaft", "die", "freund → die Freund<b>schaft</b>"],
+          ["-nis", "das / die", "das Ergeb<b>nis</b>, die Erlaub<b>nis</b>"],
+          ["-er", "der", "lehren → der Lehr<b>er</b>"],
+          ["-tum", "das (çoğu)", "das Wachs<b>tum</b>, das Eigen<b>tum</b>"]
+        ] },
+        { "type": "table", "h": "Sıfat ekleri", "head": ["Ek", "Anlam", "Örnek"], "rows": [
+          ["-bar", "-abilir", "machbar, essbar"],
+          ["-los", "-sız", "arbeitslos, hilflos"],
+          ["-voll", "-lı (dolu)", "sinnvoll, wertvoll"],
+          ["-ig / -lich / -isch", "-li, -sel", "sonnig, freundlich, politisch"],
+          ["un-", "olumsuz", "unmöglich, unklar"]
+        ] },
+        { "type": "tr", "text": "Türkçenin ekleme yapısı burada avantajdır: -sız = -los, -lı = -ig/-voll, -lık = -heit/-keit/-schaft. Almancada ekler aynı zamanda <b>artikeli</b> de söyler: -ung/-heit/-keit hep <b>die</b>." },
+        { "type": "examples", "h": "Örnekler", "items": [
+          ["Bitte <b>beantworten</b> Sie die Frage.", "Lütfen soruyu yanıtlayın."],
+          ["Ich habe mich in der Stadt <b>verlaufen</b>.", "Şehirde yolumu kaybettim."],
+          ["Die <b>Möglichkeit</b> ist <b>unbegrenzt</b>.", "Olanaklar sınırsız."]
+        ] }
+      ],
+      "mistakes": [
+        ["Ich beantworte auf die Frage.", "Ich beantworte die Frage.", "be- fiili doğrudan nesne alır."],
+        ["das Freiheit", "die Freiheit", "-heit → die."],
+        ["Ich habe mich verloren in der Stadt. (yol)", "Ich habe mich verlaufen.", "Yolunu kaybetmek → sich verlaufen."]
+      ],
+      "exercises": [
+        { "t": "choice", "q": "Bitte ___ Sie die Fragen 1 bis 5.", "o": ["antworten", "beantworten", "verantworten"], "a": "beantworten", "x": "be- → Akk. nesne." },
+        { "t": "choice", "q": "___ Wohnung ist hell.", "o": ["Der", "Die", "Das"], "a": "Die", "x": "-ung → die." },
+        { "t": "gap", "q": "frei → die Frei___ (ek)", "a": ["heit"], "x": "-heit." },
+        { "t": "gap", "q": "möglich → die Möglich___ (ek)", "a": ["keit"], "x": "-lich ile biten sıfatlarda -keit." },
+        { "t": "choice", "q": "Er hat keine Arbeit. Er ist ___.", "o": ["arbeitsvoll", "arbeitslos", "unarbeitbar"], "a": "arbeitslos", "x": "-los = -sız." },
+        { "t": "choice", "q": "Das Glas ist auf den Boden gefallen und ___.", "o": ["zerbrochen", "verbrochen", "erbrochen"], "a": "zerbrochen", "x": "zer- = parçalanmak." },
+        { "t": "choice", "q": "Kolumbus hat Amerika ___.", "o": ["entdeckt", "bedeckt", "verdeckt"], "a": "entdeckt", "x": "ent-decken = örtüyü kaldırmak → keşfetmek." },
+        { "t": "gap", "q": "Diese Pilze sind nicht ess___. (yenilebilir değil)", "a": ["bar"], "x": "-bar = -abilir." },
+        { "t": "choice", "q": "Ich habe dich leider ___. (yanlış anladım)", "o": ["missverstanden", "verstanden", "zerstanden"], "a": "missverstanden", "x": "miss- = yanlış." },
+        { "t": "choice", "q": "Das war eine ___ Idee! (anlamlı)", "o": ["sinnlose", "sinnvolle", "sinnbare"], "a": "sinnvolle", "x": "-voll = -lı." }
+      ],
+      "links": [
+        { "n": "Schubert – Verben mit Präfixen (C1)", "u": "https://www.schubert-verlag.de/aufgaben/uebungen_c1/c1_praefixe1.htm" },
+        { "n": "Lingolia – Nomen und Artikel", "u": "https://deutsch.lingolia.com/de/grammatik/nomen" }
+      ]
+    }
+  ]
+}

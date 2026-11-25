@@ -3,6 +3,7 @@ import * as sync from './sync.js';
 import { nowSec } from './srs.js';
 import { initFsp, showFsp, fspBack, fspRemote, flushFsp } from './fsp.js';
 import { initSpeaking, showSpeaking, speakingBack, leaveSpeaking } from './speaking.js';
+import { initGerman, showGerman, germanBack, germanKey } from './german.js';
 import { svg, ICON, ic } from './icons.js';
 
 // Android uygulaması (Capacitor) içinde mi çalışıyoruz? Orada bazı işler yerel eklentilerle yapılır.
@@ -392,6 +393,7 @@ function renderSidebar() {
   $('#nav-reading')?.classList.toggle('active', ['readings', 'reading'].includes(state.view));
   $('#nav-fsp')?.classList.toggle('active', ['fsp', 'fsp-run'].includes(state.view));
   $('#nav-speaking')?.classList.toggle('active', String(state.view).startsWith('speaking'));
+  $('#nav-german')?.classList.toggle('active', String(state.view).startsWith('german'));
   if (!String(state.view).startsWith('speaking')) leaveSpeaking(); // mikrofon ve kayıt açık kalmasın
   document.body.classList.toggle('reading-on', state.view === 'reading');
   renderChatBadges();
@@ -4785,6 +4787,7 @@ document.addEventListener('click', (e) => {
       case 'readings': flushReading(); showReadings(); break;
       case 'fsp': await showFsp(); break;
       case 'speaking': await showSpeaking(); break;
+      case 'german': await showGerman(); break;
       case 'reading-import': readingImportModal(); break;
       case 'reading-check': checkReading(); break;
       case 'reading-timer': {
@@ -4960,6 +4963,11 @@ document.addEventListener('keydown', (e) => {
     return;
   }
 
+  if (String(state.view).startsWith('german')) {
+    if (e.key === 'Escape') { if (typing) document.activeElement.blur(); else germanBack(); return; }
+    if (germanKey(e)) return;
+  }
+
   if ((state.view === 'fsp' || state.view === 'fsp-run') && e.key === 'Escape') {
     if (typing) document.activeElement.blur(); else fspBack();
     return;
@@ -5060,6 +5068,7 @@ async function init() {
   initFsp({ $, $$, main, state, prefs, savePrefs, store, sync, ICON, toast, guard, openModal, confirmBox, speak, stopSpeech, addWordsToDeck, openDeck,
     renderSidebar, setTitle, leaveStudy, refreshDecks, showHome });
   initSpeaking({ $, $$, main, state, prefs, savePrefs, sync, ICON, toast, openModal, confirmBox, setTitle, leaveStudy, renderSidebar, showHome });
+  initGerman({ $, $$, main, state, ICON, toast, speak, setTitle, leaveStudy, renderSidebar, showHome });
   store.onRemoteChange(onRemoteChange);
   sync.setPresenceProvider(() => (timer.status === 'running' ? Math.floor((Date.now() - liveSec() * 1000) / 1000) : null));
   sync.onStatus(() => renderAccount());
@@ -5102,6 +5111,7 @@ async function init() {
       else if (state.view === 'readings') showHome();
       else if (state.view === 'deck') showDecks();
       else if (fspBack()) { /* FSP kendi geri adımını yaptı */ }
+      else if (String(state.view).startsWith('german') && germanBack()) { /* Almanca kendi geri adımını yaptı */ }
       else if (['decks', 'essays', 'chat'].includes(state.view)) showHome();
       else NativeApp.exitApp();
     });

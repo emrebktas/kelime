@@ -1,16 +1,17 @@
 // Uygulama dosyalarını önbelleğe alır: internet yokken de açılır.
 // Önce ağ (her zaman en yeni sürüm), ağ yoksa ya da yavaşsa önbellek.
 
-const CACHE = 'kelime-v54';
+const CACHE = 'kelime-v55';
 const ASSETS = [
   './', 'index.html', 'app.css', 'ds.css',
   'vendor/fonts/inter-latin-wght-normal.woff2', 'vendor/fonts/inter-latin-ext-wght-normal.woff2',
   'vendor/fonts/fraunces-latin-wght-normal.woff2', 'vendor/fonts/fraunces-latin-ext-wght-normal.woff2', 'manifest.webmanifest',
-  'js/app.js', 'js/icons.js', 'js/store.js', 'js/sync.js', 'js/srs.js', 'js/config.js', 'js/fsp.js', 'js/kurs.js', 'js/fsp-train.js', 'js/fsp-learn.js', 'js/speaking.js', 'speaking.css', 'fsp-train.css', 'fsp-learn.css', 'fsp-exam.css',
+  'js/app.js', 'js/icons.js', 'js/store.js', 'js/sync.js', 'js/srs.js', 'js/config.js', 'js/fsp.js', 'js/kurs.js', 'js/fsp-train.js', 'js/fsp-learn.js', 'js/speaking.js', 'speaking.css', 'js/german.js', 'german.css', 'fsp-train.css', 'fsp-learn.css', 'fsp-exam.css',
   'vendor/supabase.js', 'vendor/capacitor.js',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/logo.png',
   'content/task1-collocations.json', 'content/reading-sample.json', 'content/writing-criteria.json',
   'content/fsp-cases.json', 'content/fsp-guide.json', 'content/fsp-bayern.json', 'content/fsp-training.json',
+  'content/german/a1.json', 'content/german/a2.json', 'content/german/b1.json', 'content/german/b2.json', 'content/german/c1.json', 'content/german/c2.json',
 ];
 
 self.addEventListener('install', (e) => {

@@ -1,0 +1,464 @@
+{
+  "level": "C1",
+  "title": "İleri",
+  "intro": "Akademik ve mesleki metinlerin dili: <b>isimleştirme (Nominalstil), genişletilmiş sıfat-fiiller, öznel modal fiiller, ileri bağlaçlar, değişken önekli fiiller</b> ve “es”in görevleri. Goethe-Zertifikat C1, TestDaF ve DSH’de beklenen yapılar.",
+  "sources": [
+    { "n": "Goethe-Institut – Goethe-Zertifikat C1", "u": "https://www.goethe.de/ins/de/de/prf/gzc1.cfm" },
+    { "n": "Schubert-Verlag – Erkundungen C1 Online-Übungen", "u": "https://www.schubert-verlag.de/aufgaben/uebungen_c1/c1_erkund_uebungen_index.htm" },
+    { "n": "Lingolia Deutsch – Grammatik", "u": "https://deutsch.lingolia.com/de/grammatik" }
+  ],
+  "topics": [
+    {
+      "id": "c1-nominal",
+      "title": "İsimleştirme ve fiilleştirme",
+      "de": "Nominalisierung ↔ Verbalisierung: Nominalstil und Verbalstil",
+      "summary": "Bilimsel ve resmî metinler <b>isim</b> ağırlıklıdır (<i>nach der Ankunft des Zuges</i>), konuşma dili <b>fiil</b> ağırlıklı (<i>nachdem der Zug angekommen war</i>). C1’de iki yönde dönüşüm beklenir.",
+      "blocks": [
+        { "type": "table", "h": "Yan cümle ↔ edat grubu", "head": ["Anlam", "Verbalstil (bağlaç)", "Nominalstil (edat)"], "rows": [
+          ["zaman", "<b>Nachdem</b> er angekommen war, …", "<b>Nach</b> seiner Ankunft …"],
+          ["zaman", "<b>Während</b> wir arbeiteten, …", "<b>Während</b> der Arbeit …"],
+          ["zaman", "<b>Bevor</b> die Sitzung beginnt, …", "<b>Vor</b> Beginn der Sitzung …"],
+          ["sebep", "<b>Weil</b> es stark regnete, …", "<b>Wegen</b> des starken Regens …"],
+          ["karşıtlık", "<b>Obwohl</b> er krank war, …", "<b>Trotz</b> seiner Krankheit …"],
+          ["koşul", "<b>Wenn</b> man es falsch benutzt, …", "<b>Bei</b> falscher Benutzung …"],
+          ["amaç", "<b>Um</b> Energie <b>zu</b> sparen, …", "<b>Zum</b> Sparen von Energie / <b>Zur</b> Energieeinsparung …"],
+          ["yöntem", "<b>Indem</b> man regelmäßig übt, …", "<b>Durch</b> regelmäßiges Üben …"],
+          ["sonuç", "…, <b>sodass</b> der Verkehr zusammenbrach.", "… <b>mit der Folge</b> eines Verkehrszusammenbruchs."]
+        ] },
+        { "type": "list", "h": "Dönüşüm kuralları", "items": [
+          "<b>Fiil → isim:</b> ankommen → die Ankunft, entscheiden → die Entscheidung, steigen → der Anstieg, lesen → das Lesen (mastar isimleştirme).",
+          "<b>Özne → Genitiv veya iyelik:</b> der Zug kommt an → die Ankunft <b>des Zuges</b>; er kommt an → <b>seine</b> Ankunft.",
+          "<b>Akkusativ nesne → Genitiv:</b> man repariert das Auto → die Reparatur <b>des Autos</b>.",
+          "<b>Etken özne (pasifte) → durch:</b> die Untersuchung des Patienten <b>durch den Arzt</b>.",
+          "<b>Zarf → sıfat:</b> es regnet stark → der <b>starke</b> Regen; man übt regelmäßig → <b>regelmäßiges</b> Üben.",
+          "<b>Edat korunur ya da yeni edat gelir:</b> fragen <b>nach</b> → die Frage <b>nach</b>; beeinflussen (+ Akk.) → der Einfluss <b>auf</b>"
+        ] },
+        { "type": "tip", "h": "Abartma", "text": "İyi bir C1 metni iki stili dengeler. Arka arkaya Genitiv zinciri (<i>die Verbesserung der Qualität der Ausbildung der Lehrer</i>) okunmayı zorlaştırır; bir kısmını yan cümleye çevir." },
+        { "type": "tr", "text": "Türkçe akademik dil de isimleştirmeyi sever: “Trenin varışından sonra”, “düzenli alıştırma yoluyla”. Türkçe -ma/-ış/-ım ekleri Almancadaki -ung, -en (das Üben) ve kök isimlerine (die Ankunft) karşılık gelir." },
+        { "type": "examples", "h": "Örnekler", "items": [
+          ["<b>Bei</b> Nichtbeachtung der Vorschriften droht ein Bußgeld.", "Kurallara uyulmaması hâlinde para cezası uygulanır."],
+          ["<b>Nach</b> Abschluss des Studiums ging sie ins Ausland.", "Okulu bitirdikten sonra yurt dışına gitti."],
+          ["<b>Aufgrund</b> der gestiegenen Nachfrage wurden die Preise erhöht.", "Artan talep nedeniyle fiyatlar yükseltildi."]
+        ] }
+      ],
+      "mistakes": [
+        ["nach dem Ankommen des Zuges (yazıda)", "nach der Ankunft des Zuges", "Kök isim tercih edilir."],
+        ["wegen es regnet", "wegen des Regens / weil es regnet", "Edat isimle, bağlaç cümleyle."],
+        ["der Einfluss an die Politik", "der Einfluss auf die Politik", "İsimleşince edat eklenebilir: beeinflussen → Einfluss auf."]
+      ],
+      "exercises": [
+        { "t": "choice", "q": "Nachdem er das Studium beendet hatte, … → ___ Beendigung des Studiums …", "o": ["Nach", "Nachdem", "Seit"], "a": "Nach", "x": "nachdem → nach + Dativ." },
+        { "t": "choice", "q": "Weil die Kosten steigen, … → Wegen ___ Kosten …", "o": ["steigender", "der steigenden", "den steigenden"], "a": "der steigenden", "x": "wegen + Gen. çoğul: der steigenden Kosten." },
+        { "t": "gap", "q": "Obwohl er sich bemühte, … → ___ seiner Bemühungen …", "a": ["Trotz"], "x": "obwohl → trotz + Gen." },
+        { "t": "choice", "q": "Wenn man das Gerät richtig benutzt, … → ___ richtiger Benutzung …", "o": ["Bei", "Mit", "Wenn"], "a": "Bei", "x": "Koşul → bei." },
+        { "t": "choice", "q": "Indem man regelmäßig trainiert, … → ___ regelmäßiges Training …", "o": ["Durch", "Mit", "Bei"], "a": "Durch", "x": "Yöntem → durch + Akk." },
+        { "t": "gap", "q": "Bevor die Prüfung beginnt, … → Vor ___ der Prüfung … (isim)", "a": ["Beginn"], "x": "beginnen → der Beginn." },
+        { "t": "choice", "q": "die Firma entwickelt ein Produkt → die ___ eines Produkts durch die Firma", "o": ["Entwicklung", "Entwickeln", "Entwicklungs"], "a": "Entwicklung", "x": "entwickeln → die Entwicklung." },
+        { "t": "choice", "q": "Während der Verhandlungen … → Verbalstil:", "o": ["Während verhandelt wurde, …", "Während der verhandelt, …", "Während dass man verhandelte, …"], "a": "Während verhandelt wurde, …", "x": "Öznesiz pasif yan cümle." },
+        { "t": "gap", "q": "Um die Umwelt zu schützen, … → Zum ___ der Umwelt …", "a": ["Schutz"], "x": "schützen → der Schutz; zu + dem = zum." },
+        { "t": "choice", "q": "Die Preise stiegen stark. → der ___ Anstieg der Preise", "o": ["starke", "stark", "starken"], "a": "starke", "x": "Zarf → sıfat: der starke Anstieg." }
+      ],
+      "links": [
+        { "n": "Schubert – Nominalisierungen 1", "u": "https://www.schubert-verlag.de/aufgaben/uebungen_c1/c1_nominalisierung1.htm" },
+        { "n": "Schubert – Nominalisierungen 2", "u": "https://www.schubert-verlag.de/aufgaben/uebungen_c1/c1_nominalisierung2.htm" }
+      ]
+    },
+    {
+      "id": "c1-partizipattr",
+      "title": "Genişletilmiş sıfat-fiil yapıları",
+      "de": "Erweiterte Partizipialattribute · Gerundivum (zu + Partizip I)",
+      "summary": "Bir ilgi cümlesini isim öbeğine sıkıştırmak: <i>die <b>von der Regierung geplante</b> Reform</i> (hükümetin planladığı reform). Gazete ve bilim dilinin temel yapısıdır.",
+      "blocks": [
+        { "type": "table", "h": "Relativsatz → erweitertes Attribut", "head": ["Relativsatz", "Partizipialattribut", "Partizip"], "rows": [
+          ["die Reform, <b>die</b> von der Regierung <b>geplant wird</b>", "die von der Regierung <b>geplante</b> Reform", "II (pasif)"],
+          ["die Kinder, <b>die</b> im Garten <b>spielen</b>", "die im Garten <b>spielenden</b> Kinder", "I (aktif, eşzamanlı)"],
+          ["der Gast, <b>der</b> gestern <b>angekommen ist</b>", "der gestern <b>angekommene</b> Gast", "II (sein-fiili, tamamlanmış)"],
+          ["die Aufgabe, <b>die</b> noch <b>zu erledigen ist</b>", "die noch <b>zu erledigende</b> Aufgabe", "zu + I (gerundivum: -ılmalı)"],
+          ["ein Problem, <b>das</b> leicht <b>gelöst werden kann</b>", "ein leicht <b>zu lösendes</b> Problem", "zu + I (-ılabilir)"]
+        ] },
+        { "type": "list", "h": "Çözme stratejisi (okurken)", "items": [
+          "1) Artikeli bul ve ona ait <b>ismi</b> ara (genellikle birkaç kelime sonra): <i><b>die</b> seit Jahren von Experten geforderte <b>Reform</b></i>.",
+          "2) İsmin hemen önündeki kelime Partizip’tir: <i>geforderte</i>.",
+          "3) Aradaki kelimeler Partizip’in tamamlayıcılarıdır: <i>seit Jahren, von Experten</i>.",
+          "4) İlgi cümlesine çevir: <i>die Reform, die seit Jahren von Experten gefordert wird</i>."
+        ] },
+        { "type": "tip", "h": "Hangi Partizip?", "text": "Partizip I = aktif ve eşzamanlı. Partizip II = geçişli fiilde pasif, sein-fiilinde tamamlanmış aktif (der eingeschlafene Junge). Haben alan geçişsiz fiillerden (geschlafen) sıfat yapılmaz." },
+        { "type": "tr", "text": "Bu yapı Türkçeye neredeyse birebir uyar: “<i>uzmanların yıllardır talep ettiği</i> reform” = <i>die seit Jahren von Experten geforderte Reform</i>. Türk öğrenciler için okurken çevirmek kolaydır; yazarken artikel ile ismi uzak tutmaya alışmak gerekir." },
+        { "type": "examples", "h": "Örnekler", "items": [
+          ["Die <b>im letzten Jahr deutlich gestiegenen</b> Mieten belasten viele Familien.", "Geçen yıl belirgin şekilde artan kiralar birçok aileye yük oluyor."],
+          ["Das ist ein <b>nicht zu unterschätzendes</b> Risiko.", "Bu, hafife alınmaması gereken bir risk."],
+          ["Die <b>auf dem Bahnsteig wartenden</b> Fahrgäste wurden informiert.", "Perondaki bekleyen yolcular bilgilendirildi."]
+        ] }
+      ],
+      "mistakes": [
+        ["die geplante von der Regierung Reform", "die von der Regierung geplante Reform", "Tamamlayıcılar Partizip’ten önce."],
+        ["der geschlafene Mann", "der schlafende Mann", "haben-geçişsiz fiilden PII sıfatı olmaz."],
+        ["eine zu lösende leicht Aufgabe", "eine leicht zu lösende Aufgabe", "Zarf zu’dan önce."]
+      ],
+      "exercises": [
+        { "t": "choice", "q": "das Buch, das von vielen gelesen wird → das von vielen ___ Buch", "o": ["lesende", "gelesene", "zu lesende"], "a": "gelesene", "x": "Pasif → PII." },
+        { "t": "choice", "q": "die Studenten, die in der Bibliothek lernen → die in der Bibliothek ___ Studenten", "o": ["lernenden", "gelernten", "lernende"], "a": "lernenden", "x": "Aktif, eşzamanlı → PI; die + çoğul → -en." },
+        { "t": "choice", "q": "die Probleme, die noch gelöst werden müssen → die noch ___ Probleme", "o": ["gelösten", "zu lösenden", "lösenden"], "a": "zu lösenden", "x": "Zorunluluk → zu + PI." },
+        { "t": "gap", "q": "der Zug, der vor 10 Minuten abgefahren ist → der vor 10 Minuten ___ Zug", "a": ["abgefahrene"], "x": "sein-fiili, tamamlanmış → PII + -e." },
+        { "t": "order", "q": "die Maßnahmen, die von der Stadt beschlossen wurden →", "w": ["die", "von", "der", "Stadt", "beschlossenen", "Maßnahmen"], "a": "die von der Stadt beschlossenen Maßnahmen", "x": "artikel + tamamlayıcı + PII + isim." },
+        { "t": "choice", "q": "Das ist eine kaum ___ Behauptung. (kanıtlanabilir)", "o": ["zu beweisende", "bewiesene", "beweisende"], "a": "zu beweisende", "x": "-abilir → zu + PI." },
+        { "t": "choice", "q": "die seit langem geforderte Reform = die Reform, …", "o": ["die seit langem fordert", "die seit langem gefordert wird", "die seit langem zu fordern ist"], "a": "die seit langem gefordert wird", "x": "PII → pasif ilgi cümlesi." },
+        { "t": "gap", "q": "Die ständig ___ Zahl der Touristen ist ein Problem. (wachsen, PI)", "a": ["wachsende"], "x": "Süren süreç → PI + -e." },
+        { "t": "choice", "q": "die Frau, die eingeschlafen ist → die ___ Frau", "o": ["eingeschlafene", "einschlafende", "geschlafene"], "a": "eingeschlafene", "x": "einschlafen (sein) → PII sıfat olur." }
+      ],
+      "links": [
+        { "n": "Schubert – Partizipialattribute", "u": "https://www.schubert-verlag.de/aufgaben/uebungen_c1/c1_attribute1.htm" },
+        { "n": "Lingolia – Adjektive", "u": "https://deutsch.lingolia.com/de/grammatik/adjektive" }
+      ]
+    },
+    {
+      "id": "c1-modal-subjektiv",
+      "title": "Öznel modal fiiller: iddia ve aktarım",
+      "de": "Subjektiver Gebrauch: sollen (Fremdbehauptung), wollen (Eigenbehauptung), mögen · im Vergleich zu müssen, dürfte, kann",
+      "summary": "<b>sollen</b> = “söylendiğine göre”: <i>Er <b>soll</b> reich sein.</i> (Zenginmiş.) <b>wollen</b> = “kendi iddiasına göre”: <i>Er <b>will</b> das nicht gewusst haben.</i> (Bilmediğini iddia ediyor.)",
+      "blocks": [
+        { "type": "table", "h": "Öznel anlamlar", "head": ["Modal", "Anlam", "Örnek", "Türkçe"], "rows": [
+          ["sollen", "başkasının iddiası, söylenti", "Der Täter <b>soll</b> ins Ausland geflohen sein.", "Failin yurt dışına kaçtığı söyleniyor."],
+          ["wollen", "öznenin kendi iddiası (şüpheyle)", "Sie <b>will</b> ihn nie gesehen haben.", "Onu hiç görmediğini iddia ediyor."],
+          ["müssen", "güçlü çıkarım", "Er <b>muss</b> es gewusst haben.", "Biliyor olmalıydı."],
+          ["dürfte", "olasılık", "Das <b>dürfte</b> teuer gewesen sein.", "Muhtemelen pahalıydı."],
+          ["können / könnte", "imkân", "Sie <b>könnte</b> recht haben.", "Haklı olabilir."],
+          ["mögen", "kabul (eski/yazı)", "Das <b>mag</b> sein, aber …", "Olabilir, ama …"]
+        ] },
+        { "type": "table", "h": "Nesnel ↔ öznel ayırt etme", "head": ["", "Nesnel", "Öznel"], "rows": [
+          ["Präsens", "Er <b>soll</b> mehr lernen. (öğretmen istiyor)", "Er <b>soll</b> sehr klug sein. (öyle diyorlar)"],
+          ["Geçmiş", "Er <b>sollte</b> / hat lernen <b>sollen</b>.", "Er <b>soll</b> sehr klug <b>gewesen sein</b>."],
+          ["Präsens", "Sie <b>will</b> Ärztin werden. (niyet)", "Sie <b>will</b> Ärztin sein. (iddia)"]
+        ], "note": "Öznel kullanımda geçmiş, modal fiille değil <b>mastar perfekt</b> (PII + haben/sein) ile kurulur; modal Präsens’te kalır." },
+        { "type": "tr", "text": "Türkçenin “-mış” eki (duyulan geçmiş) Almanca <b>sollen</b>’in öznel kullanımına çok yakındır: <i>Er soll krank sein.</i> = “Hastaymış.” Gazete dilinde suçlama yapmadan bilgi aktarmak için kullanılır." },
+        { "type": "examples", "h": "Örnekler", "items": [
+          ["Das Restaurant <b>soll</b> ausgezeichnet <b>sein</b>.", "Restoran mükemmelmiş."],
+          ["Er <b>will</b> von nichts <b>gewusst haben</b>.", "Hiçbir şeyden haberi olmadığını iddia ediyor."],
+          ["Laut Zeugen <b>soll</b> der Fahrer zu schnell <b>gefahren sein</b>.", "Tanıklara göre sürücü çok hızlı gidiyormuş."]
+        ] }
+      ],
+      "mistakes": [
+        ["Er sollte reich gewesen sein. (söylenti)", "Er soll reich gewesen sein.", "Öznel: modal Präsens + mastar perfekt."],
+        ["Sie will ihn nicht gesehen. ", "Sie will ihn nicht gesehen haben.", "Mastar perfekt eksik."],
+        ["Er soll nach Berlin gefahren haben.", "Er soll nach Berlin gefahren sein.", "fahren → sein."]
+      ],
+      "exercises": [
+        { "t": "choice", "q": "Man sagt, dass der Politiker korrupt ist. → Der Politiker ___ korrupt sein.", "o": ["will", "soll", "muss"], "a": "soll", "x": "Başkasının iddiası → sollen." },
+        { "t": "choice", "q": "Er behauptet, dass er unschuldig ist. → Er ___ unschuldig sein.", "o": ["soll", "will", "dürfte"], "a": "will", "x": "Kendi iddiası → wollen." },
+        { "t": "gap", "q": "Es wird berichtet, dass der Täter geflohen ist. → Der Täter soll geflohen ___.", "a": ["sein"], "x": "fliehen → sein." },
+        { "t": "gap", "q": "Sie behauptet, das Geld nicht genommen zu haben. → Sie will das Geld nicht genommen ___.", "a": ["haben"], "x": "nehmen → haben." },
+        { "t": "choice", "q": "Ich bin fast sicher, dass er die Wahrheit kennt. → Er ___ die Wahrheit kennen.", "o": ["muss", "soll", "will"], "a": "muss", "x": "Güçlü çıkarım → müssen." },
+        { "t": "choice", "q": "Hangisi “söylentiye göre” anlamında?", "o": ["Du sollst pünktlich sein.", "Das Hotel soll sehr schön sein.", "Ich soll morgen anrufen."], "a": "Das Hotel soll sehr schön sein.", "x": "Bilgi aktarımı → öznel sollen." },
+        { "t": "order", "w": ["der", "Zeuge", "will", "alles", "gesehen", "haben"], "a": "Der Zeuge will alles gesehen haben.", "x": "wollen + PII + haben." },
+        { "t": "choice", "q": "Angeblich war sie früher Schauspielerin. → Sie ___ früher Schauspielerin gewesen sein.", "o": ["soll", "sollte", "hat sollen"], "a": "soll", "x": "angeblich → soll + gewesen sein." },
+        { "t": "choice", "q": "Das ___ sein, aber ich glaube es trotzdem nicht.", "o": ["mag", "will", "soll"], "a": "mag", "x": "Kabul: Das mag sein." }
+      ],
+      "links": [
+        { "n": "Schubert – Modalverben (subjektiv/objektiv) 1", "u": "https://www.schubert-verlag.de/aufgaben/uebungen_c1/c1_modalverben1.htm" },
+        { "n": "Schubert – Modalverben (subjektiv/objektiv) 2", "u": "https://www.schubert-verlag.de/aufgaben/uebungen_c1/c1_modalverben2.htm" }
+      ]
+    },
+    {
+      "id": "c1-konnektoren",
+      "title": "C1 bağlaçları",
+      "de": "zumal, insofern (als), es sei denn, geschweige denn, wenngleich, zu …, als dass, als dass, anstatt dass, wie … auch",
+      "summary": "Nüanslı gerekçelendirme ve sınırlama için: <i>Ich komme nicht, <b>zumal</b> ich ohnehin müde bin.</i> · <i>Er ist <b>zu</b> jung, <b>als dass</b> er das verstehen <b>könnte</b>.</i>",
+      "blocks": [
+        { "type": "table", "h": "Bağlaçlar", "head": ["Bağlaç", "Anlam", "Örnek"], "rows": [
+          ["zumal", "hele ki, üstelik (ek sebep)", "Wir bleiben hier, <b>zumal</b> es regnet."],
+          ["insofern (als) / insoweit", "-dığı ölçüde", "Das stimmt, <b>insofern als</b> die Daten korrekt sind."],
+          ["es sei denn", "… olmadıkça", "Ich komme, <b>es sei denn</b>, ich werde krank."],
+          ["geschweige denn", "nerede kaldı ki", "Er kann kaum laufen, <b>geschweige denn</b> rennen."],
+          ["wenngleich / obgleich", "-sa da (resmî obwohl)", "<b>Wenngleich</b> das Ergebnis gut ist, bleiben Fragen."],
+          ["zu …, als dass", "… -emeyecek kadar (Konj. II)", "Es ist <b>zu</b> spät, <b>als dass</b> wir noch etwas ändern <b>könnten</b>."],
+          ["(nicht) so …, als dass", "… kadar değil", "Es ist <b>nicht so</b> schwer, <b>als dass</b> man es nicht schaffen <b>könnte</b>."],
+          ["wie / was / wer … auch (immer)", "her ne kadar / ne olursa olsun", "<b>Wie</b> sehr er sich <b>auch</b> bemüht, er schafft es nicht."],
+          ["sofern / soweit", "-dığı takdirde / bildiğim kadarıyla", "<b>Soweit</b> ich weiß, ist er im Urlaub."]
+        ] },
+        { "type": "tip", "h": "zu … als dass + Konjunktiv II", "text": "Olumsuz sonuç ima eder, cümlede “nicht” olmaz: <i>Das Wasser ist zu kalt, als dass man darin schwimmen könnte.</i> = so kalt, dass man <b>nicht</b> darin schwimmen kann." },
+        { "type": "tip", "h": "auch immer söz dizimi", "text": "Bu yan cümle ana cümlenin söz dizimini etkilemez; ana cümle özneyle başlayabilir: <i>Was er auch sagt, ich glaube ihm nicht.</i>" },
+        { "type": "tr", "text": "“Hele ki” = zumal, “… olmadıkça” = es sei denn, “nerede kaldı ki” = geschweige denn, “… -emeyecek kadar” = zu … als dass. Bu kalıplar yazma sınavında üst bant ölçütü olan “çeşitli bağlaç kullanımı”nı karşılar." },
+        { "type": "examples", "h": "Örnekler", "items": [
+          ["Ich habe keine Zeit, <b>geschweige denn</b> Lust.", "Vaktim yok, hevesim nerede kaldı."],
+          ["Wir fahren morgen los, <b>es sei denn</b>, das Wetter spielt nicht mit.", "Hava bozmazsa yarın yola çıkıyoruz."],
+          ["Er spricht <b>zu</b> leise, <b>als dass</b> man ihn verstehen <b>könnte</b>.", "Anlaşılamayacak kadar alçak sesle konuşuyor."]
+        ] }
+      ],
+      "mistakes": [
+        ["Es ist zu spät, als dass wir nicht kommen können.", "Es ist zu spät, als dass wir kommen könnten.", "Olumsuzluk zaten yapıda; Konj. II."],
+        ["…, es sei denn ich werde krank. (virgülsüz)", "…, es sei denn, ich werde krank.", "es sei denn’den sonra virgül; ana cümle sırası."],
+        ["Was er auch sagt, glaube ich ihm nicht.", "Was er auch sagt, ich glaube ihm nicht.", "auch immer cümlesi ana cümleyi etkilemez."]
+      ],
+      "exercises": [
+        { "t": "choice", "q": "Ich gehe nicht mit, ___ ich morgen früh aufstehen muss.", "o": ["zumal", "geschweige denn", "es sei denn"], "a": "zumal", "x": "Ek sebep → zumal." },
+        { "t": "choice", "q": "Er kann kaum Englisch, ___ Chinesisch.", "o": ["geschweige denn", "zumal", "insofern"], "a": "geschweige denn", "x": "nerede kaldı → geschweige denn." },
+        { "t": "choice", "q": "Wir treffen uns im Park, ___, es regnet.", "o": ["es sei denn", "zumal", "sofern"], "a": "es sei denn", "x": "… olmadıkça → es sei denn." },
+        { "t": "gap", "q": "Der Koffer ist zu schwer, ___ dass ich ihn tragen könnte.", "a": ["als"], "x": "zu …, als dass." },
+        { "t": "choice", "q": "Die Aufgabe ist zu komplex, als dass man sie in einer Stunde lösen ___.", "o": ["kann", "könnte", "konnte"], "a": "könnte", "x": "als dass → Konj. II." },
+        { "t": "choice", "q": "___ ich weiß, hat die Sitzung schon begonnen.", "o": ["Soweit", "Zumal", "Insofern"], "a": "Soweit", "x": "Bildiğim kadarıyla → soweit." },
+        { "t": "choice", "q": "___ die Ergebnisse positiv sind, bleiben Zweifel.", "o": ["Wenngleich", "Zumal", "Es sei denn"], "a": "Wenngleich", "x": "-sa da → wenngleich." },
+        { "t": "gap", "q": "Wie sehr er sich ___ anstrengt, er wird nie fertig.", "a": ["auch"], "x": "wie … auch (immer)." },
+        { "t": "choice", "q": "Die Theorie ist richtig, ___ sie nur für Erwachsene gilt.", "o": ["insofern als", "geschweige denn", "es sei denn"], "a": "insofern als", "x": "-dığı ölçüde → insofern als." },
+        { "t": "order", "w": ["was", "du", "auch", "sagst,", "ich", "bleibe", "hier"], "a": "Was du auch sagst, ich bleibe hier.", "x": "auch-cümlesi + ana cümle özneyle." }
+      ],
+      "links": [
+        { "n": "Schubert – C1 Online-Übungen (Satzverbindungen)", "u": "https://www.schubert-verlag.de/aufgaben/uebungen_c1/c1_uebungen_index.htm" },
+        { "n": "Schubert – Satzbildung 1", "u": "https://www.schubert-verlag.de/aufgaben/uebungen_c1/c1_satzbau1.htm" }
+      ]
+    },
+    {
+      "id": "c1-passiv-komplex",
+      "title": "Karmaşık edilgen yapılar",
+      "de": "Passiv mit Modalverben in allen Zeiten · Passiv im Konjunktiv II · Passiv in Nebensätzen",
+      "summary": "Modal fiil + pasif + geçmiş + Konjunktiv bir araya gelince fiil grubu uzar: <i>Das <b>hätte</b> früher <b>erledigt werden müssen</b>.</i> (Bunun daha önce halledilmesi gerekirdi.)",
+      "blocks": [
+        { "type": "table", "h": "Modal + Passiv", "head": ["Zaman", "Ana cümle", "Yan cümle (…, weil)"], "rows": [
+          ["Präsens", "Das Haus <b>muss</b> renoviert <b>werden</b>.", "…, weil das Haus renoviert werden <b>muss</b>."],
+          ["Präteritum", "Das Haus <b>musste</b> renoviert <b>werden</b>.", "…, weil das Haus renoviert werden <b>musste</b>."],
+          ["Perfekt", "Das Haus <b>hat</b> renoviert werden <b>müssen</b>.", "…, weil das Haus <b>hat</b> renoviert werden müssen."],
+          ["Konj. II şimdi", "Das Haus <b>müsste</b> renoviert <b>werden</b>.", "…, weil das Haus renoviert werden <b>müsste</b>."],
+          ["Konj. II geçmiş", "Das Haus <b>hätte</b> renoviert werden <b>müssen</b>.", "…, weil das Haus <b>hätte</b> renoviert werden müssen."]
+        ], "note": "Yan cümlede “hat/hätte” üçlü fiil grubunun <b>başına</b> geçer." },
+        { "type": "table", "h": "Konjunktiv II Passiv", "head": ["", "Örnek", "Türkçe"], "rows": [
+          ["şimdi", "Wenn das Gesetz geändert <b>würde</b>, …", "Yasa değiştirilse …"],
+          ["geçmiş", "Wenn der Fehler entdeckt worden <b>wäre</b>, …", "Hata fark edilseydi …"],
+          ["öznel modal", "Der Brief <b>muss</b> verloren gegangen <b>sein</b>. / … gestohlen worden <b>sein</b>.", "Mektup kaybolmuş / çalınmış olmalı."]
+        ] },
+        { "type": "tr", "text": "Türkçe edilgen + gereklilik + şart eklerini tek fiile ekler: “yap<b>ıl</b>ma<b>sı</b> gerek<b>ir</b>di”. Almancada bunlar ayrı fiillere dağılır ve sıralama kuralı katıdır: <b>PII → werden → modal</b>." },
+        { "type": "examples", "h": "Örnekler", "items": [
+          ["Die Patienten <b>hätten</b> früher informiert <b>werden müssen</b>.", "Hastaların daha önce bilgilendirilmesi gerekirdi."],
+          ["Es ist unklar, ob das Problem gelöst werden <b>kann</b>.", "Sorunun çözülüp çözülemeyeceği belirsiz."],
+          ["Ohne Spenden <b>hätte</b> das Projekt nicht durchgeführt <b>werden können</b>.", "Bağışlar olmasaydı proje yürütülemezdi."]
+        ] }
+      ],
+      "mistakes": [
+        ["Das hätte gemacht müssen werden.", "Das hätte gemacht werden müssen.", "Sıra: PII → werden → modal."],
+        ["…, weil es renoviert werden müssen hat.", "…, weil es hat renoviert werden müssen.", "Yan cümlede hat başa."],
+        ["Das muss gemacht geworden.", "Das muss gemacht werden.", "Modal + PII + werden."]
+      ],
+      "exercises": [
+        { "t": "choice", "q": "Der Antrag ___ bis Freitag eingereicht werden.", "o": ["muss", "wird", "ist"], "a": "muss", "x": "Modal + PII + werden." },
+        { "t": "choice", "q": "Das Problem hätte früher erkannt werden ___.", "o": ["gemusst", "müssen", "müsste"], "a": "müssen", "x": "Çift mastar sonda." },
+        { "t": "order", "q": "Konj. II geçmiş + Passiv + können:", "w": ["der", "Unfall", "hätte", "verhindert", "werden", "können"], "a": "Der Unfall hätte verhindert werden können.", "x": "hätte + PII + werden + können." },
+        { "t": "order", "q": "Es ist schade, …", "w": ["dass", "das", "Konzert", "hat", "abgesagt", "werden", "müssen"], "a": "dass das Konzert hat abgesagt werden müssen", "x": "Yan cümle: hat + PII + werden + modal." },
+        { "t": "choice", "q": "Wenn der Fehler früher entdeckt worden ___, wäre nichts passiert.", "o": ["hätte", "wäre", "würde"], "a": "wäre", "x": "Passiv geçmiş Konj. II: wäre … worden." },
+        { "t": "gap", "q": "Die Straße müsste dringend repariert ___.", "a": ["werden"], "x": "Konj. II modal + PII + werden." },
+        { "t": "choice", "q": "Die Unterlagen müssen gestohlen worden ___. (eminim)", "o": ["haben", "sein", "werden"], "a": "sein", "x": "Öznel modal + pasif mastar perfekt: worden sein." },
+        { "t": "choice", "q": "Hangisi doğru?", "o": ["Die Frage konnte nicht beantwortet werden.", "Die Frage konnte nicht beantwortet worden.", "Die Frage konnte nicht werden beantwortet."], "a": "Die Frage konnte nicht beantwortet werden.", "x": "Modal Präteritum + PII + werden." },
+        { "t": "gap", "q": "Ohne Hilfe hätte das Feuer nicht gelöscht werden ___.", "a": ["können", "koennen"], "x": "hätte … werden können." }
+      ],
+      "links": [
+        { "n": "Schubert – Passiv im Konjunktiv II", "u": "https://www.schubert-verlag.de/aufgaben/uebungen_c1/c1_passiv1.htm" },
+        { "n": "Schubert – Passiv und Passiversatz", "u": "https://www.schubert-verlag.de/aufgaben/uebungen_c1/c1_passiv2.htm" }
+      ]
+    },
+    {
+      "id": "c1-praefixverben",
+      "title": "Hem ayrılan hem ayrılmayan önekler",
+      "de": "Variable Präfixe: durch-, über-, um-, unter-, wieder-, hinter-, voll-",
+      "summary": "Bazı önekler hem ayrılabilir hem ayrılmaz olabilir; <b>anlam ve vurgu</b> değişir: <i>Er <b>setzt</b> mit der Fähre <b>über</b></i> (karşıya geçer) ↔ <i>Er <b>übersetzt</b> den Text</i> (çevirir).",
+      "blocks": [
+        { "type": "table", "h": "Kural", "head": ["", "Ayrılabilen", "Ayrılmayan"], "rows": [
+          ["Vurgu", "önekte: <b>ÜBER</b>setzen", "kökte: über<b>SET</b>zen"],
+          ["Anlam", "genellikle somut, mekânsal", "genellikle soyut, mecazi"],
+          ["Partizip II", "über<b>ge</b>setzt", "übersetzt (ge- yok)"],
+          ["zu-mastar", "über<b>zu</b>setzen", "<b>zu</b> übersetzen"]
+        ] },
+        { "type": "table", "h": "Sık çiftler", "head": ["Fiil", "Ayrılabilen (somut)", "Ayrılmayan (soyut)"], "rows": [
+          ["übersetzen", "mit dem Boot übersetzen (karşıya geçmek)", "einen Text übersetzen (çevirmek)"],
+          ["umfahren", "ein Schild umfahren (çarpıp devirmek)", "ein Hindernis umfahren (etrafından dolaşmak)"],
+          ["durchschauen", "durch das Fenster durchschauen (içinden bakmak)", "jemanden durchschauen (niyetini anlamak)"],
+          ["unterhalten", "einen Eimer unterhalten (altına tutmak)", "sich unterhalten (sohbet etmek)"],
+          ["wiederholen", "den Ball wiederholen (geri getirmek)", "eine Übung wiederholen (tekrar etmek)"],
+          ["umgehen", "mit etwas umgehen (bir şeyle başa çıkmak)", "ein Problem umgehen (sorundan kaçmak)"],
+          ["überlegen", "eine Decke überlegen (üstüne örtmek)", "sich etwas überlegen (düşünmek)"]
+        ] },
+        { "type": "list", "h": "Eğilimler", "items": [
+          "<b>über-</b> ve <b>unter-</b> mecazi anlamlarda çoğunlukla <b>ayrılmaz</b>: überraschen, übernehmen, überzeugen, unterrichten, unterschreiben, unterstützen.",
+          "<b>um-</b> “değiştirmek” anlamında ayrılır (umziehen, umsteigen, umbuchen), “etrafını sarmak” anlamında ayrılmaz (umarmen, umgeben).",
+          "<b>durch-</b> “baştan sona” anlamında ayrılabilir (durchlesen, durcharbeiten), “içine işlemek” anlamında ayrılmaz (durchsuchen, durchqueren)."
+        ] },
+        { "type": "tr", "text": "Türkçede bir fiilin iki anlamı vurgu ile ayrılmaz; Almancada <b>vurgu</b> anlamı belirler. Yeni bir fiil öğrenirken Partizip II’sini (umgezogen mi, umarmt mı?) de not al." },
+        { "type": "examples", "h": "Örnekler", "items": [
+          ["Sie hat den Roman ins Türkische <b>übersetzt</b>.", "Romanı Türkçeye çevirdi."],
+          ["Wir sind letzten Monat <b>umgezogen</b>.", "Geçen ay taşındık."],
+          ["Die Polizei <b>durchsuchte</b> die Wohnung.", "Polis daireyi aradı."],
+          ["Ich habe den Text zweimal <b>durchgelesen</b>.", "Metni iki kez baştan sona okudum."]
+        ] }
+      ],
+      "mistakes": [
+        ["Ich habe den Text übergesetzt.", "Ich habe den Text übersetzt.", "Çeviri anlamında ayrılmaz: ge- yok."],
+        ["Er umarmt sie um.", "Er umarmt sie.", "umarmen ayrılmaz."],
+        ["Ich unterschreibe den Vertrag unter.", "Ich unterschreibe den Vertrag.", "unterschreiben ayrılmaz."]
+      ],
+      "exercises": [
+        { "t": "choice", "q": "Kannst du diesen Brief ins Deutsche ___?", "o": ["übersetzen", "überzusetzen", "über setzen"], "a": "übersetzen", "x": "Çevirmek → ayrılmaz." },
+        { "t": "choice", "q": "Wir sind letztes Jahr nach Köln ___.", "o": ["umgezogen", "umzogen", "geumzogen"], "a": "umgezogen", "x": "Taşınmak → ayrılabilen: umgezogen." },
+        { "t": "choice", "q": "Die Mutter ___ ihr Kind.", "o": ["umarmt", "armt … um", "umgearmt"], "a": "umarmt", "x": "Sarılmak → ayrılmaz." },
+        { "t": "gap", "q": "Ich habe den Vertrag schon ___. (unterschreiben, PII)", "a": ["unterschrieben"], "x": "Ayrılmaz: ge- yok." },
+        { "t": "choice", "q": "Er hat seinen Plan sofort ___. (anladı, niyetini)", "o": ["durchschaut", "durchgeschaut"], "a": "durchschaut", "x": "Mecazi → ayrılmaz." },
+        { "t": "choice", "q": "In Frankfurt müssen Sie ___.", "o": ["umsteigen", "umzusteigen", "umgestiegen"], "a": "umsteigen", "x": "Aktarma yapmak → umsteigen (ayrılabilen)." },
+        { "t": "gap", "q": "Hast du dir das gut ___? (überlegen, PII)", "a": ["überlegt", "ueberlegt"], "x": "Düşünmek → ayrılmaz: überlegt." },
+        { "t": "choice", "q": "Die Polizei hat das Haus ___.", "o": ["durchsucht", "durchgesucht"], "a": "durchsucht", "x": "Aramak → ayrılmaz." },
+        { "t": "choice", "q": "Bitte lies den Vertrag genau ___!", "o": ["durch", "durchlesen", "zu durchlesen"], "a": "durch", "x": "durchlesen ayrılabilen: Lies … durch!" },
+        { "t": "choice", "q": "Er ___ die Firma seines Vaters.", "o": ["übernimmt", "nimmt … über", "übergenommen"], "a": "übernimmt", "x": "Devralmak → ayrılmaz." }
+      ],
+      "links": [
+        { "n": "Schubert – Verben mit über-", "u": "https://www.schubert-verlag.de/aufgaben/uebungen_c1/c1_praefixe1.htm" },
+        { "n": "Schubert – Verben mit durch-", "u": "https://www.schubert-verlag.de/aufgaben/uebungen_c1/c1_praefixe2.htm" },
+        { "n": "Schubert – Verben mit unter- und um-", "u": "https://www.schubert-verlag.de/aufgaben/uebungen_c1/c1_praefixe3.htm" }
+      ]
+    },
+    {
+      "id": "c1-es",
+      "title": "“es” sözcüğünün görevleri",
+      "de": "Die Funktionen von „es“: Pronomen, formales Subjekt/Objekt, Platzhalter im Vorfeld, Korrelat",
+      "summary": "“es” bazen bir şeyi işaret eder, bazen sadece <b>dilbilgisel boşluk doldurur</b>. Ne zaman düşebildiğini bilmek C1 yazımında önemlidir.",
+      "blocks": [
+        { "type": "table", "h": "Görevler", "head": ["Görev", "Örnek", "Düşer mi?"], "rows": [
+          ["Zamir (das Kind → es)", "Das Kind schläft. <b>Es</b> ist müde.", "Hayır"],
+          ["Biçimsel özne (hava, zaman, his)", "<b>Es</b> regnet. · <b>Es</b> ist spät. · Mir geht <b>es</b> gut.", "Hayır"],
+          ["Sabit ifadeler", "<b>Es</b> gibt … · <b>Es</b> geht um … · <b>Es</b> handelt sich um …", "Hayır"],
+          ["Pozisyon 1 dolgusu (Platzhalter)", "<b>Es</b> kamen viele Gäste. → Viele Gäste kamen.", "Evet, başka öğe 1. pozisyona gelince"],
+          ["Öznesiz pasifte dolgu", "<b>Es</b> wird getanzt. → Heute wird getanzt.", "Evet"],
+          ["Korrelat (yan cümleyi önceden haber verir)", "Ich finde <b>es</b> gut, dass du kommst.", "Çoğu zaman yan cümle başa gelince düşer"]
+        ] },
+        { "type": "tip", "h": "Platzhalter-es’te fiil gerçek özneye uyar", "text": "<i>Es <b>kamen</b> viele Leute.</i> (çoğul, çünkü özne <i>viele Leute</i>) · <i>Es <b>fehlt</b> ein Stuhl.</i>" },
+        { "type": "list", "h": "Korrelat-es’in davranışı", "items": [
+          "Zorunlu: <i>Ich habe <b>es</b> satt, …</i> · <i>Er hat <b>es</b> eilig.</i> (sabit)",
+          "Tercihe bağlı: <i>Ich bedauere (<b>es</b>), dass …</i> · <i>Es freut mich, dass …</i>",
+          "Yan cümle başa gelirse düşer: <i>Dass du kommst, freut mich.</i> (✗ … freut es mich)"
+        ] },
+        { "type": "tr", "text": "Türkçede öznesiz cümleler doğaldır (“Yağmur yağıyor”, “Geç oldu”). Almancada özne yeri boş bırakılamaz; bu boşluğu <b>es</b> doldurur: <i>Es regnet. Es ist spät.</i>" },
+        { "type": "examples", "h": "Örnekler", "items": [
+          ["<b>Es</b> handelt sich um ein Missverständnis.", "Bir yanlış anlaşılma söz konusu."],
+          ["<b>Es</b> wurde lange diskutiert. = Lange wurde diskutiert.", "Uzun uzun tartışıldı."],
+          ["Ich halte <b>es</b> für wichtig, dass alle informiert werden.", "Herkesin bilgilendirilmesini önemli buluyorum."]
+        ] }
+      ],
+      "mistakes": [
+        ["Heute es wird gefeiert.", "Heute wird gefeiert.", "Pozisyon 1 dolu → Platzhalter-es düşer."],
+        ["Es kam viele Leute.", "Es kamen viele Leute.", "Fiil gerçek özneye uyar."],
+        ["Dass er kommt, freut es mich.", "Dass er kommt, freut mich.", "Yan cümle başta → korrelat düşer."]
+      ],
+      "exercises": [
+        { "t": "choice", "q": "Hangisi doğru?", "o": ["Gestern es wurde viel gelacht.", "Gestern wurde viel gelacht.", "Gestern wurde es viel gelacht."], "a": "Gestern wurde viel gelacht.", "x": "Öznesiz pasifte es sadece 1. pozisyonda." },
+        { "t": "choice", "q": "Es ___ heute viele Touristen in der Stadt.", "o": ["ist", "sind", "seid"], "a": "sind", "x": "Platzhalter-es: fiil gerçek özneye (Touristen) uyar." },
+        { "t": "choice", "q": "In diesem Text ___ um Umweltschutz.", "o": ["geht es", "es geht", "handelt"], "a": "geht es", "x": "es geht um; pozisyon 1 dolu → fiil 2., es 3." },
+        { "t": "gap", "q": "___ handelt sich um einen Fehler.", "a": ["Es"], "x": "Sabit ifade: es handelt sich um." },
+        { "t": "choice", "q": "Dass du gekommen bist, freut ___.", "o": ["es mich", "mich", "mich es"], "a": "mich", "x": "Yan cümle başta → es düşer." },
+        { "t": "choice", "q": "Ich habe ___ satt, immer zu warten.", "o": ["es", "ihm", "—"], "a": "es", "x": "Zorunlu korrelat: es satt haben." },
+        { "t": "order", "w": ["es", "klingelte", "an", "der", "Tür"], "a": "Es klingelte an der Tür.", "x": "Biçimsel özne." },
+        { "t": "choice", "q": "Es fehlen noch zwei Unterschriften. → Ohne es:", "o": ["Noch fehlen zwei Unterschriften.", "Noch fehlt zwei Unterschriften.", "Noch es fehlen zwei Unterschriften."], "a": "Noch fehlen zwei Unterschriften.", "x": "Platzhalter-es düşer, fiil çoğul kalır." },
+        { "t": "gap", "q": "Wie geht ___ dir?", "a": ["es"], "x": "Biçimsel özne: es geht." }
+      ],
+      "links": [
+        { "n": "Lingolia – Pronomen", "u": "https://deutsch.lingolia.com/de/grammatik/pronomen" },
+        { "n": "Schubert – Satzbildung 2", "u": "https://www.schubert-verlag.de/aufgaben/uebungen_c1/c1_satzbau2.htm" }
+      ]
+    },
+    {
+      "id": "c1-rektion",
+      "title": "Edat bağlantılı fiil, sıfat ve isimler",
+      "de": "Rektion: Verben, Adjektive und Nomen mit festen Präpositionen (Wiederholung und Ausbau)",
+      "summary": "C1’de edat bağlantıları (Rektion) yalnızca fiillerde değil <b>sıfat ve isimlerde</b> de doğru kullanılmalı: <i>abhängig <b>von</b>, stolz <b>auf</b>, der Einfluss <b>auf</b>, die Angst <b>vor</b></i>.",
+      "blocks": [
+        { "type": "table", "h": "Sıfat + edat", "head": ["Sıfat", "Edat + hâl", "Örnek"], "rows": [
+          ["abhängig", "von + D", "Das ist <b>abhängig vom</b> Wetter."],
+          ["stolz", "auf + A", "Sie ist <b>stolz auf</b> ihre Tochter."],
+          ["zufrieden", "mit + D", "Bist du <b>mit</b> dem Ergebnis <b>zufrieden</b>?"],
+          ["verantwortlich", "für + A", "Wer ist <b>für</b> das Projekt <b>verantwortlich</b>?"],
+          ["interessiert", "an + D", "Ich bin <b>an</b> dem Job <b>interessiert</b>."],
+          ["bekannt", "für + A", "Die Stadt ist <b>für</b> ihre Brücken <b>bekannt</b>."],
+          ["gewöhnt", "an + A", "Ich bin <b>an</b> das Klima <b>gewöhnt</b>."],
+          ["überzeugt", "von + D", "Er ist <b>von</b> seiner Idee <b>überzeugt</b>."]
+        ] },
+        { "type": "table", "h": "İsim + edat (fiilden farklı olabilir!)", "head": ["Fiil", "İsim"], "rows": [
+          ["sich interessieren <b>für</b>", "das Interesse <b>an</b> + D (daha yaygın; “für” da duyulur)"],
+          ["beeinflussen + A", "der Einfluss <b>auf</b> + A"],
+          ["fragen <b>nach</b>", "die Frage <b>nach</b> + D"],
+          ["sich beschäftigen <b>mit</b>", "die Beschäftigung <b>mit</b> + D"],
+          ["(sich) fürchten <b>vor</b>", "die Angst / Furcht <b>vor</b> + D"],
+          ["verzichten <b>auf</b>", "der Verzicht <b>auf</b> + A"],
+          ["nachfragen", "die Nachfrage <b>nach</b> + D"]
+        ] },
+        { "type": "tip", "h": "Hâl kontrolü", "text": "auf / über + Akkusativ, mit / von / vor / nach / an(ilgi) + Dativ kalıpları en sık görülenlerdir. Şüphedeysen: <b>über</b> hep Akk., <b>vor</b> bu kalıplarda hep Dat." },
+        { "type": "tr", "text": "Türkçe hâl ekleri burada çoğu zaman yanıltır: “-e bağımlı” = abhängig <b>von</b> (Türkçede -e, Almancada -den); “-den gurur duymak” = stolz <b>auf</b>. Kalıpları Türkçe karşılıklarıyla değil, Almanca bütün olarak ezberle." },
+        { "type": "examples", "h": "Örnekler", "items": [
+          ["Die Nachfrage <b>nach</b> E-Autos steigt.", "Elektrikli araçlara talep artıyor."],
+          ["Er hat großen Einfluss <b>auf</b> die Entscheidung.", "Karar üzerinde büyük etkisi var."],
+          ["Wir sind <b>auf</b> Ihre Unterstützung <b>angewiesen</b>.", "Desteğinize muhtacız."]
+        ] }
+      ],
+      "mistakes": [
+        ["abhängig an der Situation", "abhängig von der Situation", "abhängig von."],
+        ["der Einfluss an die Politik", "der Einfluss auf die Politik", "İsimde edat: Einfluss auf + Akk."],
+        ["stolz über seinen Sohn", "stolz auf seinen Sohn", "stolz auf."]
+      ],
+      "exercises": [
+        { "t": "choice", "q": "Der Erfolg ist ___ vielen Faktoren abhängig.", "o": ["von", "an", "auf"], "a": "von", "x": "abhängig von." },
+        { "t": "choice", "q": "Ich bin ___ dem Angebot sehr interessiert.", "o": ["für", "an", "über"], "a": "an", "x": "interessiert an + Dativ." },
+        { "t": "choice", "q": "Die Eltern sind stolz ___ ihren Sohn.", "o": ["über", "auf", "von"], "a": "auf", "x": "stolz auf + Akk." },
+        { "t": "gap", "q": "Ich bin noch nicht ___ das kalte Wetter gewöhnt.", "a": ["an"], "x": "gewöhnt an + Akk." },
+        { "t": "choice", "q": "Die Nachfrage ___ Wohnungen ist hoch.", "o": ["nach", "auf", "für"], "a": "nach", "x": "die Nachfrage nach." },
+        { "t": "choice", "q": "Er hat keinen Einfluss ___ die Politik.", "o": ["auf", "an", "über"], "a": "auf", "x": "der Einfluss auf + Akk." },
+        { "t": "gap", "q": "Wer ist ___ diesen Fehler verantwortlich?", "a": ["für"], "x": "verantwortlich für + Akk." },
+        { "t": "choice", "q": "Viele Menschen haben Angst ___ der Zukunft.", "o": ["vor", "für", "um"], "a": "vor", "x": "Angst vor + Dat." },
+        { "t": "choice", "q": "Sie ist ___ ihrer Arbeit sehr zufrieden.", "o": ["über", "mit", "von"], "a": "mit", "x": "zufrieden mit." },
+        { "t": "gap", "q": "Der Verzicht ___ Zucker fällt mir schwer.", "a": ["auf"], "x": "der Verzicht auf." }
+      ],
+      "links": [
+        { "n": "Schubert – Verben mit präpositionalem Objekt", "u": "https://www.schubert-verlag.de/aufgaben/uebungen_c1/c1_objekt1.htm" },
+        { "n": "Schubert – Präpositionen (C1)", "u": "https://www.schubert-verlag.de/aufgaben/uebungen_c1/c1_praepositionen3.htm" }
+      ]
+    },
+    {
+      "id": "c1-praep-gehoben",
+      "title": "Resmî ve kurumsal edatlar",
+      "de": "Gehobene Präpositionen: zufolge, gemäß, entsprechend, entgegen, mangels, zwecks, seitens, kraft, unbeschadet",
+      "summary": "Hukuk, idare ve basın dilinde sık görülen edatlar. Bazıları ismin <b>arkasına</b> gelebilir: <i>dem Bericht <b>zufolge</b></i>.",
+      "blocks": [
+        { "type": "table", "h": "Edatlar", "head": ["Edat", "Hâl", "Anlam", "Örnek"], "rows": [
+          ["zufolge", "D (arkada)", "-e göre", "dem Bericht <b>zufolge</b>"],
+          ["gemäß", "D (önde/arkada)", "-e uygun olarak", "<b>gemäß</b> § 5 · den Vorschriften <b>gemäß</b>"],
+          ["entsprechend", "D", "-e uygun", "<b>entsprechend</b> Ihrem Wunsch"],
+          ["entgegen", "D", "-in aksine", "<b>entgegen</b> den Erwartungen"],
+          ["mangels", "G", "… yokluğundan", "<b>mangels</b> Beweisen / Beweise"],
+          ["zwecks", "G", "… amacıyla", "<b>zwecks</b> Klärung des Sachverhalts"],
+          ["seitens", "G", "… tarafından", "<b>seitens</b> der Behörde"],
+          ["kraft", "G", "… yetkisiyle", "<b>kraft</b> seines Amtes"],
+          ["unbeschadet", "G", "… saklı kalmak kaydıyla", "<b>unbeschadet</b> der Rechte Dritter"],
+          ["anlässlich", "G", "… vesilesiyle", "<b>anlässlich</b> des Jubiläums"]
+        ] },
+        { "type": "tip", "h": "Genitiv görünmezse Dativ", "text": "Artikelsiz çoğulda Genitiv belli olmuyorsa Dativ’e geçilir: <i>mangels <b>Beweisen</b></i> (Beweise’nin Genitiv’i görünmez)." },
+        { "type": "tr", "text": "Türk hukuk dilindeki “… uyarınca, … gereğince, … münasebetiyle, … tarafından” kalıplarının karşılıklarıdır. Resmî bir şikâyet veya itiraz dilekçesinde (Widerspruch) çok işe yarar." },
+        { "type": "examples", "h": "Örnekler", "items": [
+          ["<b>Laut</b> Polizei / Der Polizei <b>zufolge</b> gab es keine Verletzten.", "Polise göre yaralı yok."],
+          ["Der Angeklagte wurde <b>mangels</b> Beweisen freigesprochen.", "Sanık delil yetersizliğinden beraat etti."],
+          ["<b>Entgegen</b> allen Prognosen stieg die Arbeitslosigkeit nicht.", "Tüm tahminlerin aksine işsizlik artmadı."]
+        ] }
+      ],
+      "mistakes": [
+        ["zufolge dem Bericht", "dem Bericht zufolge", "zufolge isimden sonra."],
+        ["entgegen der Erwartungen", "entgegen den Erwartungen", "entgegen + Dativ."],
+        ["zwecks dem Austausch", "zwecks des Austauschs", "zwecks + Genitiv."]
+      ],
+      "exercises": [
+        { "t": "choice", "q": "Den Angaben ___ ist die Zahl gestiegen. (verilere göre)", "o": ["zufolge", "mangels", "zwecks"], "a": "zufolge", "x": "-e göre (arkada) → zufolge." },
+        { "t": "choice", "q": "___ den Erwartungen gewann der Außenseiter.", "o": ["Entgegen", "Gemäß", "Seitens"], "a": "Entgegen", "x": "-in aksine → entgegen." },
+        { "t": "choice", "q": "Er wurde ___ Beweisen freigesprochen.", "o": ["mangels", "zwecks", "kraft"], "a": "mangels", "x": "yokluğundan → mangels." },
+        { "t": "choice", "q": "___ der Stadt gab es keine Stellungnahme.", "o": ["Seitens", "Zufolge", "Entgegen"], "a": "Seitens", "x": "tarafından → seitens + Gen." },
+        { "t": "gap", "q": "___ § 3 des Vertrags ist die Kündigung möglich. (uyarınca)", "a": ["Gemäß", "Gemaess"], "x": "gemäß + Dat." },
+        { "t": "choice", "q": "Wir treffen uns ___ Besprechung des Projekts.", "o": ["zwecks", "mangels", "entgegen"], "a": "zwecks", "x": "amacıyla → zwecks." },
+        { "t": "choice", "q": "___ des 100. Geburtstags gab es ein Fest.", "o": ["Anlässlich", "Entsprechend", "Zufolge"], "a": "Anlässlich", "x": "vesilesiyle → anlässlich." },
+        { "t": "gap", "q": "Der Richter entschied kraft ___ Amtes. (sein)", "a": ["seines"], "x": "kraft + Gen.: seines Amtes." },
+        { "t": "choice", "q": "Ihrem Wunsch ___ haben wir den Termin verschoben.", "o": ["entsprechend", "entgegen", "mangels"], "a": "entsprechend", "x": "uygun olarak → entsprechend." }
+      ],
+      "links": [
+        { "n": "Schubert – Präpositionen (C1, Teil 4)", "u": "https://www.schubert-verlag.de/aufgaben/uebungen_c1/c1_praepositionen4.htm" },
+        { "n": "Schubert – Präpositionen (C1, Teil 5)", "u": "https://www.schubert-verlag.de/aufgaben/uebungen_c1/c1_praepositionen5.htm" },
+        { "n": "Lingolia – Präpositionen", "u": "https://deutsch.lingolia.com/de/grammatik/praepositionen" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,411 @@
+{
+  "level": "C2",
+  "title": "Ustalık",
+  "intro": "Anadil düzeyine yaklaşmak: <b>kip parçacıkları (doch, ja, halt …), söz dizimiyle vurgu, ileri taviz yapıları, aktarımın incelikleri, yazı dilinin eski/gösterişli biçimleri, üslup katmanları</b> ve birleşik kelime yapımı. Goethe-Zertifikat C2: GDS düzeyi.",
+  "sources": [
+    { "n": "Goethe-Institut – Goethe-Zertifikat C2", "u": "https://www.goethe.de/ins/de/de/prf/gzc2.cfm" },
+    { "n": "Goethe-Zertifikat C2 – Prüfungsziele (PDF)", "u": "https://www.goethe.de/pro/relaunch/prf/de/Pruefungsziele_Testbeschreibung_C2.pdf" },
+    { "n": "Lingolia Deutsch – Grammatik", "u": "https://deutsch.lingolia.com/de/grammatik" }
+  ],
+  "topics": [
+    {
+      "id": "c2-partikeln",
+      "title": "Kip parçacıkları (Modalpartikeln)",
+      "de": "Modalpartikeln: doch, ja, mal, halt, eben, eigentlich, denn, wohl, schon, bloß, nur, ruhig",
+      "summary": "Cümlenin bilgisini değil, konuşanın <b>tavrını</b> değiştirir: şaşkınlık, sabırsızlık, yumuşatma, ortak bilgi. Konuşmayı “doğal” kılan en önemli öğelerdir.",
+      "blocks": [
+        { "type": "table", "h": "Sık parçacıklar", "head": ["Parçacık", "İşlev", "Örnek", "Tonu"], "rows": [
+          ["doch", "itiraz, hatırlatma, rica güçlendirme", "Das weißt du <b>doch</b>! · Komm <b>doch</b> mit!", "“ya, hani”"],
+          ["ja", "ortak bilgi; şaşkınlık", "Das ist <b>ja</b> bekannt. · Das ist <b>ja</b> toll!", "“zaten, biliyorsun”"],
+          ["mal", "rica/emri yumuşatma", "Guck <b>mal</b>! · Kannst du <b>mal</b> kommen?", "“bir”"],
+          ["halt / eben", "kaçınılmazlık, kabullenme", "Das ist <b>halt</b> so. · Dann nimm <b>eben</b> den Bus.", "“ne yapalım”"],
+          ["eigentlich", "sorularda konu değiştirme, ilgi", "Wie heißt du <b>eigentlich</b>?", "“bu arada”"],
+          ["denn", "soruda ilgi/şaşkınlık", "Was ist <b>denn</b> los?", "“peki, ki”"],
+          ["wohl", "tahmin", "Er ist <b>wohl</b> krank.", "“herhalde”"],
+          ["schon", "teselli, kısıtlı onay", "Das wird <b>schon</b> klappen. · Schön ist es <b>schon</b>, aber teuer.", "“elbet; aslında”"],
+          ["bloß / nur", "tehdit, endişe, dilek", "Mach das <b>bloß</b> nicht! · Wenn er <b>nur</b> käme!", "“sakın; keşke”"],
+          ["ruhig", "izin, cesaretlendirme", "Frag <b>ruhig</b>!", "“çekinme”"]
+        ] },
+        { "type": "list", "h": "Kurallar", "items": [
+          "Parçacıklar vurgusuzdur ve <b>orta alanda</b>, genellikle zamirlerden sonra, nesneden önce durur: <i>Ich hab dir <b>doch</b> das Buch gegeben.</i>",
+          "Pozisyon 1’e gelemezler (vurgulu “Doch!” cevabı ayrı bir kelimedir).",
+          "Birleşebilirler; sıra genellikle: <b>ja – denn – doch – eben/halt – wohl – mal</b>: <i>Komm <b>doch mal</b> her!</i> · <i>Das ist <b>ja wohl</b> nicht dein Ernst!</i>"
+        ] },
+        { "type": "tr", "text": "Türkçedeki “ya, işte, hani, bir, artık, ki” gibi küçük sözcükler aynı işlevi görür: “Gel <b>bir</b>!” = Komm <b>mal</b>! · “Biliyorsun <b>ya</b>” = Du weißt <b>ja</b>. Birebir çeviri yoktur; tonu dinleyerek öğren." },
+        { "type": "examples", "h": "Örnekler", "items": [
+          ["Setz dich <b>doch</b>!", "Otursana!"],
+          ["Wo warst du <b>denn</b>?", "Neredeydin ki?"],
+          ["Das ist <b>halt</b> Pech.", "Ne yapalım, şanssızlık."],
+          ["Du hast <b>ja</b> recht.", "Haklısın tabii (kabul ediyorum)."]
+        ] }
+      ],
+      "mistakes": [
+        ["Doch komm mit!", "Komm doch mit!", "Parçacık pozisyon 1’de olmaz."],
+        ["Was ist doch los? (merak)", "Was ist denn los?", "Soruda ilgi → denn."],
+        ["Komm mal doch!", "Komm doch mal!", "Sıralama: doch mal."]
+      ],
+      "exercises": [
+        { "t": "choice", "q": "Was ist ___ hier passiert? (şaşkın soru)", "o": ["denn", "doch", "halt"], "a": "denn", "x": "Soru + ilgi/şaşkınlık → denn." },
+        { "t": "choice", "q": "Komm ___ rein! (davet, yumuşak)", "o": ["doch", "denn", "wohl"], "a": "doch", "x": "Davet güçlendirme → doch." },
+        { "t": "choice", "q": "Das ist ___ so, da kann man nichts machen.", "o": ["halt", "denn", "ruhig"], "a": "halt", "x": "Kabullenme → halt." },
+        { "t": "choice", "q": "Keine Sorge, das wird ___ klappen.", "o": ["schon", "denn", "bloß"], "a": "schon", "x": "Teselli → schon." },
+        { "t": "choice", "q": "Mach das ___ nicht noch einmal! (sakın)", "o": ["bloß", "denn", "eigentlich"], "a": "bloß", "x": "Tehdit/uyarı → bloß." },
+        { "t": "choice", "q": "Wie alt bist du ___? (bu arada)", "o": ["eigentlich", "halt", "ruhig"], "a": "eigentlich", "x": "Konu değişimi → eigentlich." },
+        { "t": "choice", "q": "Du kannst mich ___ anrufen, wenn du Fragen hast. (çekinme)", "o": ["ruhig", "denn", "eigentlich"], "a": "ruhig", "x": "Cesaretlendirme → ruhig." },
+        { "t": "order", "w": ["komm", "doch", "mal", "her"], "a": "Komm doch mal her!", "x": "Sıra: doch mal." },
+        { "t": "choice", "q": "Das weißt du ___, wir haben doch darüber gesprochen.", "o": ["ja", "denn", "mal"], "a": "ja", "x": "Ortak bilgi → ja." },
+        { "t": "choice", "q": "Er ist nicht gekommen. Er ist ___ krank.", "o": ["wohl", "mal", "ruhig"], "a": "wohl", "x": "Tahmin → wohl." }
+      ],
+      "links": [
+        { "n": "Lingolia – Adverbien", "u": "https://deutsch.lingolia.com/de/grammatik/adverbien" }
+      ]
+    },
+    {
+      "id": "c2-satzstellung",
+      "title": "Söz dizimiyle vurgu ve bilgi yapısı",
+      "de": "Vorfeld, Mittelfeld, Nachfeld: Informationsstruktur, Stellung von Pronomen und Negation, Ausklammerung",
+      "summary": "Almanca söz dizimi esnektir ama kuralsız değildir: <b>bilinen bilgi öne, yeni bilgi arkaya</b>. Pozisyon 1 (Vorfeld) konu/bağlantı, cümle sonu vurgu içindir.",
+      "blocks": [
+        { "type": "table", "h": "Cümle alanları", "head": ["Vorfeld", "Fiil (sol)", "Mittelfeld", "Fiil (sağ)", "Nachfeld"], "rows": [
+          ["Gestern", "hat", "mir mein Bruder endlich das Geld", "zurückgegeben", "– nach drei Monaten."],
+          ["Das Geld", "hat", "mir gestern mein Bruder", "zurückgegeben,", "das er mir schuldete."]
+        ] },
+        { "type": "list", "h": "Mittelfeld kuralları", "items": [
+          "<b>Zamirler isimlerden önce</b>; zamirler arasında: Nom. → Akk. → Dat.: <i>Gestern hat <b>er es ihr</b> gegeben.</i>",
+          "<b>Belirli (bilinen) öğeler belirsiz (yeni) öğelerden önce</b>: <i>Ich habe <b>dem Kind</b> <b>einen Ball</b> geschenkt.</i> ↔ <i>Ich habe <b>den Ball</b> <b>einem Kind</b> geschenkt.</i>",
+          "<b>Özne isimse</b> zamir nesneler öne geçebilir: <i>Gestern hat <b>ihn</b> mein Vater angerufen.</i>",
+          "<b>nicht</b> olumsuzladığı öğenin önüne; tüm cümleyi olumsuzlarken mümkün olduğunca sona, ama sağ fiil parçasından ve yön/yüklem tamamlayıcılarından önce."
+        ] },
+        { "type": "table", "h": "Vorfeld ile vurgu", "head": ["Cümle", "Vurgu / işlev"], "rows": [
+          ["<b>Ich</b> habe das nicht gesagt.", "nötr"],
+          ["<b>Das</b> habe ich nicht gesagt.", "“bunu” (karşıtlık: başka bir şey söyledim)"],
+          ["<b>Gesagt</b> habe ich das nicht, aber gedacht.", "fiilin kendisine karşıtlık"],
+          ["<b>Dass er kommt</b>, glaube ich nicht.", "yan cümleyi konu yapma"]
+        ] },
+        { "type": "tip", "h": "İkisi de doğru", "text": "<i>Gestern hat mein Vater ihn angerufen.</i> ve <i>Gestern hat ihn mein Vater angerufen.</i> ikisi de dilbilgisel olarak doğrudur; zamir nesnenin önde olduğu ikinci sıra daha doğal ve yaygındır." },
+        { "type": "tip", "h": "Ausklammerung (Nachfeld)", "text": "Uzun karşılaştırmalar ve edat grupları sağ fiil parçasının <b>arkasına</b> alınabilir; konuşmada ve gazete dilinde okunabilirliği artırır: <i>Er hat mehr verdient <b>als sein Vater</b>.</i> · <i>Wir haben lange diskutiert <b>über die Zukunft des Projekts</b>.</i>" },
+        { "type": "tr", "text": "Türkçede vurgu çoğunlukla fiilden hemen önceki öğeye düşer (“Kitabı <b>Ali</b> aldı”). Almancada benzer işlevi <b>Vorfeld</b> (karşıtlık) ve Mittelfeld’in <b>sonu</b> (yeni bilgi) görür." },
+        { "type": "examples", "h": "Örnekler", "items": [
+          ["Das Buch hat <b>mir</b> <b>gestern</b> <b>ein Freund</b> empfohlen.", "Kitabı bana dün bir arkadaş önerdi (yeni bilgi: ein Freund)."],
+          ["<b>Mit diesem Ergebnis</b> hatte niemand gerechnet.", "Bu sonucu kimse beklemiyordu."],
+          ["Ich habe <b>es ihm</b> schon tausendmal erklärt.", "Ona bunu bin kez anlattım."]
+        ] }
+      ],
+      "mistakes": [
+        ["Ich habe gegeben ihm das Buch.", "Ich habe ihm das Buch gegeben.", "Partizip sağ parçada."],
+        ["Ich habe nicht ihm geholfen. (genel olumsuz)", "Ich habe ihm nicht geholfen.", "Genel olumsuzlukta nicht zamirden sonra."]
+      ],
+      "exercises": [
+        { "t": "order", "w": ["gestern", "hat", "er", "es", "ihr", "gegeben"], "a": "Gestern hat er es ihr gegeben.", "x": "Zamirler: Nom. → Akk. → Dat." },
+        { "t": "choice", "q": "Hangisi en doğal? (yeni bilgi: bir komşu)", "o": ["Den Schlüssel hat mir ein Nachbar gebracht.", "Ein Nachbar hat den Schlüssel mir gebracht.", "Den Schlüssel hat ein Nachbar mir gebracht."], "a": "Den Schlüssel hat mir ein Nachbar gebracht.", "x": "Zamir önce, yeni bilgi (ein Nachbar) sona yakın." },
+        { "t": "choice", "q": "Karşıtlık: “Bunu değil, şunu söyledim.” → ___ habe ich nicht gesagt.", "o": ["Das", "Ich", "Nicht"], "a": "Das", "x": "Karşıtlık öğesi Vorfeld’e." },
+        { "t": "choice", "q": "Ich habe ___ ein Geschenk gekauft.", "o": ["meiner Schwester", "ein Geschenk meiner Schwester"], "a": "meiner Schwester", "x": "Belirli (Dativ) → belirsiz (Akk.)." },
+        { "t": "order", "w": ["ich", "habe", "ihm", "das", "nicht", "geglaubt"], "a": "Ich habe ihm das nicht geglaubt.", "x": "Genel olumsuz: nicht zamir/belirli nesneden sonra." },
+        { "t": "choice", "q": "Ausklammerung için en doğal sıra:", "o": ["Sie ist größer geworden als ihre Mutter.", "Sie ist als ihre Mutter größer geworden.", "Sie als ihre Mutter ist größer geworden."], "a": "Sie ist größer geworden als ihre Mutter.", "x": "Karşılaştırma Nachfeld’e." },
+        { "t": "order", "w": ["gestern", "hat", "ihn", "sein", "Chef", "angerufen"], "a": "Gestern hat ihn sein Chef angerufen.", "alt": ["Gestern hat sein Chef ihn angerufen."], "x": "Zamir nesne isim özneden önce gelebilir (daha doğal)." },
+        { "t": "choice", "q": "Hangisi “fiilin kendisini” karşıtlık için öne alır?", "o": ["Gelesen habe ich das Buch, aber nicht verstanden.", "Das Buch habe ich gelesen.", "Ich habe das Buch gelesen."], "a": "Gelesen habe ich das Buch, aber nicht verstanden.", "x": "Partizip Vorfeld’de → karşıtlık." }
+      ],
+      "links": [
+        { "n": "Lingolia – Satzbau", "u": "https://deutsch.lingolia.com/de/grammatik/satzbau" },
+        { "n": "Schubert – Satzbildung (C1)", "u": "https://www.schubert-verlag.de/aufgaben/uebungen_c1/c1_satzbau2.htm" }
+      ]
+    },
+    {
+      "id": "c2-konzessiv",
+      "title": "İleri taviz ve karşıtlık yapıları",
+      "de": "Konzessive Feinheiten: wenn auch, so … auch, noch so, mögen … auch, selbst wenn, wie dem auch sei, gleichwohl, nichtsdestotrotz",
+      "summary": "“obwohl”un ötesi: <i>So schwer es <b>auch</b> ist, …</i> · <i><b>Wenn auch</b> spät, er kam.</i> · <i>Er <b>mag</b> recht haben, <b>aber</b> …</i> C2 metinlerinde üslup inceliği bu yapılarla kurulur.",
+      "blocks": [
+        { "type": "table", "h": "Yapılar", "head": ["Yapı", "Anlam", "Örnek"], "rows": [
+          ["so + sıfat + … auch", "ne kadar … olsa da", "<b>So</b> teuer das Hotel <b>auch</b> war, es hat sich gelohnt."],
+          ["noch so + sıfat", "ne kadar … olursa olsun", "Und wenn du <b>noch so</b> bittest, ich bleibe hart."],
+          ["wenn auch / wenngleich", "-se de (kısaltılmış)", "Er hat bestanden, <b>wenn auch</b> knapp."],
+          ["selbst wenn / auch wenn", "-se bile", "<b>Selbst wenn</b> es regnet, gehen wir."],
+          ["mögen … (aber / doch)", "… olabilir ama", "Er <b>mag</b> klug sein, <b>doch</b> ihm fehlt Erfahrung."],
+          ["zwar …, aber", "gerçi … ama", "<b>Zwar</b> ist das Gehalt gut, <b>aber</b> die Arbeit ist hart."],
+          ["gleichwohl / nichtsdestotrotz / dennoch", "yine de (resmî)", "Die Lage ist schwierig. <b>Gleichwohl</b> sind wir zuversichtlich."],
+          ["wie dem auch sei", "her ne olursa olsun", "<b>Wie dem auch sei</b>, wir müssen handeln."],
+          ["ungeachtet dessen / trotz alledem", "buna rağmen", "<b>Ungeachtet dessen</b> wurde das Projekt fortgesetzt."]
+        ] },
+        { "type": "tip", "h": "so … auch söz dizimi", "text": "Taviz cümlesi ana cümlenin dizimini genellikle <b>etkilemez</b>: <i>So sehr ich mich auch bemühe, <b>ich schaffe</b> es nicht.</i> (Ama ters dizim de mümkündür: … , schaffe ich es nicht.)" },
+        { "type": "tr", "text": "“Ne kadar pahalı <b>olsa da</b>” = So teuer es auch ist. “İstersen yalvar, …” = Und wenn du noch so bittest, … “Zeki <b>olabilir ama</b> …” = Er mag klug sein, aber …" },
+        { "type": "examples", "h": "Örnekler", "items": [
+          ["<b>So</b> gut der Plan <b>auch</b> klingt, er ist nicht umsetzbar.", "Plan ne kadar iyi görünse de uygulanamaz."],
+          ["Das <b>mag</b> stimmen, <b>doch</b> es ändert nichts.", "Bu doğru olabilir ama hiçbir şeyi değiştirmez."],
+          ["Er hat sich entschuldigt, <b>wenn auch</b> widerwillig.", "İsteksizce de olsa özür diledi."]
+        ] }
+      ],
+      "mistakes": [
+        ["So teuer auch das Hotel war, …", "So teuer das Hotel auch war, …", "auch özneden sonra."],
+        ["Selbst wenn regnet es, …", "Selbst wenn es regnet, …", "Yan cümle: fiil sonda."],
+        ["Er mag klug sein, deshalb fehlt ihm Erfahrung.", "Er mag klug sein, aber ihm fehlt Erfahrung.", "mögen tavizi karşıtlıkla devam eder."]
+      ],
+      "exercises": [
+        { "t": "gap", "q": "So schwer die Aufgabe ___ ist, wir schaffen das.", "a": ["auch"], "x": "so … auch." },
+        { "t": "choice", "q": "Er hat die Prüfung bestanden, ___ mit Mühe.", "o": ["wenn auch", "selbst wenn", "als ob"], "a": "wenn auch", "x": "Kısaltılmış taviz → wenn auch." },
+        { "t": "choice", "q": "___ du mich anflehst, ich ändere meine Meinung nicht.", "o": ["Selbst wenn", "Wenn auch", "Zwar"], "a": "Selbst wenn", "x": "-se bile → selbst wenn." },
+        { "t": "choice", "q": "Sie ___ talentiert sein, aber sie übt zu wenig. (kabul: “olabilir ama”)", "o": ["mag", "will", "soll"], "a": "mag", "x": "Taviz → mögen." },
+        { "t": "choice", "q": "Die Kritik war berechtigt. ___ hielt er an seinem Plan fest.", "o": ["Gleichwohl", "Zumal", "Sofern"], "a": "Gleichwohl", "x": "Yine de (resmî) → gleichwohl." },
+        { "t": "gap", "q": "Und wenn du ___ so lange wartest, er kommt nicht.", "a": ["noch"], "x": "noch so + sıfat/zarf." },
+        { "t": "choice", "q": "___, wir müssen jetzt eine Entscheidung treffen.", "o": ["Wie dem auch sei", "So dem auch sei", "Wie es auch ist sei"], "a": "Wie dem auch sei", "x": "Sabit kalıp." },
+        { "t": "order", "w": ["so", "sehr", "ich", "mich", "auch", "bemühe,", "ich", "verstehe", "es", "nicht"], "a": "So sehr ich mich auch bemühe, ich verstehe es nicht.", "alt": ["So sehr ich mich auch bemühe, verstehe ich es nicht."], "x": "Taviz cümlesi ana cümle dizimini çoğunlukla etkilemez." },
+        { "t": "choice", "q": "___ ist das Angebot günstig, aber die Qualität ist schlecht.", "o": ["Zwar", "Wenn auch", "Gleichwohl"], "a": "Zwar", "x": "zwar … aber." }
+      ],
+      "links": [
+        { "n": "Lingolia – Satzbau", "u": "https://deutsch.lingolia.com/de/grammatik/satzbau" }
+      ]
+    },
+    {
+      "id": "c2-redewiedergabe",
+      "title": "Aktarımın incelikleri",
+      "de": "Redewiedergabe: Konjunktiv I/II, Indikativ, sollen, laut/zufolge, angeblich, redeeinleitende Verben",
+      "summary": "C2’de aktarım bir <b>tavır</b> meselesidir: Indikativ (katılıyorum), Konjunktiv I (tarafsız), Konjunktiv II (şüpheliyim), sollen/angeblich (söylenti).",
+      "blocks": [
+        { "type": "table", "h": "Aynı haber, farklı mesafe", "head": ["Biçim", "Örnek", "Mesafe"], "rows": [
+          ["Indikativ", "Er sagt, dass er unschuldig <b>ist</b>.", "nötr / katılım"],
+          ["Konjunktiv I", "Er sagt, er <b>sei</b> unschuldig.", "tarafsız aktarım (basın)"],
+          ["Konjunktiv II", "Er sagt, er <b>wäre</b> unschuldig.", "şüphe (veya Konj. I yerine)"],
+          ["sollen", "Er <b>soll</b> unschuldig sein.", "söylenti"],
+          ["wollen", "Er <b>will</b> unschuldig sein.", "iddia (şüpheli)"],
+          ["angeblich / vermeintlich", "Er ist <b>angeblich</b> unschuldig.", "şüphe"],
+          ["laut / zufolge", "<b>Laut</b> Anwalt ist er unschuldig.", "kaynak gösterme"]
+        ] },
+        { "type": "list", "h": "Aktarım fiilleri (redeeinleitende Verben)", "items": [
+          "nötr: sagen, mitteilen, erklären, berichten, angeben, äußern",
+          "vurgulu: betonen, hervorheben, unterstreichen, versichern",
+          "şüpheli: behaupten, vorgeben, vorgeben zu …",
+          "karşı çıkan: bestreiten, dementieren, zurückweisen, einwenden",
+          "kabul eden: einräumen, zugeben, eingestehen"
+        ] },
+        { "type": "tip", "h": "laut ile kip seçimi", "text": "<i>Laut dem Bericht <b>ist</b> …</i> (Indikativ) ve <i>Laut dem Bericht <b>sei</b> …</i> (Konjunktiv I) ikisi de doğrudur; Konjunktiv I aktaranın mesafesini daha belirgin kılar." },
+        { "type": "tip", "h": "Uzun aktarımda Konjunktiv I süreklidir", "text": "Basında aktarım cümleleri bağımsız da devam eder; her cümlede “sagte er” tekrarlanmaz, Konjunktiv I aktarımın sürdüğünü gösterir: <i>Der Minister erklärte, die Lage sei ernst. Man <b>werde</b> alles tun. Es <b>gebe</b> keine Alternative.</i>" },
+        { "type": "tr", "text": "Türkçede “-mış” ve “-dığını söyledi / iddia etti / yalanladı” arasındaki seçimle verilen mesafe Almancada hem fiil (behaupten, bestreiten) hem de kip (sei / wäre) ile verilir." },
+        { "type": "examples", "h": "Örnekler", "items": [
+          ["Der Konzern <b>bestreitet</b>, gegen Gesetze verstoßen zu haben.", "Şirket yasaları çiğnediğini yalanlıyor."],
+          ["Sie <b>räumte ein</b>, Fehler gemacht zu haben.", "Hata yaptığını kabul etti."],
+          ["Dem Sprecher zufolge <b>seien</b> keine weiteren Schritte geplant.", "Sözcüye göre başka adım planlanmıyormuş."]
+        ] }
+      ],
+      "mistakes": [
+        ["Er bestreitet, dass er es getan hat nicht.", "Er bestreitet, es getan zu haben.", "bestreiten zaten olumsuz; nicht eklenmez."],
+        ["Er räumte ein, dass er es nicht getan hat.", "Er bestritt, es getan zu haben.", "einräumen = kabul etmek; inkâr için bestreiten."],
+        ["Er sagte, er habe gestern gekommen.", "Er sagte, er sei gestern gekommen.", "kommen → sein."]
+      ],
+      "exercises": [
+        { "t": "choice", "q": "Tarafsız basın dili: Der Minister sagte, die Lage ___ unter Kontrolle.", "o": ["ist", "sei", "wäre"], "a": "sei", "x": "Tarafsız → Konjunktiv I." },
+        { "t": "choice", "q": "Er gibt zu, einen Fehler gemacht zu haben. = Er ___ einen Fehler ein.", "o": ["räumt", "weist", "streitet"], "a": "räumt", "x": "einräumen = kabul etmek." },
+        { "t": "choice", "q": "Die Firma ___, an dem Skandal beteiligt gewesen zu sein.", "o": ["bestreitet", "betont", "räumt ein"], "a": "bestreitet", "x": "Yalanlama → bestreiten." },
+        { "t": "choice", "q": "Man erzählt sich, er sei Millionär. → Er ___ Millionär sein.", "o": ["soll", "will", "mag"], "a": "soll", "x": "Söylenti → sollen." },
+        { "t": "gap", "q": "Die Sprecherin erklärte, man ___ die Preise senken. (werden, Konj. I)", "a": ["werde"], "x": "man werde." },
+        { "t": "choice", "q": "Er behauptet, er ___ krank gewesen. (şüphe vurgusu)", "o": ["wäre", "ist", "war"], "a": "wäre", "x": "Şüphe → Konj. II." },
+        { "t": "gap", "q": "Dem Bericht ___ ist die Zahl der Arbeitslosen gesunken.", "a": ["zufolge"], "x": "Dativ + zufolge." },
+        { "t": "choice", "q": "Sie ___, dass das Projekt pünktlich fertig wird. (güvence verdi)", "o": ["versicherte", "bestritt", "räumte ein"], "a": "versicherte", "x": "versichern = güvence vermek." },
+        { "t": "choice", "q": "“Parti suçlamaları reddetti.” Hangisi?", "o": ["Die Partei wies die Vorwürfe zurück.", "Die Partei gab die Vorwürfe zu.", "Die Partei hob die Vorwürfe hervor."], "a": "Die Partei wies die Vorwürfe zurück.", "x": "zurückweisen = reddetmek." }
+      ],
+      "links": [
+        { "n": "Schubert – Indirekte Rede (C1) 1", "u": "https://www.schubert-verlag.de/aufgaben/uebungen_c1/c1_indirekte-rede1.htm" },
+        { "n": "Schubert – Indirekte Rede (C1) 2", "u": "https://www.schubert-verlag.de/aufgaben/uebungen_c1/c1_indirekte-rede2.htm" }
+      ]
+    },
+    {
+      "id": "c2-gehoben",
+      "title": "Yazı dilinin gösterişli ve eski biçimleri",
+      "de": "Gehobene Formen: starker Konjunktiv II (stünde, hülfe, begänne), Konjunktiv I im Hauptsatz, Genitivobjekte",
+      "summary": "Edebiyat, hukuk ve törensel dilde rastlanan biçimler: <i>Es <b>lebe</b> die Freiheit!</i> · <i>Man <b>nehme</b> 200 g Mehl.</i> · <i>Wir <b>gedenken</b> der Opfer.</i>",
+      "blocks": [
+        { "type": "table", "h": "Güçlü Konjunktiv II biçimleri", "head": ["Mastar", "Präteritum", "Konj. II", "Not"], "rows": [
+          ["stehen", "stand", "<b>stünde</b> / stände", "yazı dili"],
+          ["helfen", "half", "<b>hülfe</b> / hälfe", "çok nadir; würde helfen"],
+          ["beginnen", "begann", "<b>begänne</b> / begönne", "nadir"],
+          ["sterben", "starb", "<b>stürbe</b>", "edebi"],
+          ["werfen", "warf", "<b>würfe</b>", "edebi"],
+          ["kommen / gehen / geben / wissen", "kam / ging / gab / wusste", "<b>käme / ginge / gäbe / wüsste</b>", "hâlâ yaygın"],
+          ["finden / tun / lassen", "fand / tat / ließ", "<b>fände / täte / ließe</b>", "yaygın"]
+        ] },
+        { "type": "table", "h": "Ana cümlede Konjunktiv I", "head": ["İşlev", "Örnek", "Türkçe"], "rows": [
+          ["dilek / temenni", "<b>Es lebe</b> der König! · Gott <b>sei</b> Dank!", "Yaşasın kral! · Çok şükür!"],
+          ["tarif / talimat", "Man <b>nehme</b> drei Eier.", "Üç yumurta alınır."],
+          ["varsayım (matematik)", "<b>Gegeben sei</b> ein Dreieck ABC.", "ABC üçgeni verilmiş olsun."],
+          ["kalıp", "<b>Koste es</b>, was es wolle. · <b>Sei es</b> drum.", "Ne pahasına olursa olsun. · Olsun bakalım."]
+        ] },
+        { "type": "list", "h": "Genitiv nesne alan fiiller (resmî)", "items": [
+          "<b>gedenken</b> + G: der Opfer gedenken (anmak)",
+          "<b>bedürfen</b> + G: Das bedarf einer Erklärung. (açıklama gerektirir)",
+          "<b>sich bedienen</b> + G: sich einer Methode bedienen (bir yöntemden yararlanmak)",
+          "<b>sich enthalten</b> + G: sich der Stimme enthalten (çekimser kalmak)",
+          "<b>jemanden anklagen / beschuldigen</b> + G: jemanden des Diebstahls beschuldigen (hırsızlıkla suçlamak)",
+          "<b>sich vergewissern / sich rühmen / sich schämen</b> + G (eski)"
+        ] },
+        { "type": "tip", "h": "Tarif dili", "text": "<i>Man <b>nimmt</b> 200 g Zucker.</i> günümüz tariflerinde normaldir; <i>Man <b>nehme</b> 200 g Zucker.</i> klasik/eski üsluptur. İkisi de doğrudur." },
+        { "type": "tr", "text": "Türkçedeki “Yaşasın …!”, “alınır, karıştırılır” (tarif dili) ve “anmak, gerektirmek” gibi resmî kalıplar burada karşılık bulur. Bu biçimleri <b>tanımak</b> şart; aktif kullanımda ölçülü ol." },
+        { "type": "examples", "h": "Örnekler", "items": [
+          ["Die Sache <b>bedarf</b> einer genauen Prüfung.", "Mesele ayrıntılı bir incelemeyi gerektiriyor."],
+          ["Er wurde <b>des Betrugs</b> beschuldigt.", "Dolandırıcılıkla suçlandı."],
+          ["Wenn ich an deiner Stelle <b>stünde</b>, …", "Senin yerinde olsaydım …"]
+        ] }
+      ],
+      "mistakes": [
+        ["Das bedarf eine Erklärung.", "Das bedarf einer Erklärung.", "bedürfen + Genitiv."],
+        ["Es lebt die Freiheit! (temenni)", "Es lebe die Freiheit!", "Temenni → Konj. I."]
+      ],
+      "exercises": [
+        { "t": "choice", "q": "Das ___ einer ausführlichen Erklärung.", "o": ["bedarf", "braucht", "bedürft"], "a": "bedarf", "x": "bedürfen + Gen.: es bedarf." },
+        { "t": "choice", "q": "Wir gedenken ___ Opfer des Krieges.", "o": ["die", "der", "den"], "a": "der", "x": "gedenken + Gen. çoğul: der." },
+        { "t": "gap", "q": "Man ___ zwei Tassen Mehl und rühre gut um. (nehmen, Konj. I)", "a": ["nehme"], "x": "Tarif dili: man nehme." },
+        { "t": "choice", "q": "Es ___ die Freiheit!", "o": ["lebt", "lebe", "lebte"], "a": "lebe", "x": "Temenni → Konj. I." },
+        { "t": "choice", "q": "Wenn er an meiner Stelle ___, würde er anders handeln.", "o": ["stünde", "stand", "steht"], "a": "stünde", "x": "stehen → stünde (Konj. II)." },
+        { "t": "choice", "q": "Er wurde ___ Diebstahls angeklagt.", "o": ["des", "dem", "den"], "a": "des", "x": "anklagen + Gen." },
+        { "t": "gap", "q": "Sie enthielt sich ___ Stimme.", "a": ["der"], "x": "sich enthalten + Gen.: der Stimme." },
+        { "t": "choice", "q": "Koste es, was es ___!", "o": ["will", "wolle", "wollte"], "a": "wolle", "x": "Kalıp: Koste es, was es wolle." },
+        { "t": "choice", "q": "Ich ___ es gut, wenn du mitkämest.", "o": ["fände", "fand", "finde"], "a": "fände", "x": "finden → fände." }
+      ],
+      "links": [
+        { "n": "Lingolia – Verben", "u": "https://deutsch.lingolia.com/de/grammatik/verben" },
+        { "n": "Lingolia – Kasus/Fälle", "u": "https://deutsch.lingolia.com/de/grammatik/deklination" }
+      ]
+    },
+    {
+      "id": "c2-partizipialsatz",
+      "title": "Serbest sıfat-fiil öbekleri",
+      "de": "Partizipialkonstruktionen als verkürzte Nebensätze: „Am Bahnhof angekommen, …“ · feste Wendungen",
+      "summary": "Yan cümle, öznesi ana cümleyle aynıysa bir Partizip öbeğine kısaltılabilir: <i><b>Zu Hause angekommen</b>, ging er sofort ins Bett.</i> (Eve varınca …)",
+      "blocks": [
+        { "type": "table", "h": "Yan cümle → Partizip öbeği", "head": ["Yan cümle", "Kısaltma", "Anlam"], "rows": [
+          ["Nachdem er am Bahnhof angekommen war, …", "<b>Am Bahnhof angekommen</b>, …", "zaman (önce)"],
+          ["Während sie laut lachte, …", "<b>Laut lachend</b>, …", "eşzamanlılık / tarz"],
+          ["Weil er von der Kritik verletzt war, …", "<b>Von der Kritik verletzt</b>, …", "sebep"],
+          ["Wenn man es genau betrachtet, …", "<b>Genau betrachtet</b>, …", "koşul"]
+        ], "note": "Koşul: öbeğin örtük öznesi ana cümlenin öznesiyle aynı olmalı. Öbek virgülle ayrılır." },
+        { "type": "list", "h": "Kalıplaşmış ifadeler (öznesi serbest)", "items": [
+          "<b>genau genommen</b> (aslına bakılırsa) · <b>streng genommen</b> (kesin konuşmak gerekirse) · <b>im Grunde genommen</b> (özünde)",
+          "<b>abgesehen davon</b> (bunun dışında) · <b>angenommen, dass …</b> (varsayalım ki) · <b>vorausgesetzt, dass …</b> (… şartıyla)",
+          "<b>offen gesagt</b> (açıkçası) · <b>ehrlich gesagt</b> (doğrusu) · <b>kurz gesagt</b> (kısacası) · <b>verglichen mit</b> (… ile kıyaslandığında)"
+        ] },
+        { "type": "tip", "h": "Sallanan öbek hatası", "text": "<i>✗ <b>Im Hotel angekommen</b>, regnete es.</i> → Varan kim? Yağmur değil. Doğrusu: <i>Als wir im Hotel ankamen, regnete es.</i>" },
+        { "type": "tr", "text": "Türkçe zarf-fiiller (-ınca, -erek, -ken) bu yapıya çok benzer: “Eve <b>varınca</b> yattı” = <i>Zu Hause angekommen, ging er ins Bett.</i> Türkçedeki özne eşitliği kuralı Almancada da geçerli." },
+        { "type": "examples", "h": "Örnekler", "items": [
+          ["<b>In Berlin geboren</b>, verbrachte sie ihre Kindheit in Wien.", "Berlin’de doğmuş, çocukluğunu Viyana’da geçirmişti."],
+          ["<b>Ehrlich gesagt</b>, habe ich keine Lust.", "Doğrusu hiç hevesim yok."],
+          ["<b>Vorausgesetzt, dass</b> alle zustimmen, beginnen wir morgen.", "Herkes onaylarsa yarın başlıyoruz."]
+        ] }
+      ],
+      "mistakes": [
+        ["Im Büro angekommen, klingelte das Telefon.", "Als ich im Büro ankam, klingelte das Telefon.", "Öznesi farklı → öbek kullanılamaz."],
+        ["Genau genommt", "Genau genommen", "nehmen → genommen."]
+      ],
+      "exercises": [
+        { "t": "choice", "q": "Nachdem sie zu Hause angekommen war, rief sie ihre Mutter an. → ___, rief sie ihre Mutter an.", "o": ["Zu Hause angekommen", "Zu Hause ankommend", "Zu Hause ankommen"], "a": "Zu Hause angekommen", "x": "Önceki olay → PII." },
+        { "t": "choice", "q": "Während er laut sang, ging er durch den Park. → ___, ging er durch den Park.", "o": ["Laut singend", "Laut gesungen", "Laut zu singen"], "a": "Laut singend", "x": "Eşzamanlı → PI." },
+        { "t": "gap", "q": "___ genommen ist das kein Fehler, sondern eine Ungenauigkeit. (kesin konuşursak)", "a": ["Streng"], "x": "streng genommen." },
+        { "t": "choice", "q": "___ davon, dass es teuer ist, ist es auch hässlich.", "o": ["Abgesehen", "Vorausgesetzt", "Angenommen"], "a": "Abgesehen", "x": "Bunun dışında → abgesehen davon." },
+        { "t": "choice", "q": "Hangisi doğru?", "o": ["Im Hotel angekommen, gingen wir sofort essen.", "Im Hotel angekommen, regnete es stark.", "Im Hotel angekommen, war das Zimmer schmutzig."], "a": "Im Hotel angekommen, gingen wir sofort essen.", "x": "Öbeğin öznesi = ana cümlenin öznesi (wir)." },
+        { "t": "gap", "q": "___, dass du recht hast: Was machen wir dann? (varsayalım ki)", "a": ["Angenommen"], "x": "angenommen, dass …" },
+        { "t": "choice", "q": "___ mit dem Vorjahr sind die Umsätze gestiegen.", "o": ["Verglichen", "Vergleichend", "Vergleicht"], "a": "Verglichen", "x": "verglichen mit." },
+        { "t": "gap", "q": "Im Grunde ___ hast du recht.", "a": ["genommen"], "x": "im Grunde genommen." }
+      ],
+      "links": [
+        { "n": "Schubert – Partizipialattribute (C1)", "u": "https://www.schubert-verlag.de/aufgaben/uebungen_c1/c1_attribute1.htm" },
+        { "n": "Lingolia – Satzbau", "u": "https://deutsch.lingolia.com/de/grammatik/satzbau" }
+      ]
+    },
+    {
+      "id": "c2-register",
+      "title": "Üslup katmanları: konuşma ↔ yazı",
+      "de": "Register: Umgangssprache, Standardsprache, Bildungs- und Fachsprache · typische Abweichungen",
+      "summary": "C2 kullanıcısı aynı içeriği <b>duruma göre</b> farklı söyler ve konuşma dilindeki “standart dışı” yapıları tanır ama yazıda kullanmaz.",
+      "blocks": [
+        { "type": "table", "h": "Konuşma dilinde görülen yapılar", "head": ["Konuşma dili", "Standart / yazı", "Not"], "rows": [
+          ["wegen <b>dem</b> Wetter", "wegen <b>des</b> Wetters", "Genitiv edatlarında Dativ"],
+          ["…, weil ich <b>hab</b> keine Zeit.", "…, weil ich keine Zeit <b>habe</b>.", "weil + V2 (konuşmada yaygın)"],
+          ["<b>dem Peter sein</b> Auto", "<b>Peters</b> Auto / das Auto von Peter", "bölgesel iyelik"],
+          ["Ich <b>tu</b> gerade kochen.", "Ich koche gerade.", "tun + mastar (bölgesel)"],
+          ["Ich <b>bin</b> am Arbeiten.", "Ich arbeite gerade.", "“am”-süreklilik (yaygın, kabul görüyor)"],
+          ["Kommst du mit, <b>gell</b>/<b>ne</b>?", "Kommst du mit?", "onay parçacıkları"],
+          ["<b>Das</b> ist der Mann, <b>wo</b> …", "der Mann, <b>der</b> …", "güney: wo ilgi zamiri"]
+        ] },
+        { "type": "table", "h": "Aynı içerik, üç düzey", "head": ["Düzey", "Örnek"], "rows": [
+          ["umgangssprachlich", "Der Typ hat echt keinen Plan."],
+          ["standard", "Der Mann hat keine Ahnung."],
+          ["gehoben / formell", "Dem Herrn fehlt es offenkundig an Sachkenntnis."]
+        ] },
+        { "type": "list", "h": "Yazı diline çevirirken", "items": [
+          "Kısaltmaları aç: hab → habe, ’s → es, nen → einen, grad → gerade.",
+          "Parçacıkları (halt, eben, mal) çıkar ya da nötr karşılık kullan.",
+          "Fiil yerine isim kalıpları ve NVV kullan: kriegen → erhalten, checken → verstehen/prüfen, machen → durchführen."
+        ] },
+        { "type": "tr", "text": "Türkçede “abi, ya, işte, falan” konuşmaya, “mezkûr, işbu, binaenaleyh” resmî yazıya aittir. Almancada da kelime seçimi kadar <b>dilbilgisel</b> farklar (wegen + Dat., weil + V2) üslup işaretidir." },
+        { "type": "examples", "h": "Örnekler", "items": [
+          ["(ugs.) Ich hab’s nicht gecheckt. → (Standard) Ich habe es nicht verstanden.", "Anlamadım."],
+          ["(ugs.) Kriegst du das hin? → (formell) Sind Sie in der Lage, das zu erledigen?", "Halledebilir misin?"],
+          ["(ugs.) Wegen dem Stau … → (schriftlich) Aufgrund des Staus …", "Trafik yüzünden …"]
+        ] }
+      ],
+      "mistakes": [
+        ["(Bewerbung) Ich hab echt Bock auf den Job.", "Ich bin sehr an der Stelle interessiert.", "Başvuruda konuşma dili olmaz."],
+        ["(Aufsatz) …, weil das ist wichtig.", "…, weil das wichtig ist.", "Yazıda weil + fiil sonda."],
+        ["(E-Mail an Behörde) Hallo!", "Sehr geehrte Damen und Herren,", "Resmî hitap."]
+      ],
+      "exercises": [
+        { "t": "choice", "q": "Yazı dili: ___ des schlechten Wetters fiel das Konzert aus.", "o": ["Wegen", "Wegen dem", "Weil"], "a": "Wegen", "x": "wegen + Gen." },
+        { "t": "choice", "q": "“Ich hab keinen Plan.” cümlesinin standart (nötr) karşılığı:", "o": ["Ich habe keine Ahnung.", "Ich hab null Peilung.", "Ich hab kein Plan."], "a": "Ich habe keine Ahnung.", "x": "Standart düzey: keine Ahnung haben." },
+        { "t": "choice", "q": "Hangisi standart yazı dilidir?", "o": ["Das ist dem Peter sein Haus.", "Das ist Peters Haus.", "Das ist Peter sein Haus."], "a": "Das ist Peters Haus.", "x": "Genitiv-s." },
+        { "t": "choice", "q": "“kriegen” resmî karşılığı:", "o": ["erhalten", "nehmen", "holen"], "a": "erhalten", "x": "kriegen → erhalten/bekommen." },
+        { "t": "order", "q": "Yazı diline çevir: „…, weil ich hab keine Zeit.“", "w": ["weil", "ich", "keine", "Zeit", "habe"], "a": "weil ich keine Zeit habe", "x": "Yazıda weil → fiil sonda." },
+        { "t": "choice", "q": "Resmî e-posta için uygun kapanış:", "o": ["LG", "Mit freundlichen Grüßen", "Tschüss"], "a": "Mit freundlichen Grüßen", "x": "Standart resmî kapanış." },
+        { "t": "choice", "q": "“Ich bin gerade am Kochen.” yazı dili karşılığı:", "o": ["Ich koche gerade.", "Ich tu gerade kochen.", "Ich bin kochend."], "a": "Ich koche gerade.", "x": "Standart Präsens + gerade." },
+        { "t": "choice", "q": "Hangisi bir kip parçacığı içermeyen nötr yazıdır?", "o": ["Das ist halt so.", "Das ist eben so.", "Dies lässt sich nicht ändern."], "a": "Dies lässt sich nicht ändern.", "x": "Parçacıksız, resmî." }
+      ],
+      "links": [
+        { "n": "Goethe-Zertifikat C2 – Prüfungsziele", "u": "https://www.goethe.de/pro/relaunch/prf/de/Pruefungsziele_Testbeschreibung_C2.pdf" }
+      ]
+    },
+    {
+      "id": "c2-komposita",
+      "title": "Birleşik kelimeler ve bağlama sesleri",
+      "de": "Komposition: Fugenelemente (-s-, -es-, -n-, -en-, -e-, -er-), Determinativkomposita, Bindestrich",
+      "summary": "Almanca uzun kelimeler kurar: <i>Arbeit<b>s</b>platz, Sonne<b>n</b>brille, Kind<b>er</b>garten</i>. Son öğe <b>temel</b> (artikel + anlam), öncekiler <b>niteleyici</b>dir.",
+      "blocks": [
+        { "type": "table", "h": "Bağlama sesleri (Fugenelemente)", "head": ["Ses", "Tipik durum", "Örnek"], "rows": [
+          ["-s-", "-ung, -heit, -keit, -schaft, -tät, -ion, -ling ile biten ilk öğe", "Wohnung<b>s</b>tür, Gesundheit<b>s</b>amt, Universität<b>s</b>stadt"],
+          ["-(e)n-", "-e ile biten dişil / n-çekimli ilk öğe", "Sonne<b>n</b>schein, Straße<b>n</b>bahn, Student<b>en</b>ausweis"],
+          ["-er-", "çoğulu -er olan ilk öğe", "Kind<b>er</b>garten, Bild<b>er</b>buch"],
+          ["-e-", "bazı tek heceliler", "Hund<b>e</b>hütte, Tag<b>e</b>buch"],
+          ["Ø", "çoğu durumda", "Hausarzt, Tischlampe, Zahnbürste"],
+          ["-e düşer", "fiil kökü + isim", "Sprech<b>stunde</b> (sprechen), Wasch<b>maschine</b>"]
+        ], "note": "Kural kesin değildir; Schweinebraten ↔ Schweinshaxe (bölgesel). Bilinen kelimeleri model al." },
+        { "type": "list", "h": "Temel kurallar", "items": [
+          "<b>Artikel ve çoğul son öğeden gelir:</b> das Haus + die Tür → <b>die</b> Haustür, die Haustür<b>en</b>.",
+          "<b>Anlam:</b> son öğe nedir, öncekiler ne tür olduğunu söyler: <i>Kaffeetasse</i> (kahve fincanı) ↔ <i>Tassenkaffee</i> (fincanda kahve).",
+          "<b>Kısa çizgi:</b> kısaltma/sayı/okunabilirlik için: <i>E-Mail, 3-Zimmer-Wohnung, Ich-Erzähler</i>.",
+          "<b>Sıfat + isim</b> birleşiği de mümkündür: Großstadt, Kleingeld, Hochhaus."
+        ] },
+        { "type": "tr", "text": "Türkçe tamlama “çocuk bahçesi” iki kelimedir ve ikinci kelime iyelik eki alır. Almancada tek kelime olur ve ek yerine bazen <b>bağlama sesi</b> girer: Kind<b>er</b>garten. Mantık aynı: son öğe temel." },
+        { "type": "examples", "h": "Örnekler", "items": [
+          ["die Geburt<b>s</b>tag<b>s</b>feier", "doğum günü partisi"],
+          ["die Krankenversicherung<b>s</b>karte", "sağlık sigortası kartı"],
+          ["der Schlüsseldienst", "çilingir hizmeti"]
+        ] }
+      ],
+      "mistakes": [
+        ["der Arbeitplatz", "der Arbeitsplatz", "Arbeit + s + Platz."],
+        ["das Haustür", "die Haustür", "Artikel son öğeden: die Tür."],
+        ["die Sonnebrille", "die Sonnenbrille", "-e ile biten dişil → -n-."]
+      ],
+      "exercises": [
+        { "t": "gap", "q": "die Wohnung + der Schlüssel → der Wohnung___schlüssel (bağlama sesi)", "a": ["s"], "x": "-ung → -s-." },
+        { "t": "gap", "q": "die Sonne + die Creme → die Sonne___creme", "a": ["n"], "x": "-e ile biten dişil → -n-." },
+        { "t": "choice", "q": "das Kind + der Wagen → ?", "o": ["der Kindwagen", "der Kinderwagen", "der Kindeswagen"], "a": "der Kinderwagen", "x": "Çoğul -er → Kinderwagen." },
+        { "t": "choice", "q": "das Auto + die Bahn → ___ Autobahn", "o": ["der", "die", "das"], "a": "die", "x": "Artikel son öğeden: die Bahn." },
+        { "t": "choice", "q": "die Hand + der Schuh → ___ Handschuh", "o": ["der", "die", "das"], "a": "der", "x": "der Schuh." },
+        { "t": "gap", "q": "die Gesundheit + das Amt → das Gesundheit___amt", "a": ["s"], "x": "-heit → -s-." },
+        { "t": "choice", "q": "“Tassenkaffee” nedir?", "o": ["kahve fincanı", "fincanda servis edilen kahve", "kahve çekirdeği"], "a": "fincanda servis edilen kahve", "x": "Temel = Kaffee." },
+        { "t": "choice", "q": "Hangisi doğru yazım?", "o": ["3 Zimmer Wohnung", "3-Zimmer-Wohnung", "3Zimmerwohnung"], "a": "3-Zimmer-Wohnung", "x": "Sayılı birleşiklerde kısa çizgi." },
+        { "t": "gap", "q": "der Tag + das Buch → das Tag___buch (bağlama sesi)", "a": ["e"], "x": "Tagebuch." },
+        { "t": "choice", "q": "sprechen + die Stunde → ?", "o": ["die Sprechenstunde", "die Sprechstunde", "die Sprechsstunde"], "a": "die Sprechstunde", "x": "Fiil kökü: sprech-." }
+      ],
+      "links": [
+        { "n": "Lingolia – Nomen und Artikel", "u": "https://deutsch.lingolia.com/de/grammatik/nomen" }
+      ]
+    }
+  ]
+}
